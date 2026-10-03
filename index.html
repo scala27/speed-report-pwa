@@ -99,7 +99,7 @@
     }
     textarea {
       resize: vertical;
-      min-height: 110px;
+      min-height: 120px;
       font-family: inherit;
       line-height: 1.6;
     }
@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v4.2-PrecisionIndentAndBold</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v4.3-Section1PresetTemplate</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -212,11 +212,11 @@
     <div class="form-row">
       <div class="form-group">
         <label for="assigner">交辦長官</label>
-        <input type="text" id="assigner" name="assigner" value="陳副署長建成">
+        <input type="text" id="assigner" name="assigner" value="陳副總工程司春宏">
       </div>
       <div class="form-group">
         <label for="reporting_unit">陳報單位</label>
-        <input type="text" id="reporting_unit" name="reporting_unit" value="河川海岸組" required>
+        <input type="text" id="reporting_unit" name="reporting_unit" value="土地管理組" required>
       </div>
     </div>
 
@@ -231,51 +231,42 @@
       </div>
     </div>
 
-    <!-- 壹、案由： -->
+    <!-- 壹、案由： (內含一~四預設提示架構) -->
     <div class="section-label">壹、案由：</div>
     <div class="form-group">
-      <textarea id="section_1" name="section_1" required>115年4月2日中央畜產會董事長蘇治芬拜會經濟部次長賴建信研商虎尾潮建議案</textarea>
-    </div>
-
-    <!-- 與會人員： -->
-    <div class="section-label">與會人員：</div>
-    <div class="form-group">
-      <textarea id="attendees" name="attendees" required>經濟部賴次長建信、中央畜產會董事長蘇治芬、都市里人規劃設計有限公司建築師林雋怡、台灣糖業公司副總經理蔡東霖、副處長陳冠翰、水利署陳副署長建成及水利署第五河川分署科長周育興等。</textarea>
+      <textarea id="section_1" name="section_1" rows="5" placeholder="一、開會時間：&#10;二、開會地點：&#10;三、主持人：&#10;四、與會人員：" required>一、開會時間：115年9月17日(四)下午15:30
+二、開會地點：立法委員伍麗華國會辦公室
+三、主持人：曾巧忻主任
+四、與會人員：行政院公共工程委員會洪簡任技正彥斌、水利署陳副總工程司春宏、梁科長顥懷、第九河川分署李科長秀芳、莊聘用工程司宇</textarea>
     </div>
 
     <!-- 貳、重點說明暨續辦摘要： -->
     <div class="section-label">貳、重點說明暨續辦摘要：</div>
     <div class="form-group">
-      <textarea id="section_2" name="section_2">一、中山路人行跨橋都市計畫審議進度：請第五河川分署儘速依雲林縣政府意見辦理修正及補充，俟與該府城鄉發展處研商共識後，再行正式函報。
-(一)中山路人行跨橋都市計畫審議進度：請第五河川分署儘速依雲林縣政府意見辦理修正及補充，俟與該府城鄉發展處研商共識後，再行正式函報。
-1. 青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。
-2. 安慶圳景觀環境營造工程：請第五河川分署再檢視水質條件、水源循環利用及後續維護管理等優化評估。
-(1)同心公園及周邊再發展：同心公園西側台糖既有古蹟木屋群緊鄰水防道路，具有帶動周邊發展加值效益，惟現況有圍牆阻隔，不利串聯及通透，請第五河川分署與台糖公司辦理會勘，釐清相關權責並評估改善。
-二、青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。
-三、安慶圳景觀環境營造工程後續執行：請第五河川分署持續與地方相關權責單位建立密切聯繫窗口，確保相關營造工程順利推進。
-四、跨領域整合研商事項：針對周邊整體環境改善，請相關單位通力合作並定期回報最新進度。</textarea>
+      <textarea id="section_2" name="section_2" rows="7">一、香草場所在土地在馬太鞍事件時雖未淹水,但目前本署規劃之第二道防線為治理需求仍有其必要性。
+二、本署暨九河分署辦理用地取得後,在地相關民眾居住權及相關權益應給予保障;例如申辦原保地增劃編程序者仍能繼續,或協助申請中繼屋、安排以地易地方式。</textarea>
     </div>
 
     <!-- 叁、擬處理意見或建議事項： -->
     <div class="section-label">叁、擬處理意見或建議事項：</div>
     <div class="form-group">
-      <textarea id="section_3" name="section_3">本案後續由第五河川分署、本署河川海岸組錄案辦理。</textarea>
+      <textarea id="section_3" name="section_3" rows="3">請工程會依據會議決議協助香草場居民就工程範圍外土地,專案洽原民會申請增劃編原住民保留地。</textarea>
     </div>
 
     <!-- 本件分送單位 -->
     <div class="section-label">本件分送（勾選）</div>
     <div class="checkbox-container">
       <div class="checkbox-grid">
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長辦公室" checked> 署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副署長辦公室" checked> 王副署長辦公室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長辦公室"> 署長辦公室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副署長辦公室"> 王副署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="黃副署長辦公室"> 黃副署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="陳副署長辦公室" checked> 陳副署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工程司室" checked> 總工程司室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室"> 主任秘書室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室" checked> 主任秘書室</label>
       </div>
       <div class="other-unit-row">
         <label class="checkbox-item"><input type="checkbox" id="chk_other_unit" checked> 其他單位：</label>
-        <input type="text" id="other_unit_text" name="other_unit_text" value="第五河川分署、河川海岸組">
+        <input type="text" id="other_unit_text" name="other_unit_text" value="河川海岸組、國會組">
       </div>
     </div>
 
@@ -283,11 +274,11 @@
     <div class="form-row" style="margin-top: 16px;">
       <div class="form-group">
         <label for="contact_person">本案聯絡人</label>
-        <input type="text" id="contact_person" name="contact_person" value="河川海岸組/科長/王基安">
+        <input type="text" id="contact_person" name="contact_person" value="土地管理組/科長/梁顥懷">
       </div>
       <div class="form-group">
         <label for="contact_phone">聯絡電話</label>
-        <input type="text" id="contact_phone" name="contact_phone" value="04-22501223/0937775253">
+        <input type="text" id="contact_phone" name="contact_phone" value="0928284556">
       </div>
     </div>
 
@@ -304,10 +295,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (更新版號 v4.2 強制刷新快取)
+  // PWA Service Worker 註冊 (更新版號 v4.3 強制刷新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=4.2')
+      navigator.serviceWorker.register('./service-worker.js?v=4.3')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -388,7 +379,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (精確 40pt 安全門檻、強化頂部與大標粗體、修正第三四層懸掛縮排)
+  // 3. 純前端標楷體 PDF 引擎 (三大章節架構，完全切合 1150917 速報單標準)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -407,7 +398,7 @@
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 40; // 底欄觸發安全門檻調整至 40 pt
+    const pageBottomMargin = 40; // 置底 40pt 安全觸發門檻
     const printableWidth = width - (marginX * 2); // 515.28 pt
 
     // 格式化勾選選項文字 (原生 ■ 與 □)
@@ -446,7 +437,7 @@
 
         const trimmed = para.trim();
         let baseIndent = 32; // 預設一般段落首行縮排 2 字 (32pt)
-        let hangIndent = 0;  // 預設一般段落次行頂格 (0pt，不用懸掛縮排)
+        let hangIndent = 0;  // 預設一般段落次行頂格 (0pt，無懸掛縮排)
 
         // 第四層: (1), （1） -> 首行縮排 5 字 (80pt), 次行懸掛 90pt
         if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
@@ -521,10 +512,10 @@
       });
     });
 
-    // 左側：經濟部水利署 (加大粗體 20pt，strokeWidth: 1.4)
+    // 左側：經濟部水利署 (加大粗體 20pt)
     drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20, 1.4);
 
-    // 右側：辦理現況速報單 (加大粗體 20pt，strokeWidth: 1.4)
+    // 右側：辦理現況速報單 (加大粗體 20pt)
     const rightTitle = '辦理現況速報單';
     const rightTitleW = measureTextWidth(rightTitle, 20);
     drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20, 1.4);
@@ -566,7 +557,7 @@
     let currentPageBoxStartY = basicInfoStartY - 22 - 14;
 
     // ====================================================
-    // 3. 實體表格內文區 (大標題粗體、內文常規字型，支援 40pt 門檻跨頁)
+    // 3. 實體表格內文區 (三大章節大標題粗體、內文常規字型，支援 40pt 門檻跨頁)
     // ====================================================
     const textPaddingX = 10;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -575,7 +566,6 @@
 
     const allSections = [
       processSection('壹、案由：', data.section_1, fontSize, maxTextW),
-      processSection('與會人員：', data.attendees, fontSize, maxTextW),
       processSection('貳、重點說明暨續辦摘要：', data.section_2, fontSize, maxTextW),
       processSection('叁、擬處理意見或建議事項：', data.section_3, fontSize, maxTextW)
     ];
@@ -738,14 +728,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成最新微調版 PDF...', 'info');
+      showStatus('正在生成最新版 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！40pt 門檻跨頁、標題顯著粗體與精確懸掛縮排已全數完成。', 'success');
+      showStatus('PDF 匯出成功！表單與 PDF 已完成結構優化。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
