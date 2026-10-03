@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v3.0-1150917-Fix</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v3.2-Standardized</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -294,10 +294,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊
+  // PWA Service Worker 註冊 (帶入版本號避免快取舊檔)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=3.0')
+      navigator.serviceWorker.register('./service-worker.js?v=3.2')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -378,7 +378,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (100% 擬真 1150917速報單 全寬版面)
+  // 3. 純前端標楷體 PDF 引擎 (字體標準化 + 實體黑框取代)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -401,7 +401,7 @@
 
     let currentY = height - marginTop;
 
-    // 文字自動折行演算法
+    // 自動折行演算法
     function wrapText(text, fontSize, maxWidth) {
       const lines = [];
       const paragraphs = (text || '').split('\n');
@@ -421,7 +421,7 @@
       return lines;
     }
 
-    // 繪製表格外框單元格
+    // 繪製外框單元格
     function drawCell(x, y, w, h, bgHex = null) {
       if (bgHex) {
         page.drawRectangle({ x, y: y - h, width: w, height: h, color: rgb(0.95, 0.95, 0.95) });
@@ -429,24 +429,27 @@
       page.drawRectangle({ x, y: y - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 1 });
     }
 
-    // 繪製核取方塊與文字標籤
+    // 繪製核取方塊與標籤 (已勾選直接以實體黑色方框取代空心框)
     function drawBoxWithLabel(x, y, label, isChecked, fontSize = 9.5) {
       const boxSize = 9;
-      page.drawRectangle({
-        x: x,
-        y: y,
-        width: boxSize,
-        height: boxSize,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 1
-      });
       if (isChecked) {
+        // 直接繪製滿版黑色實體方框 (■)
         page.drawRectangle({
-          x: x + 2,
-          y: y + 2,
-          width: boxSize - 4,
-          height: boxSize - 4,
+          x: x,
+          y: y,
+          width: boxSize,
+          height: boxSize,
           color: rgb(0, 0, 0)
+        });
+      } else {
+        // 未勾選：繪製空心外框 (□)
+        page.drawRectangle({
+          x: x,
+          y: y,
+          width: boxSize,
+          height: boxSize,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 1
         });
       }
       page.drawText(label, {
@@ -461,9 +464,7 @@
     // 1. 表頭 (經濟部水利署 / 辦理現況速報單)
     // ----------------------------------------------------
     const headerHeight = 36;
-    const halfW = printableWidth / 2;
-    drawCell(marginX, currentY, halfW, headerHeight);
-    drawCell(marginX + halfW, currentY, halfW, headerHeight);
+    drawCell(marginX, currentY, printableWidth, headerHeight);
 
     page.drawText('經濟部水利署', {
       x: marginX + 12,
@@ -484,9 +485,10 @@
     currentY -= headerHeight;
 
     // ----------------------------------------------------
-    // 2. 基本資料雙欄網格 (交辦長官, 交辦日期, 陳報單位, 陳報日期)
+    // 2. 基本資料雙欄網格 (字體統一 10.5 pt)
     // ----------------------------------------------------
     const metaRowH = 24;
+    const halfW = printableWidth / 2;
 
     // 第一列
     drawCell(marginX, currentY, halfW, metaRowH);
@@ -525,7 +527,7 @@
     currentY -= metaRowH;
 
     // ----------------------------------------------------
-    // 3. 會議/案由性質勾選區 (全寬)
+    // 3. 會議/案由性質勾選區 (選項字體 9.5 pt)
     // ----------------------------------------------------
     const typeRowH = 26;
     drawCell(marginX, currentY, printableWidth, typeRowH);
@@ -541,28 +543,28 @@
     types.forEach(t => {
       const isChecked = data.meeting_type === t;
       drawBoxWithLabel(curX, currentY - 17, t, isChecked, 9.5);
-      curX += kaiFont.widthOfTextAtSize(t, 9.5) + 18;
+      curX += kaiFont.widthOfTextAtSize(t, 9.5) + 20;
     });
     currentY -= typeRowH;
 
     // ----------------------------------------------------
-    // 4. 壹、案由： (單欄全寬，內文頂格)
+    // 4. 壹、案由： (標題統一 11.5 pt，內文統一 10.5 pt)
     // ----------------------------------------------------
     const sec1Lines = wrapText(data.section_1, 10.5, printableWidth - 20);
-    const sec1H = Math.max(90, sec1Lines.length * 16 + 28);
+    const sec1H = Math.max(90, sec1Lines.length * 16.5 + 28);
     drawCell(marginX, currentY, printableWidth, sec1H);
 
     page.drawText('壹、案由：', {
       x: marginX + 10,
       y: currentY - 18,
-      size: 11,
+      size: 11.5,
       font: kaiFont
     });
 
     sec1Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 36 - (idx * 16),
+        y: currentY - 36 - (idx * 16.5),
         size: 10.5,
         font: kaiFont
       });
@@ -570,23 +572,23 @@
     currentY -= sec1H;
 
     // ----------------------------------------------------
-    // 5. 貳、重點說明暨續辦摘要： (單欄全寬，內文頂格)
+    // 5. 貳、重點說明暨續辦摘要： (標題統一 11.5 pt，內文統一 10.5 pt)
     // ----------------------------------------------------
     const sec2Lines = wrapText(data.section_2, 10.5, printableWidth - 20);
-    const sec2H = Math.max(160, sec2Lines.length * 16 + 28);
+    const sec2H = Math.max(150, sec2Lines.length * 16.5 + 28);
     drawCell(marginX, currentY, printableWidth, sec2H);
 
     page.drawText('貳、重點說明暨續辦摘要：', {
       x: marginX + 10,
       y: currentY - 18,
-      size: 11,
+      size: 11.5,
       font: kaiFont
     });
 
     sec2Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 36 - (idx * 16),
+        y: currentY - 36 - (idx * 16.5),
         size: 10.5,
         font: kaiFont
       });
@@ -594,23 +596,23 @@
     currentY -= sec2H;
 
     // ----------------------------------------------------
-    // 6. 參、擬處理意見或建議事項： (單欄全寬，內文頂格)
+    // 6. 參、擬處理意見或建議事項： (標題統一 11.5 pt，內文統一 10.5 pt)
     // ----------------------------------------------------
     const sec3Lines = wrapText(data.section_3, 10.5, printableWidth - 20);
-    const sec3H = Math.max(110, sec3Lines.length * 16 + 28);
+    const sec3H = Math.max(100, sec3Lines.length * 16.5 + 28);
     drawCell(marginX, currentY, printableWidth, sec3H);
 
     page.drawText('參、擬處理意見或建議事項：', {
       x: marginX + 10,
       y: currentY - 18,
-      size: 11,
+      size: 11.5,
       font: kaiFont
     });
 
     sec3Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 36 - (idx * 16),
+        y: currentY - 36 - (idx * 16.5),
         size: 10.5,
         font: kaiFont
       });
@@ -618,42 +620,44 @@
     currentY -= sec3H;
 
     // ----------------------------------------------------
-    // 7. 本件分送 (勾選)
+    // 7. 本件分送 (勾選) (標題 11.5 pt，項目 9.5 pt)
     // ----------------------------------------------------
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [data.dispatch_units].filter(Boolean);
-    const dispatchRowH = 65;
+    const dispatchRowH = 80;
     drawCell(marginX, currentY, printableWidth, dispatchRowH);
 
     page.drawText('本件分送 (勾選)', {
       x: marginX + 10,
       y: currentY - 16,
-      size: 10.5,
+      size: 11.5,
       font: kaiFont
     });
 
-    // 第一排處室
+    // 第 1 列處室
     const row1Units = ['署長辦公室', '王副署長辦公室', '黃副署長辦公室'];
     let dX = marginX + 10;
     row1Units.forEach(u => {
       const isChecked = dispatchUnits.includes(u);
-      drawBoxWithLabel(dX, currentY - 35, u, isChecked, 9.5);
-      dX += 160;
+      drawBoxWithLabel(dX, currentY - 34, u, isChecked, 9.5);
+      dX += 150;
     });
 
-    // 第二排處室
+    // 第 2 列處室
     const row2Units = ['陳副署長辦公室', '總工程司室', '主任秘書室'];
     dX = marginX + 10;
     row2Units.forEach(u => {
       const isChecked = dispatchUnits.includes(u);
-      drawBoxWithLabel(dX, currentY - 52, u, isChecked, 9.5);
-      dX += 160;
+      drawBoxWithLabel(dX, currentY - 51, u, isChecked, 9.5);
+      dX += 150;
     });
 
-    // 其他單位說明
+    // 第 3 列：其他單位獨立行
+    const hasOther = Boolean(data.other_unit_text);
+    drawBoxWithLabel(marginX + 10, currentY - 68, '其他單位：', hasOther, 9.5);
     if (data.other_unit_text) {
-      page.drawText(`其他單位：${data.other_unit_text}`, {
-        x: marginX + 330,
-        y: currentY - 52,
+      page.drawText(data.other_unit_text, {
+        x: marginX + 75,
+        y: currentY - 68,
         size: 9.5,
         font: kaiFont
       });
@@ -662,7 +666,7 @@
     currentY -= dispatchRowH;
 
     // ----------------------------------------------------
-    // 8. 聯絡資訊區 (本案聯絡人, 聯絡電話)
+    // 8. 聯絡資訊區 (字體統一 10.5 pt)
     // ----------------------------------------------------
     const contactRowH = 26;
     drawCell(marginX, currentY, halfW, contactRowH);
@@ -671,14 +675,14 @@
     page.drawText(`本案聯絡人：${data.contact_person || ''}`, {
       x: marginX + 10,
       y: currentY - 17,
-      size: 10,
+      size: 10.5,
       font: kaiFont
     });
 
     page.drawText(`聯絡電話：${data.contact_phone || ''}`, {
       x: marginX + halfW + 10,
       y: currentY - 17,
-      size: 10,
+      size: 10.5,
       font: kaiFont
     });
 
@@ -696,7 +700,7 @@
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！版面已 100% 套用制式範本。', 'success');
+      showStatus('PDF 匯出成功！版面與字號已標準化。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
