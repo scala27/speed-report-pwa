@@ -1,30 +1,31 @@
-const CACHE_NAME = 'speed-report-pwa-v2.8.2';
+// 1. 每次更新版號，務必同步修改快取名稱
+const CACHE_NAME = 'speed-report-v4.6';
 
-const ASSETS_TO_CACHE = [
+const FILES_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './icon-192.png',
-  './kaiu.ttf',
-  'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
-  'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
+  './kaiu.ttf'
 ];
 
+// 2. 安裝時立即跳過等待 (skipWaiting)
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+      return cache.addAll(FILES_TO_CACHE);
+    })
   );
 });
 
+// 3. 啟用時自動比對並清除非本版的舊快取 (例如 v2.8)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
+            console.log('刪除舊版 PWA 快取:', cache);
             return caches.delete(cache);
           }
         })
@@ -33,11 +34,9 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// 4. 攔截請求：優先使用網路最新資源 (Network First)
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
