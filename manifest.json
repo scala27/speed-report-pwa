@@ -1,7 +1,7 @@
 {
-  "short_name": "速報單 V2.0",
-  "name": "速報單產製系統 V2.0",
-  "description": "水利應變純前端離線速報單產製系統",
+  "short_name": "速報單 V2.8",
+  "name": "速報單填報系統 v2.8.2",
+  "description": "水利應變純前端離線速報單填報系統",
   "icons": [
     {
       "src": "icon-192.png",
@@ -16,9 +16,9 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "./tindex.html",
-  "background_color": "#ffffff",
-  "theme_color": "#1e3a8a",
+  "start_url": "./index.html",
+  "background_color": "#cbebfb",
+  "theme_color": "#d6f0ff",
   "display": "standalone",
   "orientation": "portrait"
 }
