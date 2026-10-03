@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v4.3-Section1PresetTemplate</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v4.4-BoldStroke2AndAllIndent32</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -231,7 +231,7 @@
       </div>
     </div>
 
-    <!-- 壹、案由： (內含一~四預設提示架構) -->
+    <!-- 壹、案由： (預設結構與範本) -->
     <div class="section-label">壹、案由：</div>
     <div class="form-group">
       <textarea id="section_1" name="section_1" rows="5" placeholder="一、開會時間：&#10;二、開會地點：&#10;三、主持人：&#10;四、與會人員：" required>一、開會時間：115年9月17日(四)下午15:30
@@ -295,10 +295,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (更新版號 v4.3 強制刷新快取)
+  // PWA Service Worker 註冊 (更新版號 v4.4 強制刷新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=4.3')
+      navigator.serviceWorker.register('./service-worker.js?v=4.4')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -379,7 +379,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (三大章節架構，完全切合 1150917 速報單標準)
+  // 3. 純前端標楷體 PDF 引擎 (標題描邊 2.0 顯著粗體，無編號段落全行縮排 32pt)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -398,7 +398,7 @@
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 40; // 置底 40pt 安全觸發門檻
+    const pageBottomMargin = 40; // 40pt 安全觸發門檻
     const printableWidth = width - (marginX * 2); // 515.28 pt
 
     // 格式化勾選選項文字 (原生 ■ 與 □)
@@ -411,8 +411,8 @@
       return kaiFont.widthOfTextAtSize(text, size);
     }
 
-    // 繪製向量粗體文字 (Vector Bold Effect)
-    function drawBoldText(pageObj, text, x, y, size, strokeWidth = 1.2) {
+    // 繪製向量粗體文字 (Vector Bold Effect，strokeWidth 預設 2.0 強化粗體效果)
+    function drawBoldText(pageObj, text, x, y, size, strokeWidth = 2.0) {
       pageObj.drawText(text, {
         x: x,
         y: y,
@@ -436,8 +436,8 @@
         if (!para.trim()) continue;
 
         const trimmed = para.trim();
-        let baseIndent = 32; // 預設一般段落首行縮排 2 字 (32pt)
-        let hangIndent = 0;  // 預設一般段落次行頂格 (0pt，無懸掛縮排)
+        let baseIndent = 32; // 一般段落首行縮排 2 字 (32pt)
+        let hangIndent = 32; // 一般無編號段落：全部內文採縮排 2 字 (32pt)
 
         // 第四層: (1), （1） -> 首行縮排 5 字 (80pt), 次行懸掛 90pt
         if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
@@ -485,7 +485,7 @@
     }
 
     // ====================================================
-    // 1. 頁首與會議性質區塊 (第一頁，14pt 選項 + 加大粗體標題)
+    // 1. 頁首與會議性質區塊 (第一頁，14pt 選項 + strokeWidth 2.0 顯著粗體標題)
     // ====================================================
     const listTopY = height - marginTop; // 806.89 pt
     const optionLineSpacing = 20; // 14pt 選項間距
@@ -512,13 +512,13 @@
       });
     });
 
-    // 左側：經濟部水利署 (加大粗體 20pt)
-    drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20, 1.4);
+    // 左側：經濟部水利署 (strokeWidth: 2.0 顯著粗體 20pt)
+    drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20, 2.0);
 
-    // 右側：辦理現況速報單 (加大粗體 20pt)
+    // 右側：辦理現況速報單 (strokeWidth: 2.0 顯著粗體 20pt)
     const rightTitle = '辦理現況速報單';
     const rightTitleW = measureTextWidth(rightTitle, 20);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20, 1.4);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20, 2.0);
 
     // ====================================================
     // 2. 基本資料區 (置於 14pt 第 6 個選項下方)
@@ -557,7 +557,7 @@
     let currentPageBoxStartY = basicInfoStartY - 22 - 14;
 
     // ====================================================
-    // 3. 實體表格內文區 (三大章節大標題粗體、內文常規字型，支援 40pt 門檻跨頁)
+    // 3. 實體表格內文區 (章節大標題獨立 strokeWidth: 2.0 粗體、內文常規字型)
     // ====================================================
     const textPaddingX = 10;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -593,9 +593,9 @@
           renderY = currentPageBoxStartY - 24;
         }
 
-        // 繪製文字 (大標題為粗體，其餘內文為標準字型)
+        // 繪製文字 (章節大標題採用 strokeWidth: 2.0 獨立顯著粗體，內文維持常規)
         if (item.isTitle) {
-          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, fontSize, 0.8);
+          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, fontSize, 2.0);
         } else {
           currentPage.drawText(item.text, {
             x: marginX + textPaddingX + item.indent,
@@ -735,7 +735,7 @@
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！表單與 PDF 已完成結構優化。', 'success');
+      showStatus('PDF 匯出成功！大標題 2.0 顯著粗體與無編號段落全行 32pt 縮排已套用。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
