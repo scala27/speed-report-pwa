@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v4.5</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v4.6</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -212,11 +212,11 @@
     <div class="form-row">
       <div class="form-group">
         <label for="assigner">交辦長官</label>
-        <input type="text" id="assigner" name="assigner" placeholder="例如：陳副總工程司春宏">
+        <input type="text" id="assigner" name="assigner">
       </div>
       <div class="form-group">
         <label for="reporting_unit">陳報單位</label>
-        <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：土地管理組" required>
+        <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：河川海岸組" required>
       </div>
     </div>
 
@@ -231,16 +231,22 @@
       </div>
     </div>
 
-    <!-- 壹、案由： (預設結構提示語) -->
+    <!-- 壹、案由： (預設固定內容) -->
     <div class="section-label">壹、案由：</div>
     <div class="form-group">
-      <textarea id="section_1" name="section_1" rows="5" placeholder="一、開會時間：&#10;二、開會地點：&#10;三、主持人：&#10;四、與會人員：" required></textarea>
+      <textarea id="section_1" name="section_1" rows="5" required>一、開會時間：
+二、開會地點：
+三、主持人：
+四、與會人員：</textarea>
     </div>
 
-    <!-- 貳、重點說明暨續辦摘要： (預設階層順序提示語) -->
+    <!-- 貳、重點說明暨續辦摘要： (預設固定內容) -->
     <div class="section-label">貳、重點說明暨續辦摘要：</div>
     <div class="form-group">
-      <textarea id="section_2" name="section_2" rows="7" placeholder="一、&#10;(一)&#10;1.&#10;(1)"></textarea>
+      <textarea id="section_2" name="section_2" rows="7">一、
+(一)
+1.
+(1)</textarea>
     </div>
 
     <!-- 叁、擬處理意見或建議事項： -->
@@ -270,11 +276,11 @@
     <div class="form-row" style="margin-top: 16px;">
       <div class="form-group">
         <label for="contact_person">本案聯絡人</label>
-        <input type="text" id="contact_person" name="contact_person" placeholder="例如：土地管理組/科長/梁顥懷">
+        <input type="text" id="contact_person" name="contact_person" placeholder="單位/職稱/姓名">
       </div>
       <div class="form-group">
         <label for="contact_phone">聯絡電話</label>
-        <input type="text" id="contact_phone" name="contact_phone" placeholder="例如：0928284556">
+        <input type="text" id="contact_phone" name="contact_phone" placeholder="辦公室電話/行動電話">
       </div>
     </div>
 
@@ -291,10 +297,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (更新版號 v4.5 強制刷新快取)
+  // PWA Service Worker 註冊 (更新版號 v4.6 強制刷新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=4.5')
+      navigator.serviceWorker.register('./service-worker.js?v=4.6')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
