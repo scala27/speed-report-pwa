@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>速報單產製系統 V2.0</title>
+  <title>速報單填報系統</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e3a8a">
+  <meta name="theme-color" content="#d6f0ff">
   
   <!-- CDN 套件：pdf-lib, fontkit, JSZip -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -20,48 +20,44 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f1f5f9;
-      color: #334155;
-      padding: 12px;
+      background-color: #cbebfb; /* 水藍色背景 */
+      color: #1e293b;
+      padding: 16px 12px;
       line-height: 1.5;
     }
     .container {
-      max-width: 680px;
+      max-width: 640px;
       margin: 0 auto;
       background: #ffffff;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      padding: 24px 20px;
     }
-    .header {
-      background: linear-gradient(135deg, #1e3a8a, #2563eb);
-      color: #ffffff;
-      padding: 20px 16px;
+    .header-title {
       text-align: center;
+      margin-bottom: 20px;
     }
-    .header h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: 1px;
+    .header-title h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #0f172a;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
-    .header p {
+    .version-badge {
       font-size: 0.85rem;
-      opacity: 0.9;
-      margin-top: 4px;
+      font-weight: 700;
+      color: #16a34a; /* 綠色版本號 */
     }
-    form {
-      padding: 16px;
-    }
-    .section-title {
-      font-size: 0.98rem;
-      font-weight: 600;
-      color: #1e3a8a;
-      border-left: 4px solid #2563eb;
-      padding-left: 8px;
-      margin: 18px 0 12px 0;
+    .header-divider {
+      height: 2px;
+      background-color: #0284c7;
+      margin-top: 8px;
+      border-radius: 2px;
     }
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
     .form-row {
       display: flex;
@@ -72,80 +68,121 @@
     }
     label {
       display: block;
-      font-size: 0.88rem;
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: #475569;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+    .section-label {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 20px 0 8px 0;
     }
     input[type="text"],
     input[type="date"],
-    input[type="datetime-local"],
-    input[type="number"],
     select,
     textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-size: 0.95rem;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      background-color: #f8fafc;
+      border-radius: 10px;
+      background-color: #ffffff;
+      color: #1e293b;
       transition: all 0.2s ease;
     }
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: #2563eb;
-      background-color: #ffffff;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
     textarea {
       resize: vertical;
-      min-height: 85px;
+      min-height: 120px;
+      font-family: inherit;
+      line-height: 1.6;
     }
-    .btn-group {
-      margin-top: 24px;
+    
+    /* 分送單位核取方塊區塊 */
+    .checkbox-container {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 6px;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .checkbox-item {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #0284c7;
+      cursor: pointer;
+    }
+    .other-unit-row {
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
+    .other-unit-row label {
+      margin-bottom: 0;
+      white-space: nowrap;
+    }
+
+    /* 2x2 四彩按鈕組 */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 28px;
+      padding-top: 16px;
+      border-top: 1px dashed #cbd5e1;
+    }
     .btn {
-      width: 100%;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 600;
+      padding: 14px 8px;
+      font-size: 0.98rem;
+      font-weight: 700;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-    .btn-primary {
-      background-color: #2563eb;
+      gap: 6px;
       color: #ffffff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.2s;
     }
-    .btn-primary:hover {
-      background-color: #1d4ed8;
+    .btn:active {
+      opacity: 0.85;
     }
-    .btn-secondary {
-      background-color: #0d9488;
-      color: #ffffff;
-    }
-    .btn-secondary:hover {
-      background-color: #0f766e;
-    }
-    .btn:disabled {
-      background-color: #94a3b8;
-      cursor: not-allowed;
-    }
+    .btn-green { background-color: #22c55e; }
+    .btn-orange { background-color: #f97316; }
+    .btn-red { background-color: #ef4444; }
+    .btn-blue { background-color: #0284c7; }
+
     #status-msg {
-      margin-top: 12px;
+      margin-top: 14px;
       padding: 10px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 0.88rem;
       display: none;
       text-align: center;
+      font-weight: 600;
     }
     .status-info { background: #e0f2fe; color: #0369a1; }
     .status-success { background: #dcfce7; color: #15803d; }
@@ -155,91 +192,102 @@
 <body>
 
 <div class="container">
-  <div class="header">
-    <h1>速報單產製系統 V2.0</h1>
-    <p>純前端離線引擎 ‧ 100% 標楷體公務制式 PDF</p>
+  <!-- 頁面標題 -->
+  <div class="header-title">
+    <h1>速報單填報系統 <span class="version-badge">v2.8.2-PWA-Fix</span></h1>
+    <div class="header-divider"></div>
   </div>
 
   <form id="speedReportForm">
-    <!-- 系統授權與版次 -->
-    <div class="section-title">系統控制欄位</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label for="auth_key">授權碼</label>
-        <input type="text" id="auth_key" name="auth_key" value="WRA-EMERGENCY-2026" required>
-      </div>
-      <div class="form-group">
-        <label for="version">速報次數（第 X 報）</label>
-        <input type="number" id="version" name="version" value="1" min="1" required>
-      </div>
-    </div>
-
-    <!-- 表頭基本資料 -->
-    <div class="section-title">速報基本資料</div>
+    <!-- 會議性質與單位 -->
     <div class="form-group">
-      <label for="case_title_header">速報單主標題</label>
-      <input type="text" id="case_title_header" name="case_title_header" value="水利署緊急應變速報單" required>
-    </div>
-
-    <div class="form-group">
-      <label for="case_title">案由（事件名稱）</label>
-      <input type="text" id="case_title" name="case_title" placeholder="例：0926強降雨水患應變速報" required>
+      <label for="meeting_type">會議性質</label>
+      <select id="meeting_type" name="meeting_type">
+        <option value="部次長交辦事項" selected>部次長交辦事項</option>
+        <option value="署長交辦事項">署長交辦事項</option>
+        <option value="重要應變會議">重要應變會議</option>
+        <option value="一般例行會議">一般例行會議</option>
+      </select>
     </div>
 
     <div class="form-row">
       <div class="form-group">
-        <label for="report_date">填報日期</label>
+        <label for="assigner">交辦長官</label>
+        <input type="text" id="assigner" name="assigner" placeholder="">
+      </div>
+      <div class="form-group">
+        <label for="reporting_unit">陳報單位</label>
+        <input type="text" id="reporting_unit" name="reporting_unit" value="河川海岸組" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="assigned_date">交辦日期</label>
+        <input type="date" id="assigned_date" name="assigned_date" required>
+      </div>
+      <div class="form-group">
+        <label for="report_date">陳報日期</label>
         <input type="date" id="report_date" name="report_date" required>
       </div>
-      <div class="form-group">
-        <label for="occur_time">發生時間</label>
-        <input type="datetime-local" id="occur_time" name="occur_time" required>
+    </div>
+
+    <!-- 壹、案由 -->
+    <div class="section-label">壹、案由</div>
+    <div class="form-group">
+      <textarea id="section_1" name="section_1" required>一、開會時間：
+二、開會地點：
+三、主持人：
+四、與會人員：</textarea>
+    </div>
+
+    <!-- 貳、重點說明暨續辦摘要 -->
+    <div class="section-label">貳、重點說明暨續辦摘要</div>
+    <div class="form-group">
+      <textarea id="section_2" name="section_2" placeholder="請輸入重點說明與續辦事項..."></textarea>
+    </div>
+
+    <!-- 參、擬處理意見或建議事項 -->
+    <div class="section-label">參、擬處理意見或建議事項</div>
+    <div class="form-group">
+      <textarea id="section_3" name="section_3" placeholder="請輸入擬處理意見..."></textarea>
+    </div>
+
+    <!-- 本件分送單位 -->
+    <div class="section-label">本件分送單位 (勾選)</div>
+    <div class="checkbox-container">
+      <div class="checkbox-grid">
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長室"> 署長室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副室"> 王副室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="黃副室"> 黃副室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="陳副室"> 陳副室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工室"> 總工室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主秘室"> 主秘室</label>
+      </div>
+      <div class="other-unit-row">
+        <label class="checkbox-item"><input type="checkbox" id="chk_other_unit"> 其他單位：</label>
+        <input type="text" id="other_unit_text" name="other_unit_text" placeholder="">
       </div>
     </div>
 
-    <div class="form-group">
-      <label for="location">發生地點 / 水系</label>
-      <input type="text" id="location" name="location" placeholder="例：濁水溪水系 / 雲林縣虎尾鎮段" required>
-    </div>
-
-    <!-- 狀況與處置 -->
-    <div class="section-title">事件詳情與處置</div>
-    <div class="form-group">
-      <label for="description">狀況概述</label>
-      <textarea id="description" name="description" placeholder="請詳細說明事件發生經過與目前災情影響範圍..." required></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="action_taken">處置情形</label>
-      <textarea id="action_taken" name="action_taken" placeholder="請說明已採取之緊急處置措施、動員機具與人力..." required></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="next_steps">後續規劃與需支援事項</label>
-      <textarea id="next_steps" name="next_steps" placeholder="請說明後續研擬辦理事項或需中央支援事項..." required></textarea>
-    </div>
-
-    <!-- 填報人資訊 -->
-    <div class="section-title">填報單位與人員</div>
-    <div class="form-row">
+    <!-- 聯絡人與電話 -->
+    <div class="form-row" style="margin-top: 16px;">
       <div class="form-group">
-        <label for="reporter">填報單位 / 人員</label>
-        <input type="text" id="reporter" name="reporter" placeholder="例：水利防護科 張工程師" required>
+        <label for="contact_person">本案聯絡人</label>
+        <input type="text" id="contact_person" name="contact_person" placeholder="單位/職稱/姓名">
       </div>
       <div class="form-group">
-        <label for="phone">聯絡電話 / 手機</label>
-        <input type="text" id="phone" name="phone" placeholder="例：0912-345678" required>
+        <label for="contact_phone">聯絡電話</label>
+        <input type="text" id="contact_phone" name="contact_phone" placeholder="">
       </div>
     </div>
 
-    <!-- 下載按鈕組 -->
-    <div class="btn-group">
-      <button type="button" id="btnDownloadPDF" class="btn btn-primary">
-        下載速報單 PDF 檔
-      </button>
-      <button type="button" id="btnDownloadZIP" class="btn btn-secondary">
-        下載雙軌壓縮包 (PDF + 原始檔 ZIP)
-      </button>
+    <!-- 功能按鈕區 (2x2) -->
+    <div class="btn-grid">
+      <button type="button" id="btnSaveTemp" class="btn btn-green">💾 暫存雲端</button>
+      <button type="button" id="btnLoadTemp" class="btn btn-orange">📂 載入資料</button>
+      <button type="button" id="btnExportPDF" class="btn btn-red">📄 產出 PDF</button>
+      <button type="button" id="btnExportWord" class="btn btn-blue">📝 產出 Word</button>
     </div>
 
     <div id="status-msg"></div>
@@ -256,17 +304,13 @@
     });
   }
 
-  // 初始化預設日期時間
+  // 初始化預設日期
   document.addEventListener('DOMContentLoaded', () => {
-    const today = new Date();
-    document.getElementById('report_date').value = today.toISOString().split('T')[0];
-    
-    // 設定預設發生時間格式 (YYYY-MM-DDTHH:mm)
-    const localIso = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-    document.getElementById('occur_time').value = localIso;
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('assigned_date').value = today;
+    document.getElementById('report_date').value = today;
   });
 
-  // 顯示狀態訊息
   function showStatus(text, type = 'info') {
     const msgEl = document.getElementById('status-msg');
     msgEl.style.display = 'block';
@@ -274,61 +318,82 @@
     msgEl.innerText = text;
   }
 
-  // 全域字型快取變數
   let cachedFontBytes = null;
 
-  // 取得表單物件資料
   function getFormData() {
     const form = document.getElementById('speedReportForm');
     const formData = new FormData(form);
     const data = {};
-    formData.forEach((value, key) => data[key] = value);
+    formData.forEach((value, key) => {
+      if (key === 'dispatch_units') {
+        if (!data[key]) data[key] = [];
+        data[key].push(value);
+      } else {
+        data[key] = value;
+      }
+    });
     return data;
   }
 
-  // ==========================================
-  // 純前端 PDF 核心繪製邏輯 (pdf-lib)
-  // ==========================================
+  // 1. 本地暫存資料
+  document.getElementById('btnSaveTemp').addEventListener('click', () => {
+    const data = getFormData();
+    localStorage.setItem('speed_report_temp_data', JSON.stringify(data));
+    showStatus('資料已成功暫存至手機本地！', 'success');
+  });
+
+  // 2. 載入暫存資料
+  document.getElementById('btnLoadTemp').addEventListener('click', () => {
+    const saved = localStorage.getItem('speed_report_temp_data');
+    if (!saved) {
+      showStatus('未找到暫存資料！', 'error');
+      return;
+    }
+    const data = JSON.parse(saved);
+    Object.keys(data).forEach(key => {
+      const field = document.getElementsByName(key)[0];
+      if (field) {
+        if (field.type === 'checkbox') {
+          const checkboxes = document.getElementsByName(key);
+          checkboxes.forEach(cb => {
+            cb.checked = Array.isArray(data[key]) && data[key].includes(cb.value);
+          });
+        } else {
+          field.value = data[key];
+        }
+      }
+    });
+    showStatus('已成功載入暫存資料！', 'success');
+  });
+
+  // 3. 產出純前端標楷體 PDF
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
-
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
 
-    // 載入標楷體 (kaiu.ttf)
     if (!cachedFontBytes) {
-      showStatus('正在載入標楷體字型檔 (kaiu.ttf)...', 'info');
+      showStatus('載入標楷體字型檔 (kaiu.ttf)...', 'info');
       const fontResponse = await fetch('./kaiu.ttf');
-      if (!fontResponse.ok) {
-        throw new Error('無法載入 kaiu.ttf 字型檔，請確認字型檔已放置於同目錄下。');
-      }
+      if (!fontResponse.ok) throw new Error('無法載入 kaiu.ttf 字型檔');
       cachedFontBytes = await fontResponse.arrayBuffer();
     }
 
     const kaiFont = await pdfDoc.embedFont(cachedFontBytes);
-
-    // A4 尺寸 (pt): 595.28 x 841.89
-    const page = pdfDoc.addPage([595.28, 841.89]);
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4
     const { width, height } = page.getSize();
 
-    // 頁邊距 20mm ≈ 56.7 pt
     const marginX = 56.7;
-    const marginTop = 56.7;
-    const printableWidth = width - (marginX * 2); // 481.88 pt
+    let currentY = height - 56.7;
 
-    let currentY = height - marginTop;
-
-    // 輔助函式：自動折行計算
     function wrapText(text, fontSize, maxWidth) {
       const lines = [];
       const paragraphs = (text || '').split('\n');
-
       for (const paragraph of paragraphs) {
         let currentLine = '';
         for (const char of paragraph) {
           const testLine = currentLine + char;
-          const textWidth = kaiFont.widthOfTextAtSize(testLine, fontSize);
-          if (textWidth > maxWidth && currentLine !== '') {
+          if (kaiFont.widthOfTextAtSize(testLine, fontSize) > maxWidth && currentLine !== '') {
             lines.push(currentLine);
             currentLine = char;
           } else {
@@ -340,263 +405,85 @@
       return lines;
     }
 
-    // 輔助函式：繪製儲存格外框與背景
     function drawCell(x, y, w, h, bgHex = null) {
       if (bgHex) {
-        page.drawRectangle({
-          x, y: y - h, width: w, height: h,
-          color: rgb(0.95, 0.95, 0.95), // 灰底 #F2F2F2
-        });
+        page.drawRectangle({ x, y: y - h, width: w, height: h, color: rgb(0.95, 0.95, 0.95) });
       }
-      page.drawRectangle({
-        x, y: y - h, width: w, height: h,
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 1,
-      });
+      page.drawRectangle({ x, y: y - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 1 });
     }
 
-    // 1. 繪製主標題 (置中)
-    const titleText = data.case_title_header || '水利署緊急應變速報單';
-    const titleFontSize = 20;
-    const titleWidth = kaiFont.widthOfTextAtSize(titleText, titleFontSize);
+    // 標題
+    const titleText = '速報單';
+    const titleWidth = kaiFont.widthOfTextAtSize(titleText, 22);
+    page.drawText(titleText, { x: (width - titleWidth) / 2, y: currentY - 20, size: 22, font: kaiFont });
+    currentY -= 45;
 
-    page.drawText(titleText, {
-      x: (width - titleWidth) / 2,
-      y: currentY - 20,
-      size: titleFontSize,
-      font: kaiFont,
-      color: rgb(0, 0, 0),
-    });
-
-    currentY -= 42;
-
-    // 2. 繪製副標/頁首資訊 (靠右)
-    const metaText = `速報次數：第 ${data.version || '1'} 報    |    填報日期：${data.report_date || ''}`;
-    const metaFontSize = 10;
-    const metaWidth = kaiFont.widthOfTextAtSize(metaText, metaFontSize);
-
-    page.drawText(metaText, {
-      x: width - marginX - metaWidth,
-      y: currentY,
-      size: metaFontSize,
-      font: kaiFont,
-      color: rgb(0, 0, 0),
-    });
-
-    currentY -= 15;
-
-    // 3. 表格欄寬分配 (總寬 481.88 pt = 85 + 155.94 + 85 + 155.94)
     const colW = [85, 155.94, 85, 155.94];
 
-    // ---- 列 1: 案由 ----
-    const caseTitleLines = wrapText(data.case_title, 10.5, colW[1] + colW[2] + colW[3] - 16);
-    const row1Height = Math.max(32, caseTitleLines.length * 16 + 12);
-    
-    drawCell(marginX, currentY, colW[0], row1Height, true);
-    drawCell(marginX + colW[0], currentY, colW[0] + colW[1] + colW[2], row1Height);
+    // 表頭資訊
+    const row1H = 30;
+    drawCell(marginX, currentY, colW[0], row1H, true);
+    drawCell(marginX + colW[0], currentY, colW[1] + colW[2] + colW[3], row1H);
+    page.drawText('會議性質', { x: marginX + 18, y: currentY - 18, size: 11, font: kaiFont });
+    page.drawText(data.meeting_type || '', { x: marginX + colW[0] + 8, y: currentY - 18, size: 10.5, font: kaiFont });
+    currentY -= row1H;
 
-    page.drawText('案    由', {
-      x: marginX + 22,
-      y: currentY - 18,
-      size: 11,
-      font: kaiFont,
-    });
-
-    caseTitleLines.forEach((line, idx) => {
-      page.drawText(line, {
-        x: marginX + colW[0] + 8,
-        y: currentY - 18 - (idx * 16),
-        size: 10.5,
-        font: kaiFont,
-      });
-    });
-
-    currentY -= row1Height;
-
-    // ---- 列 2: 發生時間 / 發生地點 ----
-    const timeStr = (data.occur_time || '').replace('T', ' ');
-    const locLines = wrapText(data.location, 10.5, colW[3] - 16);
-    const row2Height = Math.max(32, locLines.length * 16 + 12);
-
-    drawCell(marginX, currentY, colW[0], row2Height, true);
-    drawCell(marginX + colW[0], currentY, colW[1], row2Height);
-    drawCell(marginX + colW[0] + colW[1], currentY, colW[2], row2Height, true);
-    drawCell(marginX + colW[0] + colW[1] + colW[2], currentY, colW[3], row2Height);
-
-    page.drawText('發生時間', {
-      x: marginX + 18,
-      y: currentY - 18,
-      size: 11,
-      font: kaiFont,
-    });
-
-    page.drawText(timeStr, {
-      x: marginX + colW[0] + 8,
-      y: currentY - 18,
-      size: 10,
-      font: kaiFont,
-    });
-
-    page.drawText('發生地點', {
-      x: marginX + colW[0] + colW[1] + 18,
-      y: currentY - 18,
-      size: 11,
-      font: kaiFont,
-    });
-
-    locLines.forEach((line, idx) => {
-      page.drawText(line, {
-        x: marginX + colW[0] + colW[1] + colW[2] + 8,
-        y: currentY - 18 - (idx * 16),
-        size: 10.5,
-        font: kaiFont,
-      });
-    });
-
-    currentY -= row2Height;
-
-    // 泛用動態長文字列繪製函式
-    function drawLongTextRow(labelText, contentText) {
-      const contentWidth = colW[1] + colW[2] + colW[3] - 16;
-      const lines = wrapText(contentText, 10.5, contentWidth);
-      const rowHeight = Math.max(90, lines.length * 16 + 20);
-
-      drawCell(marginX, currentY, colW[0], rowHeight, true);
-      drawCell(marginX + colW[0], currentY, colW[1] + colW[2] + colW[3], rowHeight);
-
-      page.drawText(labelText, {
-        x: marginX + 18,
-        y: currentY - (rowHeight / 2) + 4,
-        size: 11,
-        font: kaiFont,
-      });
-
+    // 區塊繪製函式
+    function drawSection(title, content) {
+      const lines = wrapText(content, 10.5, colW[1] + colW[2] + colW[3] - 16);
+      const rowH = Math.max(80, lines.length * 16 + 20);
+      drawCell(marginX, currentY, colW[0], rowH, true);
+      drawCell(marginX + colW[0], currentY, colW[1] + colW[2] + colW[3], rowH);
+      page.drawText(title, { x: marginX + 12, y: currentY - 24, size: 11, font: kaiFont });
       lines.forEach((line, idx) => {
-        page.drawText(line, {
-          x: marginX + colW[0] + 8,
-          y: currentY - 20 - (idx * 16),
-          size: 10.5,
-          font: kaiFont,
-        });
+        page.drawText(line, { x: marginX + colW[0] + 8, y: currentY - 18 - (idx * 16), size: 10.5, font: kaiFont });
       });
-
-      currentY -= rowHeight;
+      currentY -= rowH;
     }
 
-    // ---- 列 3: 狀況概述 ----
-    drawLongTextRow('狀況概述', data.description);
-
-    // ---- 列 4: 處置情形 ----
-    drawLongTextRow('處置情形', data.action_taken);
-
-    // ---- 列 5: 後續規劃 ----
-    drawLongTextRow('後續規劃', data.next_steps);
-
-    // ---- 列 6: 填報單位/人員 / 聯絡電話 ----
-    const row6Height = 32;
-    drawCell(marginX, currentY, colW[0], row6Height, true);
-    drawCell(marginX + colW[0], currentY, colW[1], row6Height);
-    drawCell(marginX + colW[0] + colW[1], currentY, colW[2], row6Height, true);
-    drawCell(marginX + colW[0] + colW[1] + colW[2], currentY, colW[3], row6Height);
-
-    page.drawText('填報人員', {
-      x: marginX + 18,
-      y: currentY - 18,
-      size: 11,
-      font: kaiFont,
-    });
-
-    page.drawText(data.reporter || '', {
-      x: marginX + colW[0] + 8,
-      y: currentY - 18,
-      size: 10.5,
-      font: kaiFont,
-    });
-
-    page.drawText('聯絡電話', {
-      x: marginX + colW[0] + colW[1] + 18,
-      y: currentY - 18,
-      size: 11,
-      font: kaiFont,
-    });
-
-    page.drawText(data.phone || '', {
-      x: marginX + colW[0] + colW[1] + colW[2] + 8,
-      y: currentY - 18,
-      size: 10.5,
-      font: kaiFont,
-    });
+    drawSection('壹、案由', data.section_1);
+    drawSection('貳、重點說明', data.section_2);
+    drawSection('參、擬處理意見', data.section_3);
 
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
   }
 
-  // ==========================================
-  // 下載事件繫結
-  // ==========================================
-
-  // 1. 單獨下載 PDF
-  document.getElementById('btnDownloadPDF').addEventListener('click', async () => {
-    const form = document.getElementById('speedReportForm');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
+  // 匯出 PDF
+  document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成 PDF，請稍候...', 'info');
+      showStatus('正在生成 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
-
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
-      link.download = `緊急應變速報單_${data.case_title || '速報'}_第${data.version}報.pdf`;
+      link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-
-      showStatus('PDF 產生成功並已開始下載！', 'success');
+      showStatus('PDF 匯出成功！', 'success');
     } catch (err) {
-      console.error(err);
-      showStatus(`產製失敗: ${err.message}`, 'error');
+      showStatus(`匯出失敗: ${err.message}`, 'error');
     }
   });
 
-  // 2. 打包雙軌 ZIP 下載 (PDF + JSON 紀錄檔)
-  document.getElementById('btnDownloadZIP').addEventListener('click', async () => {
-    const form = document.getElementById('speedReportForm');
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
+  // 匯出雙軌/Word 包
+  document.getElementById('btnExportWord').addEventListener('click', async () => {
     try {
-      showStatus('正在產製 PDF 與打包 ZIP 壓縮檔案...', 'info');
+      showStatus('正在打包檔案...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
-
       const zip = new JSZip();
-      const filenameBase = `緊急應變速報單_${data.case_title || '速報'}_第${data.version}報`;
-
-      // 加入 PDF
-      zip.file(`${filenameBase}.pdf`, pdfBlob);
-
-      // 加入原始資料文字檔 (JSON)
-      zip.file(`${filenameBase}_原始資料.json`, JSON.stringify(data, null, 2));
-
-      // 產生 ZIP 檔
+      zip.file(`速報單_${data.report_date}.pdf`, pdfBlob);
+      zip.file(`速報單內容.json`, JSON.stringify(data, null, 2));
       const zipContent = await zip.generateAsync({ type: 'blob' });
-
       const link = document.createElement('a');
       link.href = URL.createObjectURL(zipContent);
-      link.download = `${filenameBase}_雙軌包.zip`;
+      link.download = `速報單檔案包_${data.report_date}.zip`;
       link.click();
-
-      showStatus('雙軌 ZIP 打包成功並已開始下載！', 'success');
+      showStatus('檔案包匯出成功！', 'success');
     } catch (err) {
-      console.error(err);
-      showStatus(`ZIP 打包失敗: ${err.message}`, 'error');
+      showStatus(`匯出失敗: ${err.message}`, 'error');
     }
   });
 </script>
-
 </body>
 </html>
