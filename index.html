@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v3.9-PaginationAndIndent</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v4.1-BoldPaginationFixed</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -251,7 +251,9 @@
 1. 青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。
 2. 安慶圳景觀環境營造工程：請第五河川分署再檢視水質條件、水源循環利用及後續維護管理等優化評估。
 (二)同心公園及周邊再發展：同心公園西側台糖既有古蹟木屋群緊鄰水防道路，具有帶動周邊發展加值效益，惟現況有圍牆阻隔，不利串聯及通透，請第五河川分署與台糖公司辦理會勘，釐清相關權責並評估改善。
-二、青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。</textarea>
+二、青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。
+三、安慶圳景觀環境營造工程後續執行：請第五河川分署持續與地方相關權責單位建立密切聯繫窗口，確保相關營造工程順利推進。
+四、跨領域整合研商事項：針對周邊整體環境改善，請相關單位通力合作並定期回報最新進度。</textarea>
     </div>
 
     <!-- 叁、擬處理意見或建議事項： -->
@@ -302,10 +304,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (更新版號 v3.9)
+  // PWA Service Worker 註冊 (更新版號 v4.1 強制更新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=3.9')
+      navigator.serviceWorker.register('./service-worker.js?v=4.1')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -325,7 +327,7 @@
     msgEl.innerText = text;
   }
 
-  // 西元年轉民國年輔助函式 (例如 2026-09-17 -> 115年9月17日)
+  // 西元年轉民國年輔助函式 (例如 2026-10-03 -> 115年10月3日)
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
     const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -386,7 +388,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (精確多階縮排 + 多頁跨頁自動繪製)
+  // 3. 純前端標楷體 PDF 引擎 (修正精確縮排、14pt 選項、粗體標題與自動跨頁)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -405,7 +407,7 @@
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 50; // 跨頁底部臨線門檻
+    const pageBottomMargin = 90; // 跨頁觸發門檻 (留 90pt 安全距離)
     const printableWidth = width - (marginX * 2); // 515.28 pt
 
     // 格式化勾選選項文字 (原生 ■ 與 □)
@@ -418,7 +420,20 @@
       return kaiFont.widthOfTextAtSize(text, size);
     }
 
-    // 精確多階層公務動態縮排演算法 (1 字 = 16 pt)
+    // 繪製向量粗體標題 (Vector Bold Effect)
+    function drawBoldText(pageObj, text, x, y, size) {
+      pageObj.drawText(text, {
+        x: x,
+        y: y,
+        size: size,
+        font: kaiFont,
+        color: rgb(0, 0, 0),
+        strokeColor: rgb(0, 0, 0),
+        strokeWidth: 0.7
+      });
+    }
+
+    // 精確多階層公務動態縮排演算法
     function processSection(title, contentText, fontSize, maxW) {
       const items = [];
       // 1. 章節大標題 (頂格 0 pt)
@@ -433,25 +448,25 @@
         let baseIndent = 32; // 預設一般段落首行縮排 2 字 (32pt)
         let hangIndent = 0;  // 預設一般段落次行頂格 (0pt)
 
-        // 第四層: (1), （1） -> 首行縮排 7 字 (112pt), 次行懸掛 10 字 (160pt)
+        // 第四層: (1), （1） -> 首行縮排 5 字 (80pt), 次行懸掛 7 字 (112pt)
         if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
-          baseIndent = 112;
-          hangIndent = 160;
-        }
-        // 第三層: 1., 2., １、, ２、 -> 首行縮排 5 字 (80pt), 次行懸掛 7 字 (112pt)
-        else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
           baseIndent = 80;
           hangIndent = 112;
         }
-        // 第二層: (一), （一） -> 首行縮排 3 字 (48pt), 次行懸掛 6 字 (96pt)
-        else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
-          baseIndent = 48;
+        // 第三層: 1., 2., １、, ２、 -> 首行縮排 4 字 (64pt), 次行懸掛 6 字 (96pt)
+        else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
+          baseIndent = 64;
           hangIndent = 96;
         }
-        // 第一層: 一、, 二、 -> 首行縮排 1 字 (16pt), 次行懸掛 3 字 (48pt)
+        // 第二層: (一), （一） -> 首行縮排 3 字 (48pt), 次行懸掛 5 字 (80pt)
+        else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
+          baseIndent = 48;
+          hangIndent = 80;
+        }
+        // 第一層: 一、, 二、 -> 首行縮排 2 字 (32pt), 次行懸掛 4 字 (64pt)
         else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
-          baseIndent = 16;
-          hangIndent = 48;
+          baseIndent = 32;
+          hangIndent = 64;
         }
 
         let currentLine = '';
@@ -479,10 +494,10 @@
     }
 
     // ====================================================
-    // 1. 頁首與會議性質區塊 (第一頁，無框線)
+    // 1. 頁首與會議性質區塊 (第一頁，14pt 選項 + 粗體標題)
     // ====================================================
     const listTopY = height - marginTop; // 806.89 pt
-    const lineSpacing = 18;
+    const optionLineSpacing = 20; // 14pt 選項間距
 
     const types = [
       '部次長交辦事項',
@@ -493,41 +508,31 @@
       '其他'
     ];
 
-    // 中間一欄式 6 個勾選選項
+    // 中間一欄式 6 個勾選選項 (字體大小為 14pt)
     const middleX = marginX + 175;
     types.forEach((t, idx) => {
       const isChecked = (data.meeting_type === t);
       const str = formatOptionText(t, isChecked);
       currentPage.drawText(str, {
         x: middleX,
-        y: listTopY - (idx * lineSpacing),
-        size: 12,
+        y: listTopY - (idx * optionLineSpacing),
+        size: 14,
         font: kaiFont
       });
     });
 
-    // 左側：經濟部水利署
-    currentPage.drawText('經濟部水利署', {
-      x: marginX,
-      y: listTopY - (2 * lineSpacing),
-      size: 20,
-      font: kaiFont
-    });
+    // 左側：經濟部水利署 (粗體 20pt)
+    drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20);
 
-    // 右側：辦理現況速報單
+    // 右側：辦理現況速報單 (粗體 20pt)
     const rightTitle = '辦理現況速報單';
     const rightTitleW = measureTextWidth(rightTitle, 20);
-    currentPage.drawText(rightTitle, {
-      x: marginX + printableWidth - rightTitleW,
-      y: listTopY - (2 * lineSpacing),
-      size: 20,
-      font: kaiFont
-    });
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20);
 
     // ====================================================
-    // 2. 基本資料區 (置於第 6 個選項下方)
+    // 2. 基本資料區 (置於 14pt 第 6 個選項下方)
     // ====================================================
-    const basicInfoStartY = listTopY - (6 * lineSpacing) - 10;
+    const basicInfoStartY = listTopY - (6 * optionLineSpacing) - 12;
 
     // 第一列：交辦長官 / 交辦日期
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, {
@@ -561,7 +566,7 @@
     let currentPageBoxStartY = basicInfoStartY - 22 - 14;
 
     // ====================================================
-    // 3. 實體表格內文區 (支援自動分頁跨頁與繪製獨立框線)
+    // 3. 實體表格內文區 (精確跨頁自動分頁與獨立框線繪製)
     // ====================================================
     const textPaddingX = 10;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -579,9 +584,9 @@
 
     allSections.forEach(sectionItems => {
       sectionItems.forEach(item => {
-        // 檢查是否跨頁溢出
+        // 檢查是否跨頁溢出 (當剩餘空間不足印下一行時觸發)
         if (renderY - fontLeading < pageBottomMargin) {
-          // 1. 繪製當前頁面的表格框線
+          // 1. 繪製並封閉當前頁面的表格大框線
           const currentBoxH = currentPageBoxStartY - (renderY + 6);
           currentPage.drawRectangle({
             x: marginX,
@@ -592,9 +597,9 @@
             borderWidth: 1
           });
 
-          // 2. 開啟新頁面
+          // 2. 自動開啟全新頁面並重設頂部框線座標
           currentPage = pdfDoc.addPage([595.28, 841.89]);
-          currentPageBoxStartY = height - marginTop;
+          currentPageBoxStartY = height - marginTop - 10;
           renderY = currentPageBoxStartY - 24;
         }
 
@@ -610,7 +615,7 @@
       renderY -= 6;
     });
 
-    // 繪製最後一頁的表格框線
+    // 繪製最後一頁的表格大框線
     const finalBoxEndY = renderY + 6;
     const finalBoxH = currentPageBoxStartY - finalBoxEndY;
     currentPage.drawRectangle({
@@ -625,7 +630,7 @@
     let currentY = finalBoxEndY - 20;
 
     // ====================================================
-    // 4. 本件分送與聯絡資訊 (檢查最後一頁剩餘空間，不夠則自動開新頁)
+    // 4. 本件分送與聯絡資訊 (偵測剩餘空間，不足時自動開新頁)
     // ====================================================
     if (currentY - 110 < pageBottomMargin) {
       currentPage = pdfDoc.addPage([595.28, 841.89]);
@@ -642,7 +647,7 @@
       font: kaiFont
     });
 
-    // 固定 3 欄 X 軸對齊
+    // 固定 3 欄 X 軸縱向點位對齊
     const colX1 = marginX + 105;
     const colX2 = marginX + 225;
     const colX3 = marginX + 345;
@@ -729,14 +734,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成跨頁與精確縮排之 PDF...', 'info');
+      showStatus('正在生成最新修正版 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！已完美呈現多頁跨頁與四階公務縮排。', 'success');
+      showStatus('PDF 匯出成功！跨頁分頁、14pt 選項、粗體標題與四階縮排已全數完成。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
