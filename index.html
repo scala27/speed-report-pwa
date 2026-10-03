@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v3.6-AlignedSingleOuterBox</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v3.8-HierarchicalIndent</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -300,10 +300,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (更新版號 v3.6 以強制重載快取)
+  // PWA Service Worker 註冊 (更新版號 v3.8 以強制刷新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=3.6')
+      navigator.serviceWorker.register('./service-worker.js?v=3.8')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -384,7 +384,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (對齊 1150917速報單：一欄式勾選對齊、無內部分割線單一大外框、段落懸掛縮排)
+  // 3. 純前端標楷體 PDF 引擎 (包含基本資料下移與多階層公務縮排)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -415,27 +415,47 @@
       return kaiFont.widthOfTextAtSize(text, size);
     }
 
-    // 處理章節標題與內文自動折行與段落/懸掛縮排 (Indent)
+    // 多階層公務縮排解析 (支持大標題、一、、(一)、1.、(1). 之自動懸掛縮排)
     function processSection(title, contentText, fontSize, maxW) {
       const items = [];
-      // 1. 標題獨立行
+      // 1. 章節大標題 (頂格)
       items.push({ text: title, isTitle: true, indent: 0 });
 
-      // 2. 內文段落解析
+      // 2. 內文段落階層解析
       const paragraphs = (contentText || '').split('\n');
       for (const para of paragraphs) {
         if (!para.trim()) continue;
 
-        // 判斷是否為條列號（如：一、、二、）
-        const isNumbered = /^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(para.trim());
-        const firstLineIndent = isNumbered ? 0 : 32; // 一般段落首行縮排 2 字 (32pt)
-        const subLineIndent = isNumbered ? 32 : 0;   // 條列號懸掛縮排 2 字 (32pt)
+        const trimmed = para.trim();
+        let baseIndent = 32; // 預設一般段落首行縮排 2 字 (32pt)
+        let hangIndent = 32;
+
+        // 第四層: (1), （1）
+        if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
+          baseIndent = 128;
+          hangIndent = 160;
+        }
+        // 第三層: 1., 2., １、, ２、
+        else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
+          baseIndent = 96;
+          hangIndent = 128;
+        }
+        // 第二層: (一), （一）
+        else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
+          baseIndent = 64;
+          hangIndent = 96;
+        }
+        // 第一層: 一、, 二、
+        else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
+          baseIndent = 32;
+          hangIndent = 64;
+        }
 
         let currentLine = '';
         let isFirstLine = true;
 
         for (const char of para) {
-          const currentIndent = isFirstLine ? firstLineIndent : subLineIndent;
+          const currentIndent = isFirstLine ? baseIndent : hangIndent;
           const currentMaxW = maxW - currentIndent;
           const testLine = currentLine + char;
 
@@ -448,7 +468,7 @@
           }
         }
         if (currentLine !== '') {
-          const currentIndent = isFirstLine ? firstLineIndent : subLineIndent;
+          const currentIndent = isFirstLine ? baseIndent : hangIndent;
           items.push({ text: currentLine, isTitle: false, indent: currentIndent });
         }
       }
@@ -456,9 +476,9 @@
     }
 
     // ====================================================
-    // 1. 頁首與會議性質區塊 (一欄式對齊，無框線)
+    // 1. 頁首與會議性質區塊 (一欄式，6 個選項全數呈現)
     // ====================================================
-    const listTopY = height - marginTop; // 約 806.89 pt
+    const listTopY = height - marginTop; // 806.89 pt
     const lineSpacing = 18;
 
     const types = [
@@ -483,7 +503,7 @@
       });
     });
 
-    // 左側：經濟部水利署 (與第 3 個選項 "重要會議結論" 對齊於 listTopY - 36)
+    // 左側：經濟部水利署 (對齊第 3 個選項 "重要會議結論")
     page.drawText('經濟部水利署', {
       x: marginX,
       y: listTopY - (2 * lineSpacing),
@@ -491,7 +511,7 @@
       font: kaiFont
     });
 
-    // 右側：辦理現況速報單 (與第 3 個選項 "重要會議結論" 對齊於 listTopY - 36)
+    // 右側：辦理現況速報單 (對齊第 3 個選項 "重要會議結論")
     const rightTitle = '辦理現況速報單';
     const rightTitleW = measureTextWidth(rightTitle, 20);
     page.drawText(rightTitle, {
@@ -501,50 +521,51 @@
       font: kaiFont
     });
 
-    // 左欄：交辦長官 (對齊第 4 選項 listTopY - 54)
+    // ====================================================
+    // 2. 基本資料區 (完全往下移至第 6 個選項下方開始繪製)
+    // ====================================================
+    const basicInfoStartY = listTopY - (6 * lineSpacing) - 10; // 第 6 個選項下方 10pt
+
+    // 第一列：交辦長官 / 交辦日期
     page.drawText(`交辦長官：${data.assigner || ''}`, {
       x: marginX,
-      y: listTopY - (3 * lineSpacing),
+      y: basicInfoStartY,
       size: 15,
       font: kaiFont
     });
-
-    // 右欄：交辦日期 (對齊第 4 選項 listTopY - 54)
     page.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, {
       x: marginX + 325,
-      y: listTopY - (3 * lineSpacing),
+      y: basicInfoStartY,
       size: 15,
       font: kaiFont
     });
 
-    // 左欄：陳報單位 (對齊第 5 選項 listTopY - 72)
+    // 第二列：陳報單位 / 陳報日期
     page.drawText(`陳報單位：${data.reporting_unit || ''}`, {
       x: marginX,
-      y: listTopY - (4 * lineSpacing),
+      y: basicInfoStartY - 22,
       size: 15,
       font: kaiFont
     });
-
-    // 右欄：陳報日期 (對齊第 5 選項 listTopY - 72)
     page.drawText(`陳報日期：${formatROCDate(data.report_date)}`, {
       x: marginX + 325,
-      y: listTopY - (4 * lineSpacing),
+      y: basicInfoStartY - 22,
       size: 15,
       font: kaiFont
     });
 
-    let currentY = listTopY - (6 * lineSpacing) - 15; // 約 683 pt
+    // 實體表格外框頂端 Y 座標：緊貼在「陳報單位」下緣下方 14 pt 處
+    const boxStartY = basicInfoStartY - 22 - 14;
 
     // ====================================================
-    // 2. 實體表格內文區 (僅繪製最外層大框線，無內部分割線)
+    // 3. 實體表格內文區 (僅繪製最外層大框線，具備多階層公務縮排)
     // ====================================================
-    const boxStartY = currentY;
     const textPaddingX = 10;
     const maxTextW = printableWidth - (textPaddingX * 2);
     const fontSize = 16;
     const fontLeading = 22;
 
-    // 預先計算四大區塊所有的行資訊與繪製位置
+    // 預先計算四大區塊所有的行資訊與縮排位置
     const allSections = [
       processSection('壹、案由：', data.section_1, fontSize, maxTextW),
       processSection('與會人員：', data.attendees, fontSize, maxTextW),
@@ -564,7 +585,7 @@
         });
         renderY -= fontLeading;
       });
-      renderY -= 6; // 段落間留微小間距
+      renderY -= 6;
     });
 
     const boxEndY = renderY + 6;
@@ -583,10 +604,11 @@
     currentY = boxEndY - 20;
 
     // ====================================================
-    // 3. 本件分送（勾選）區 (無框線，12 pt)
+    // 4. 本件分送（勾選）區 (無框線，固定 3 欄縱向點位精確對齊)
     // ====================================================
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [data.dispatch_units].filter(Boolean);
 
+    // 標題
     page.drawText('本件分送（勾選）', {
       x: marginX,
       y: currentY,
@@ -594,45 +616,54 @@
       font: kaiFont
     });
 
-    // 列 1: 處室選項
-    const row1Units = ['署長辦公室', '王副署長辦公室', '黃副署長辦公室', '陳副署長辦公室'];
-    let dX1 = marginX + 105;
-    row1Units.forEach(u => {
-      const isChecked = dispatchUnits.includes(u);
-      const str = formatOptionText(u, isChecked);
+    // 固定 3 欄 X 軸縱向對齊點位
+    const colX1 = marginX + 105; // 145 pt
+    const colX2 = marginX + 225; // 265 pt
+    const colX3 = marginX + 345; // 385 pt
+
+    // 第一列: 署長辦公室, 王副署長辦公室, 黃副署長辦公室
+    const row1List = [
+      { name: '署長辦公室', x: colX1 },
+      { name: '王副署長辦公室', x: colX2 },
+      { name: '黃副署長辦公室', x: colX3 }
+    ];
+    row1List.forEach(item => {
+      const isChecked = dispatchUnits.includes(item.name);
+      const str = formatOptionText(item.name, isChecked);
       page.drawText(str, {
-        x: dX1,
+        x: item.x,
         y: currentY,
         size: 12,
         font: kaiFont
       });
-      dX1 += 102;
     });
 
-    currentY -= 18;
+    currentY -= 20;
 
-    // 列 2: 處室選項
-    const row2Units = ['總工程司室', '主任秘書室'];
-    let dX2 = marginX;
-    row2Units.forEach(u => {
-      const isChecked = dispatchUnits.includes(u);
-      const str = formatOptionText(u, isChecked);
+    // 第二列: 陳副署長辦公室, 總工程司室, 主任秘書室
+    const row2List = [
+      { name: '陳副署長辦公室', x: colX1 },
+      { name: '總工程司室', x: colX2 },
+      { name: '主任秘書室', x: colX3 }
+    ];
+    row2List.forEach(item => {
+      const isChecked = dispatchUnits.includes(item.name);
+      const str = formatOptionText(item.name, isChecked);
       page.drawText(str, {
-        x: dX2,
+        x: item.x,
         y: currentY,
         size: 12,
         font: kaiFont
       });
-      dX2 += 115;
     });
 
-    currentY -= 18;
+    currentY -= 20;
 
-    // 列 3: 其他單位
+    // 第三列: 其他單位
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
     const otherBoxStr = formatOptionText('其他單位：', hasOther);
     page.drawText(otherBoxStr, {
-      x: marginX,
+      x: colX1,
       y: currentY,
       size: 12,
       font: kaiFont
@@ -641,17 +672,17 @@
     if (data.other_unit_text) {
       const prefixW = measureTextWidth(otherBoxStr, 12);
       page.drawText(data.other_unit_text, {
-        x: marginX + prefixW + 2,
+        x: colX1 + prefixW + 2,
         y: currentY,
         size: 12,
         font: kaiFont
       });
     }
 
-    currentY -= 22;
+    currentY -= 24;
 
     // ====================================================
-    // 4. 聯絡資訊區 (無框線，12 pt)
+    // 5. 聯絡資訊區 (無框線，12 pt)
     // ====================================================
     page.drawText(`本案聯絡人：${data.contact_person || ''}`, {
       x: marginX,
@@ -674,14 +705,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成依據最新標準規格之 PDF...', 'info');
+      showStatus('正在生成最新版 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！版面與字號已完全符合最新標準。', 'success');
+      showStatus('PDF 匯出成功！多階層縮排與基本資料位移已完成。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
