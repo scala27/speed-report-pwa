@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v3.2-Standardized</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v3.4-ExactFontSpec</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -200,9 +200,10 @@
     <div class="form-group">
       <label for="meeting_type">會議/案由性質</label>
       <select id="meeting_type" name="meeting_type">
-        <option value="部次長交辦事項" selected>部次長交辦事項</option>
+        <option value="部次長交辦事項">部次長交辦事項</option>
+        <option value="重要業務">重要業務</option>
+        <option value="重要會議結論" selected>重要會議結論</option>
         <option value="首長訪視行程">首長訪視行程</option>
-        <option value="重要業務/會議結論">重要業務/會議結論</option>
         <option value="媒體受訪">媒體受訪</option>
         <option value="其他">其他</option>
       </select>
@@ -211,11 +212,11 @@
     <div class="form-row">
       <div class="form-group">
         <label for="assigner">交辦長官</label>
-        <input type="text" id="assigner" name="assigner" value="陳副總工程司春宏">
+        <input type="text" id="assigner" name="assigner" value="陳副署長建成">
       </div>
       <div class="form-group">
         <label for="reporting_unit">陳報單位</label>
-        <input type="text" id="reporting_unit" name="reporting_unit" value="土地管理組" required>
+        <input type="text" id="reporting_unit" name="reporting_unit" value="河川海岸組" required>
       </div>
     </div>
 
@@ -231,41 +232,46 @@
     </div>
 
     <!-- 壹、案由 -->
-    <div class="section-label">壹、案由</div>
+    <div class="section-label">案由</div>
     <div class="form-group">
-      <textarea id="section_1" name="section_1" required>一、開會時間：2026年9月17日(四)下午15:30
-二、開會地點：立法委員伍麗華國會辦公室
-三、主持人：曾巧忻主任
-四、與會人員：行政院公共工程委員會洪簡任技正彥斌、水利署陳副總工程司春宏、梁科長顥懷、第九河川分署李科長秀芳、莊聘用工程司宇</textarea>
+      <textarea id="section_1" name="section_1" required>115年4月2日中央畜產會董事長蘇治芬拜會經濟部次長賴建信研商虎尾潮建議案</textarea>
     </div>
 
-    <!-- 貳、重點說明暨續辦摘要 -->
-    <div class="section-label">貳、重點說明暨續辦摘要</div>
+    <!-- 與會人員 -->
+    <div class="section-label">與會人員</div>
     <div class="form-group">
-      <textarea id="section_2" name="section_2">一、香草場所在土地在馬太鞍事件時雖未淹水，但目前本署規劃之第二道防線為治理需求仍有其必要性。
-二、本署暨九河分署辦理用地取得後，在地相關民眾居住權及相關權益應給予保障；例如申辦原保地增劃編程序者仍能繼續，或協助申請中繼屋、安排以地易地方式。</textarea>
+      <textarea id="attendees" name="attendees" required>經濟部賴次長建信、中央畜產會董事長蘇治芬、都市里人規劃設計有限公司建築師林雋怡、台灣糖業公司副總經理蔡東霖、副處長陳冠翰、水利署陳副署長建成及水利署第五河川分署科長周育興等。</textarea>
     </div>
 
-    <!-- 參、擬處理意見或建議事項 -->
-    <div class="section-label">參、擬處理意見或建議事項</div>
+    <!-- 重點說明暨續辦摘要 -->
+    <div class="section-label">重點說明暨續辦摘要</div>
     <div class="form-group">
-      <textarea id="section_3" name="section_3">請工程會依據會議決議協助香草場居民就工程範圍外土地，專案洽原民會申請增劃編原住民保留地。</textarea>
+      <textarea id="section_2" name="section_2">一、中山路人行跨橋都市計畫審議進度：請第五河川分署儘速依雲林縣政府意見辦理修正及補充，俟與該府城鄉發展處研商共識後，再行正式函報。
+二、青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。
+三、安慶圳景觀環境營造工程：請第五河川分署再檢視水質條件、水源循環利用及後續維護管理等優化評估。
+四、同心公園及周邊再發展：同心公園西側台糖既有古蹟木屋群緊鄰水防道路，具有帶動周邊發展加值效益，惟現況有圍牆阻隔，不利串聯及通透，請第五河川分署與台糖公司辦理會勘，釐清相關權責並評估改善。</textarea>
+    </div>
+
+    <!-- 擬處理意見或建議事項 -->
+    <div class="section-label">擬處理意見或建議事項</div>
+    <div class="form-group">
+      <textarea id="section_3" name="section_3">本案後續由第五河川分署、本署河川海岸組錄案辦理。</textarea>
     </div>
 
     <!-- 本件分送單位 -->
-    <div class="section-label">本件分送 (勾選)</div>
+    <div class="section-label">本件分送（勾選）</div>
     <div class="checkbox-container">
       <div class="checkbox-grid">
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長辦公室"> 署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副署長辦公室"> 王副署長辦公室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長辦公室" checked> 署長辦公室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副署長辦公室" checked> 王副署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="黃副署長辦公室"> 黃副署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="陳副署長辦公室" checked> 陳副署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工程司室"> 總工程司室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室" checked> 主任秘書室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工程司室" checked> 總工程司室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室"> 主任秘書室</label>
       </div>
       <div class="other-unit-row">
         <label class="checkbox-item"><input type="checkbox" id="chk_other_unit" checked> 其他單位：</label>
-        <input type="text" id="other_unit_text" name="other_unit_text" value="河川海岸組、國會組">
+        <input type="text" id="other_unit_text" name="other_unit_text" value="第五河川分署、河川海岸組">
       </div>
     </div>
 
@@ -273,11 +279,11 @@
     <div class="form-row" style="margin-top: 16px;">
       <div class="form-group">
         <label for="contact_person">本案聯絡人</label>
-        <input type="text" id="contact_person" name="contact_person" value="土地管理組/科長/梁顥懷">
+        <input type="text" id="contact_person" name="contact_person" value="河川海岸組/科長/王基安">
       </div>
       <div class="form-group">
         <label for="contact_phone">聯絡電話</label>
-        <input type="text" id="contact_phone" name="contact_phone" value="0928284556">
+        <input type="text" id="contact_phone" name="contact_phone" value="辦公室電話/行動電話：04-22501223/0937775253">
       </div>
     </div>
 
@@ -297,13 +303,13 @@
   // PWA Service Worker 註冊 (帶入版本號避免快取舊檔)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=3.2')
+      navigator.serviceWorker.register('./service-worker.js?v=3.4')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 初始化預設日期
+  // 初始化日期
   document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
     if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
@@ -356,7 +362,7 @@
 
   // 2. 載入暫存資料
   document.getElementById('btnLoadTemp').addEventListener('click', () => {
-    const saved = localStorage.getItem('speed_report_temp_data');
+    const saved = localStorage.setItem('speed_report_temp_data');
     if (!saved) {
       showStatus('未找到暫存資料！', 'error');
       return;
@@ -378,7 +384,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (字體標準化 + 實體黑框取代)
+  // 3. 純前端標楷體 PDF 引擎 (精確套用 Word 範本字號規範：20pt / 16pt / 15pt / 14pt / 12pt)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -421,7 +427,7 @@
       return lines;
     }
 
-    // 繪製外框單元格
+    // 繪製單元格外框
     function drawCell(x, y, w, h, bgHex = null) {
       if (bgHex) {
         page.drawRectangle({ x, y: y - h, width: w, height: h, color: rgb(0.95, 0.95, 0.95) });
@@ -429,236 +435,261 @@
       page.drawRectangle({ x, y: y - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 1 });
     }
 
-    // 繪製核取方塊與標籤 (已勾選直接以實體黑色方框取代空心框)
-    function drawBoxWithLabel(x, y, label, isChecked, fontSize = 9.5) {
-      const boxSize = 9;
-      if (isChecked) {
-        // 直接繪製滿版黑色實體方框 (■)
-        page.drawRectangle({
-          x: x,
-          y: y,
-          width: boxSize,
-          height: boxSize,
-          color: rgb(0, 0, 0)
-        });
-      } else {
-        // 未勾選：繪製空心外框 (□)
-        page.drawRectangle({
-          x: x,
-          y: y,
-          width: boxSize,
-          height: boxSize,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: 1
-        });
-      }
-      page.drawText(label, {
-        x: x + boxSize + 4,
-        y: y,
-        size: fontSize,
-        font: kaiFont
-      });
+    // 格式化勾選選項文字 (原生 ■ 與 □)
+    function formatOptionText(label, isChecked) {
+      return (isChecked ? '■ ' : '□ ') + label;
     }
 
     // ----------------------------------------------------
-    // 1. 表頭 (經濟部水利署 / 辦理現況速報單)
+    // 1. 頂部主標題 (規格：20 pt)
     // ----------------------------------------------------
-    const headerHeight = 36;
+    const headerHeight = 42;
     drawCell(marginX, currentY, printableWidth, headerHeight);
 
     page.drawText('經濟部水利署', {
-      x: marginX + 12,
-      y: currentY - 24,
-      size: 16,
+      x: marginX + 14,
+      y: currentY - 28,
+      size: 20,
       font: kaiFont
     });
 
     const rightTitle = '辦理現況速報單';
-    const rightTitleWidth = kaiFont.widthOfTextAtSize(rightTitle, 18);
+    const rightTitleWidth = kaiFont.widthOfTextAtSize(rightTitle, 20);
     page.drawText(rightTitle, {
-      x: marginX + printableWidth - rightTitleWidth - 12,
-      y: currentY - 24,
-      size: 18,
+      x: marginX + printableWidth - rightTitleWidth - 14,
+      y: currentY - 28,
+      size: 20,
       font: kaiFont
     });
 
     currentY -= headerHeight;
 
     // ----------------------------------------------------
-    // 2. 基本資料雙欄網格 (字體統一 10.5 pt)
+    // 2. 表頭基本資料 (規格：15 pt)
     // ----------------------------------------------------
-    const metaRowH = 24;
+    const metaRowH = 28;
     const halfW = printableWidth / 2;
 
-    // 第一列
+    // 第一列：交辦長官 / 交辦日期
     drawCell(marginX, currentY, halfW, metaRowH);
     drawCell(marginX + halfW, currentY, halfW, metaRowH);
 
     page.drawText(`交辦長官：${data.assigner || ''}`, {
       x: marginX + 10,
-      y: currentY - 16,
-      size: 10.5,
+      y: currentY - 19,
+      size: 15,
       font: kaiFont
     });
     page.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, {
       x: marginX + halfW + 10,
-      y: currentY - 16,
-      size: 10.5,
+      y: currentY - 19,
+      size: 15,
       font: kaiFont
     });
     currentY -= metaRowH;
 
-    // 第二列
+    // 第二列：陳報單位 / 陳報日期
     drawCell(marginX, currentY, halfW, metaRowH);
     drawCell(marginX + halfW, currentY, halfW, metaRowH);
 
     page.drawText(`陳報單位：${data.reporting_unit || ''}`, {
       x: marginX + 10,
-      y: currentY - 16,
-      size: 10.5,
+      y: currentY - 19,
+      size: 15,
       font: kaiFont
     });
     page.drawText(`陳報日期：${formatROCDate(data.report_date)}`, {
       x: marginX + halfW + 10,
-      y: currentY - 16,
-      size: 10.5,
+      y: currentY - 19,
+      size: 15,
       font: kaiFont
     });
     currentY -= metaRowH;
 
     // ----------------------------------------------------
-    // 3. 會議/案由性質勾選區 (選項字體 9.5 pt)
+    // 3. 會議/案由性質勾選區 (規格：12 pt)
     // ----------------------------------------------------
-    const typeRowH = 26;
+    const typeRowH = 28;
     drawCell(marginX, currentY, printableWidth, typeRowH);
 
     const types = [
       '部次長交辦事項',
+      '重要業務',
+      '重要會議結論',
       '首長訪視行程',
-      '重要業務/會議結論',
       '媒體受訪',
       '其他'
     ];
-    let curX = marginX + 10;
+    let curX = marginX + 8;
     types.forEach(t => {
-      const isChecked = data.meeting_type === t;
-      drawBoxWithLabel(curX, currentY - 17, t, isChecked, 9.5);
-      curX += kaiFont.widthOfTextAtSize(t, 9.5) + 20;
+      const isChecked = (data.meeting_type === t);
+      const str = formatOptionText(t, isChecked);
+      page.drawText(str, {
+        x: curX,
+        y: currentY - 19,
+        size: 12,
+        font: kaiFont
+      });
+      curX += kaiFont.widthOfTextAtSize(str, 12) + 10;
     });
     currentY -= typeRowH;
 
     // ----------------------------------------------------
-    // 4. 壹、案由： (標題統一 11.5 pt，內文統一 10.5 pt)
+    // 4. 案由： (大標題：16 pt，內文：14 pt)
     // ----------------------------------------------------
-    const sec1Lines = wrapText(data.section_1, 10.5, printableWidth - 20);
-    const sec1H = Math.max(90, sec1Lines.length * 16.5 + 28);
+    const sec1Lines = wrapText(data.section_1, 14, printableWidth - 20);
+    const sec1H = Math.max(55, sec1Lines.length * 20 + 28);
     drawCell(marginX, currentY, printableWidth, sec1H);
 
-    page.drawText('壹、案由：', {
+    page.drawText('案由：', {
       x: marginX + 10,
-      y: currentY - 18,
-      size: 11.5,
+      y: currentY - 20,
+      size: 16,
       font: kaiFont
     });
 
     sec1Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 36 - (idx * 16.5),
-        size: 10.5,
+        y: currentY - 42 - (idx * 20),
+        size: 14,
         font: kaiFont
       });
     });
     currentY -= sec1H;
 
     // ----------------------------------------------------
-    // 5. 貳、重點說明暨續辦摘要： (標題統一 11.5 pt，內文統一 10.5 pt)
+    // 5. 與會人員： (大標題：16 pt，內文：14 pt)
     // ----------------------------------------------------
-    const sec2Lines = wrapText(data.section_2, 10.5, printableWidth - 20);
-    const sec2H = Math.max(150, sec2Lines.length * 16.5 + 28);
+    const attendeeLines = wrapText(data.attendees, 14, printableWidth - 20);
+    const attendeeH = Math.max(55, attendeeLines.length * 20 + 28);
+    drawCell(marginX, currentY, printableWidth, attendeeH);
+
+    page.drawText('與會人員：', {
+      x: marginX + 10,
+      y: currentY - 20,
+      size: 16,
+      font: kaiFont
+    });
+
+    attendeeLines.forEach((line, idx) => {
+      page.drawText(line, {
+        x: marginX + 10,
+        y: currentY - 42 - (idx * 20),
+        size: 14,
+        font: kaiFont
+      });
+    });
+    currentY -= attendeeH;
+
+    // ----------------------------------------------------
+    // 6. 重點說明暨續辦摘要： (大標題：16 pt，內文：14 pt)
+    // ----------------------------------------------------
+    const sec2Lines = wrapText(data.section_2, 14, printableWidth - 20);
+    const sec2H = Math.max(160, sec2Lines.length * 20 + 28);
     drawCell(marginX, currentY, printableWidth, sec2H);
 
-    page.drawText('貳、重點說明暨續辦摘要：', {
+    page.drawText('重點說明暨續辦摘要：', {
       x: marginX + 10,
-      y: currentY - 18,
-      size: 11.5,
+      y: currentY - 20,
+      size: 16,
       font: kaiFont
     });
 
     sec2Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 36 - (idx * 16.5),
-        size: 10.5,
+        y: currentY - 42 - (idx * 20),
+        size: 14,
         font: kaiFont
       });
     });
     currentY -= sec2H;
 
     // ----------------------------------------------------
-    // 6. 參、擬處理意見或建議事項： (標題統一 11.5 pt，內文統一 10.5 pt)
+    // 7. 擬處理意見或建議事項: (大標題：16 pt，內文：14 pt)
     // ----------------------------------------------------
-    const sec3Lines = wrapText(data.section_3, 10.5, printableWidth - 20);
-    const sec3H = Math.max(100, sec3Lines.length * 16.5 + 28);
+    const sec3Lines = wrapText(data.section_3, 14, printableWidth - 20);
+    const sec3H = Math.max(65, sec3Lines.length * 20 + 28);
     drawCell(marginX, currentY, printableWidth, sec3H);
 
-    page.drawText('參、擬處理意見或建議事項：', {
+    page.drawText('擬處理意見或建議事項:', {
       x: marginX + 10,
-      y: currentY - 18,
-      size: 11.5,
+      y: currentY - 20,
+      size: 16,
       font: kaiFont
     });
 
     sec3Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 36 - (idx * 16.5),
-        size: 10.5,
+        y: currentY - 42 - (idx * 20),
+        size: 14,
         font: kaiFont
       });
     });
     currentY -= sec3H;
 
     // ----------------------------------------------------
-    // 7. 本件分送 (勾選) (標題 11.5 pt，項目 9.5 pt)
+    // 8. 本件分送（勾選） (規格：12 pt)
     // ----------------------------------------------------
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [data.dispatch_units].filter(Boolean);
-    const dispatchRowH = 80;
+    const dispatchRowH = 85;
     drawCell(marginX, currentY, printableWidth, dispatchRowH);
 
-    page.drawText('本件分送 (勾選)', {
+    page.drawText('本件分送（勾選）', {
       x: marginX + 10,
-      y: currentY - 16,
-      size: 11.5,
+      y: currentY - 18,
+      size: 12,
       font: kaiFont
     });
 
-    // 第 1 列處室
-    const row1Units = ['署長辦公室', '王副署長辦公室', '黃副署長辦公室'];
-    let dX = marginX + 10;
+    // 列 1: 署長辦公室, 王副署長辦公室, 黃副署長辦公室, 陳副署長辦公室
+    const row1Units = ['署長辦公室', '王副署長辦公室', '黃副署長辦公室', '陳副署長辦公室'];
+    let dX1 = marginX + 10;
     row1Units.forEach(u => {
       const isChecked = dispatchUnits.includes(u);
-      drawBoxWithLabel(dX, currentY - 34, u, isChecked, 9.5);
-      dX += 150;
+      const str = formatOptionText(u, isChecked);
+      page.drawText(str, {
+        x: dX1,
+        y: currentY - 38,
+        size: 12,
+        font: kaiFont
+      });
+      dX1 += 125;
     });
 
-    // 第 2 列處室
-    const row2Units = ['陳副署長辦公室', '總工程司室', '主任秘書室'];
-    dX = marginX + 10;
+    // 列 2: 總工程司室, 主任秘書室
+    const row2Units = ['總工程司室', '主任秘書室'];
+    let dX2 = marginX + 10;
     row2Units.forEach(u => {
       const isChecked = dispatchUnits.includes(u);
-      drawBoxWithLabel(dX, currentY - 51, u, isChecked, 9.5);
-      dX += 150;
+      const str = formatOptionText(u, isChecked);
+      page.drawText(str, {
+        x: dX2,
+        y: currentY - 58,
+        size: 12,
+        font: kaiFont
+      });
+      dX2 += 125;
     });
 
-    // 第 3 列：其他單位獨立行
-    const hasOther = Boolean(data.other_unit_text);
-    drawBoxWithLabel(marginX + 10, currentY - 68, '其他單位：', hasOther, 9.5);
+    // 列 3: 其他單位
+    const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
+    const otherBoxStr = formatOptionText('其他單位：', hasOther);
+    page.drawText(otherBoxStr, {
+      x: marginX + 10,
+      y: currentY - 76,
+      size: 12,
+      font: kaiFont
+    });
+
     if (data.other_unit_text) {
+      const prefixW = kaiFont.widthOfTextAtSize(otherBoxStr, 12);
       page.drawText(data.other_unit_text, {
-        x: marginX + 75,
-        y: currentY - 68,
-        size: 9.5,
+        x: marginX + 10 + prefixW + 2,
+        y: currentY - 76,
+        size: 12,
         font: kaiFont
       });
     }
@@ -666,23 +697,23 @@
     currentY -= dispatchRowH;
 
     // ----------------------------------------------------
-    // 8. 聯絡資訊區 (字體統一 10.5 pt)
+    // 9. 聯絡資訊區 (規格：12 pt)
     // ----------------------------------------------------
-    const contactRowH = 26;
+    const contactRowH = 30;
     drawCell(marginX, currentY, halfW, contactRowH);
     drawCell(marginX + halfW, currentY, halfW, contactRowH);
 
     page.drawText(`本案聯絡人：${data.contact_person || ''}`, {
       x: marginX + 10,
-      y: currentY - 17,
-      size: 10.5,
+      y: currentY - 20,
+      size: 12,
       font: kaiFont
     });
 
     page.drawText(`聯絡電話：${data.contact_phone || ''}`, {
       x: marginX + halfW + 10,
-      y: currentY - 17,
-      size: 10.5,
+      y: currentY - 20,
+      size: 12,
       font: kaiFont
     });
 
@@ -693,14 +724,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成 1150917 制式速報單 PDF...', 'info');
+      showStatus('正在生成依據 Word 標準字號之 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！版面與字號已標準化。', 'success');
+      showStatus('PDF 匯出成功！版面與字號已完全符合 Word 標準。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
