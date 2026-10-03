@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v4.4-BoldStroke2AndAllIndent32</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v4.5</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -212,11 +212,11 @@
     <div class="form-row">
       <div class="form-group">
         <label for="assigner">交辦長官</label>
-        <input type="text" id="assigner" name="assigner" value="陳副總工程司春宏">
+        <input type="text" id="assigner" name="assigner" placeholder="例如：陳副總工程司春宏">
       </div>
       <div class="form-group">
         <label for="reporting_unit">陳報單位</label>
-        <input type="text" id="reporting_unit" name="reporting_unit" value="土地管理組" required>
+        <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：土地管理組" required>
       </div>
     </div>
 
@@ -231,26 +231,22 @@
       </div>
     </div>
 
-    <!-- 壹、案由： (預設結構與範本) -->
+    <!-- 壹、案由： (預設結構提示語) -->
     <div class="section-label">壹、案由：</div>
     <div class="form-group">
-      <textarea id="section_1" name="section_1" rows="5" placeholder="一、開會時間：&#10;二、開會地點：&#10;三、主持人：&#10;四、與會人員：" required>一、開會時間：115年9月17日(四)下午15:30
-二、開會地點：立法委員伍麗華國會辦公室
-三、主持人：曾巧忻主任
-四、與會人員：行政院公共工程委員會洪簡任技正彥斌、水利署陳副總工程司春宏、梁科長顥懷、第九河川分署李科長秀芳、莊聘用工程司宇</textarea>
+      <textarea id="section_1" name="section_1" rows="5" placeholder="一、開會時間：&#10;二、開會地點：&#10;三、主持人：&#10;四、與會人員：" required></textarea>
     </div>
 
-    <!-- 貳、重點說明暨續辦摘要： -->
+    <!-- 貳、重點說明暨續辦摘要： (預設階層順序提示語) -->
     <div class="section-label">貳、重點說明暨續辦摘要：</div>
     <div class="form-group">
-      <textarea id="section_2" name="section_2" rows="7">一、香草場所在土地在馬太鞍事件時雖未淹水,但目前本署規劃之第二道防線為治理需求仍有其必要性。
-二、本署暨九河分署辦理用地取得後,在地相關民眾居住權及相關權益應給予保障;例如申辦原保地增劃編程序者仍能繼續,或協助申請中繼屋、安排以地易地方式。</textarea>
+      <textarea id="section_2" name="section_2" rows="7" placeholder="一、&#10;(一)&#10;1.&#10;(1)"></textarea>
     </div>
 
     <!-- 叁、擬處理意見或建議事項： -->
     <div class="section-label">叁、擬處理意見或建議事項：</div>
     <div class="form-group">
-      <textarea id="section_3" name="section_3" rows="3">請工程會依據會議決議協助香草場居民就工程範圍外土地,專案洽原民會申請增劃編原住民保留地。</textarea>
+      <textarea id="section_3" name="section_3" rows="3" placeholder="請輸入擬處理意見或建議事項..."></textarea>
     </div>
 
     <!-- 本件分送單位 -->
@@ -260,13 +256,13 @@
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長辦公室"> 署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副署長辦公室"> 王副署長辦公室</label>
         <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="黃副署長辦公室"> 黃副署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="陳副署長辦公室" checked> 陳副署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工程司室" checked> 總工程司室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室" checked> 主任秘書室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="陳副署長辦公室"> 陳副署長辦公室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工程司室"> 總工程司室</label>
+        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室"> 主任秘書室</label>
       </div>
       <div class="other-unit-row">
-        <label class="checkbox-item"><input type="checkbox" id="chk_other_unit" checked> 其他單位：</label>
-        <input type="text" id="other_unit_text" name="other_unit_text" value="河川海岸組、國會組">
+        <label class="checkbox-item"><input type="checkbox" id="chk_other_unit"> 其他單位：</label>
+        <input type="text" id="other_unit_text" name="other_unit_text" placeholder="例如：河川海岸組、國會組">
       </div>
     </div>
 
@@ -274,11 +270,11 @@
     <div class="form-row" style="margin-top: 16px;">
       <div class="form-group">
         <label for="contact_person">本案聯絡人</label>
-        <input type="text" id="contact_person" name="contact_person" value="土地管理組/科長/梁顥懷">
+        <input type="text" id="contact_person" name="contact_person" placeholder="例如：土地管理組/科長/梁顥懷">
       </div>
       <div class="form-group">
         <label for="contact_phone">聯絡電話</label>
-        <input type="text" id="contact_phone" name="contact_phone" value="0928284556">
+        <input type="text" id="contact_phone" name="contact_phone" placeholder="例如：0928284556">
       </div>
     </div>
 
@@ -295,10 +291,10 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (更新版號 v4.4 強制刷新快取)
+  // PWA Service Worker 註冊 (更新版號 v4.5 強制刷新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=4.4')
+      navigator.serviceWorker.register('./service-worker.js?v=4.5')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -411,7 +407,7 @@
       return kaiFont.widthOfTextAtSize(text, size);
     }
 
-    // 繪製向量粗體文字 (Vector Bold Effect，strokeWidth 預設 2.0 強化粗體效果)
+    // 繪製向量粗體文字 (Vector Bold Effect)
     function drawBoldText(pageObj, text, x, y, size, strokeWidth = 2.0) {
       pageObj.drawText(text, {
         x: x,
@@ -728,14 +724,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成最新版 PDF...', 'info');
+      showStatus('正在生成最新正式版 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！大標題 2.0 顯著粗體與無編號段落全行 32pt 縮排已套用。', 'success');
+      showStatus('PDF 匯出成功！版面已完成正式上線優化。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
