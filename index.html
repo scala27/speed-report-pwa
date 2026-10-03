@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v2.8.2-PWA-Fix</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v3.0-1150917-Fix</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -297,17 +297,17 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
+      navigator.serviceWorker.register('./service-worker.js?v=3.0')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 初始化日期為今日
+  // 初始化預設日期
   document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('assigned_date').value = today;
-    document.getElementById('report_date').value = today;
+    if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
+    if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
   });
 
   function showStatus(text, type = 'info') {
@@ -317,7 +317,7 @@
     msgEl.innerText = text;
   }
 
-  // 西元年轉民國年字串輔助函式 (例如 2026-09-17 -> 115年9月17日)
+  // 西元年轉民國年輔助函式 (例如 2026-09-17 -> 115年9月17日)
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
     const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -378,7 +378,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (精確重構 1150917速報單 版面)
+  // 3. 純前端標楷體 PDF 引擎 (100% 擬真 1150917速報單 全寬版面)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -392,7 +392,7 @@
     }
 
     const kaiFont = await pdfDoc.embedFont(cachedFontBytes);
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4 尺寸
     const { width, height } = page.getSize();
 
     const marginX = 40;
@@ -401,7 +401,7 @@
 
     let currentY = height - marginTop;
 
-    // 輔助折行函式
+    // 文字自動折行演算法
     function wrapText(text, fontSize, maxWidth) {
       const lines = [];
       const paragraphs = (text || '').split('\n');
@@ -421,7 +421,7 @@
       return lines;
     }
 
-    // 繪製單元格外框
+    // 繪製表格外框單元格
     function drawCell(x, y, w, h, bgHex = null) {
       if (bgHex) {
         page.drawRectangle({ x, y: y - h, width: w, height: h, color: rgb(0.95, 0.95, 0.95) });
@@ -429,7 +429,7 @@
       page.drawRectangle({ x, y: y - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 1 });
     }
 
-    // 繪製核取方塊 + 文字標籤
+    // 繪製核取方塊與文字標籤
     function drawBoxWithLabel(x, y, label, isChecked, fontSize = 9.5) {
       const boxSize = 9;
       page.drawRectangle({
@@ -525,7 +525,7 @@
     currentY -= metaRowH;
 
     // ----------------------------------------------------
-    // 3. 會議/案由性質勾選區
+    // 3. 會議/案由性質勾選區 (全寬)
     // ----------------------------------------------------
     const typeRowH = 26;
     drawCell(marginX, currentY, printableWidth, typeRowH);
@@ -541,12 +541,12 @@
     types.forEach(t => {
       const isChecked = data.meeting_type === t;
       drawBoxWithLabel(curX, currentY - 17, t, isChecked, 9.5);
-      curX += kaiFont.widthOfTextAtSize(t, 9.5) + 20;
+      curX += kaiFont.widthOfTextAtSize(t, 9.5) + 18;
     });
     currentY -= typeRowH;
 
     // ----------------------------------------------------
-    // 4. 壹、案由：
+    // 4. 壹、案由： (單欄全寬，內文頂格)
     // ----------------------------------------------------
     const sec1Lines = wrapText(data.section_1, 10.5, printableWidth - 20);
     const sec1H = Math.max(90, sec1Lines.length * 16 + 28);
@@ -570,7 +570,7 @@
     currentY -= sec1H;
 
     // ----------------------------------------------------
-    // 5. 貳、重點說明暨續辦摘要：
+    // 5. 貳、重點說明暨續辦摘要： (單欄全寬，內文頂格)
     // ----------------------------------------------------
     const sec2Lines = wrapText(data.section_2, 10.5, printableWidth - 20);
     const sec2H = Math.max(160, sec2Lines.length * 16 + 28);
@@ -594,7 +594,7 @@
     currentY -= sec2H;
 
     // ----------------------------------------------------
-    // 6. 參、擬處理意見或建議事項：
+    // 6. 參、擬處理意見或建議事項： (單欄全寬，內文頂格)
     // ----------------------------------------------------
     const sec3Lines = wrapText(data.section_3, 10.5, printableWidth - 20);
     const sec3H = Math.max(110, sec3Lines.length * 16 + 28);
