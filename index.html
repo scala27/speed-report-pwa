@@ -191,7 +191,7 @@
 
 <div class="container">
   <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v3.4-ExactFontSpec</span></h1>
+    <h1>速報單填報系統 <span class="version-badge">v3.5-BoxRestricted</span></h1>
     <div class="header-divider"></div>
   </div>
 
@@ -231,20 +231,20 @@
       </div>
     </div>
 
-    <!-- 壹、案由 -->
-    <div class="section-label">案由</div>
+    <!-- 案由 -->
+    <div class="section-label">案由：</div>
     <div class="form-group">
       <textarea id="section_1" name="section_1" required>115年4月2日中央畜產會董事長蘇治芬拜會經濟部次長賴建信研商虎尾潮建議案</textarea>
     </div>
 
     <!-- 與會人員 -->
-    <div class="section-label">與會人員</div>
+    <div class="section-label">與會人員：</div>
     <div class="form-group">
       <textarea id="attendees" name="attendees" required>經濟部賴次長建信、中央畜產會董事長蘇治芬、都市里人規劃設計有限公司建築師林雋怡、台灣糖業公司副總經理蔡東霖、副處長陳冠翰、水利署陳副署長建成及水利署第五河川分署科長周育興等。</textarea>
     </div>
 
     <!-- 重點說明暨續辦摘要 -->
-    <div class="section-label">重點說明暨續辦摘要</div>
+    <div class="section-label">重點說明暨續辦摘要：</div>
     <div class="form-group">
       <textarea id="section_2" name="section_2">一、中山路人行跨橋都市計畫審議進度：請第五河川分署儘速依雲林縣政府意見辦理修正及補充，俟與該府城鄉發展處研商共識後，再行正式函報。
 二、青埔分洪道抽水站及工程界面：青埔抽水站更換位置，請第五河川分署協助雲林縣政府檢視機組抽水量能是否滿足原設計條件，並請持續追蹤該工程進度。
@@ -253,7 +253,7 @@
     </div>
 
     <!-- 擬處理意見或建議事項 -->
-    <div class="section-label">擬處理意見或建議事項</div>
+    <div class="section-label">擬處理意見或建議事項:</div>
     <div class="form-group">
       <textarea id="section_3" name="section_3">本案後續由第五河川分署、本署河川海岸組錄案辦理。</textarea>
     </div>
@@ -283,7 +283,7 @@
       </div>
       <div class="form-group">
         <label for="contact_phone">聯絡電話</label>
-        <input type="text" id="contact_phone" name="contact_phone" value="辦公室電話/行動電話：04-22501223/0937775253">
+        <input type="text" id="contact_phone" name="contact_phone" value="04-22501223/0937775253">
       </div>
     </div>
 
@@ -303,7 +303,7 @@
   // PWA Service Worker 註冊 (帶入版本號避免快取舊檔)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=3.4')
+      navigator.serviceWorker.register('./service-worker.js?v=3.5')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
@@ -362,7 +362,7 @@
 
   // 2. 載入暫存資料
   document.getElementById('btnLoadTemp').addEventListener('click', () => {
-    const saved = localStorage.setItem('speed_report_temp_data');
+    const saved = localStorage.getItem('speed_report_temp_data');
     if (!saved) {
       showStatus('未找到暫存資料！', 'error');
       return;
@@ -384,7 +384,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (精確套用 Word 範本字號規範：20pt / 16pt / 15pt / 14pt / 12pt)
+  // 3. 純前端標楷體 PDF 引擎 (限定實體表格區，其餘無框線)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -427,11 +427,8 @@
       return lines;
     }
 
-    // 繪製單元格外框
-    function drawCell(x, y, w, h, bgHex = null) {
-      if (bgHex) {
-        page.drawRectangle({ x, y: y - h, width: w, height: h, color: rgb(0.95, 0.95, 0.95) });
-      }
+    // 繪製實體表格外框
+    function drawCell(x, y, w, h) {
       page.drawRectangle({ x, y: y - h, width: w, height: h, borderColor: rgb(0, 0, 0), borderWidth: 1 });
     }
 
@@ -440,15 +437,12 @@
       return (isChecked ? '■ ' : '□ ') + label;
     }
 
-    // ----------------------------------------------------
-    // 1. 頂部主標題 (規格：20 pt)
-    // ----------------------------------------------------
-    const headerHeight = 42;
-    drawCell(marginX, currentY, printableWidth, headerHeight);
-
+    // ====================================================
+    // 1. 頁首頂部抬頭 (無框線，規格：20 pt)
+    // ====================================================
     page.drawText('經濟部水利署', {
-      x: marginX + 14,
-      y: currentY - 28,
+      x: marginX,
+      y: currentY - 20,
       size: 20,
       font: kaiFont
     });
@@ -456,62 +450,52 @@
     const rightTitle = '辦理現況速報單';
     const rightTitleWidth = kaiFont.widthOfTextAtSize(rightTitle, 20);
     page.drawText(rightTitle, {
-      x: marginX + printableWidth - rightTitleWidth - 14,
-      y: currentY - 28,
+      x: marginX + printableWidth - rightTitleWidth,
+      y: currentY - 20,
       size: 20,
       font: kaiFont
     });
 
-    currentY -= headerHeight;
+    currentY -= 35;
 
-    // ----------------------------------------------------
-    // 2. 表頭基本資料 (規格：15 pt)
-    // ----------------------------------------------------
-    const metaRowH = 28;
+    // ====================================================
+    // 2. 表頭基本資料 (無框線，規格：15 pt)
+    // ====================================================
     const halfW = printableWidth / 2;
 
     // 第一列：交辦長官 / 交辦日期
-    drawCell(marginX, currentY, halfW, metaRowH);
-    drawCell(marginX + halfW, currentY, halfW, metaRowH);
-
     page.drawText(`交辦長官：${data.assigner || ''}`, {
-      x: marginX + 10,
-      y: currentY - 19,
+      x: marginX,
+      y: currentY - 15,
       size: 15,
       font: kaiFont
     });
     page.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, {
-      x: marginX + halfW + 10,
-      y: currentY - 19,
+      x: marginX + halfW,
+      y: currentY - 15,
       size: 15,
       font: kaiFont
     });
-    currentY -= metaRowH;
+    currentY -= 22;
 
     // 第二列：陳報單位 / 陳報日期
-    drawCell(marginX, currentY, halfW, metaRowH);
-    drawCell(marginX + halfW, currentY, halfW, metaRowH);
-
     page.drawText(`陳報單位：${data.reporting_unit || ''}`, {
-      x: marginX + 10,
-      y: currentY - 19,
+      x: marginX,
+      y: currentY - 15,
       size: 15,
       font: kaiFont
     });
     page.drawText(`陳報日期：${formatROCDate(data.report_date)}`, {
-      x: marginX + halfW + 10,
-      y: currentY - 19,
+      x: marginX + halfW,
+      y: currentY - 15,
       size: 15,
       font: kaiFont
     });
-    currentY -= metaRowH;
+    currentY -= 28;
 
-    // ----------------------------------------------------
-    // 3. 會議/案由性質勾選區 (規格：12 pt)
-    // ----------------------------------------------------
-    const typeRowH = 28;
-    drawCell(marginX, currentY, printableWidth, typeRowH);
-
+    // ====================================================
+    // 3. 會議/案由性質勾選區 (無框線，一欄六行垂直排列，規格：12 pt)
+    // ====================================================
     const types = [
       '部次長交辦事項',
       '重要業務',
@@ -520,30 +504,33 @@
       '媒體受訪',
       '其他'
     ];
-    let curX = marginX + 8;
+
     types.forEach(t => {
       const isChecked = (data.meeting_type === t);
       const str = formatOptionText(t, isChecked);
       page.drawText(str, {
-        x: curX,
-        y: currentY - 19,
+        x: marginX,
+        y: currentY - 12,
         size: 12,
         font: kaiFont
       });
-      curX += kaiFont.widthOfTextAtSize(str, 12) + 10;
+      currentY -= 18;
     });
-    currentY -= typeRowH;
 
-    // ----------------------------------------------------
-    // 4. 案由： (大標題：16 pt，內文：14 pt)
-    // ----------------------------------------------------
-    const sec1Lines = wrapText(data.section_1, 14, printableWidth - 20);
-    const sec1H = Math.max(55, sec1Lines.length * 20 + 28);
+    currentY -= 10;
+
+    // ====================================================
+    // 4. 實體表格內文區 (全單唯一有框線區域，四大區塊標題與內文均為 16 pt)
+    // ====================================================
+
+    // 區塊 1: 案由：
+    const sec1Lines = wrapText(data.section_1, 16, printableWidth - 20);
+    const sec1H = Math.max(55, sec1Lines.length * 22 + 32);
     drawCell(marginX, currentY, printableWidth, sec1H);
 
     page.drawText('案由：', {
       x: marginX + 10,
-      y: currentY - 20,
+      y: currentY - 22,
       size: 16,
       font: kaiFont
     });
@@ -551,23 +538,21 @@
     sec1Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 42 - (idx * 20),
-        size: 14,
+        y: currentY - 46 - (idx * 22),
+        size: 16,
         font: kaiFont
       });
     });
     currentY -= sec1H;
 
-    // ----------------------------------------------------
-    // 5. 與會人員： (大標題：16 pt，內文：14 pt)
-    // ----------------------------------------------------
-    const attendeeLines = wrapText(data.attendees, 14, printableWidth - 20);
-    const attendeeH = Math.max(55, attendeeLines.length * 20 + 28);
+    // 區塊 2: 與會人員：
+    const attendeeLines = wrapText(data.attendees, 16, printableWidth - 20);
+    const attendeeH = Math.max(55, attendeeLines.length * 22 + 32);
     drawCell(marginX, currentY, printableWidth, attendeeH);
 
     page.drawText('與會人員：', {
       x: marginX + 10,
-      y: currentY - 20,
+      y: currentY - 22,
       size: 16,
       font: kaiFont
     });
@@ -575,23 +560,21 @@
     attendeeLines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 42 - (idx * 20),
-        size: 14,
+        y: currentY - 46 - (idx * 22),
+        size: 16,
         font: kaiFont
       });
     });
     currentY -= attendeeH;
 
-    // ----------------------------------------------------
-    // 6. 重點說明暨續辦摘要： (大標題：16 pt，內文：14 pt)
-    // ----------------------------------------------------
-    const sec2Lines = wrapText(data.section_2, 14, printableWidth - 20);
-    const sec2H = Math.max(160, sec2Lines.length * 20 + 28);
+    // 區塊 3: 重點說明暨續辦摘要：
+    const sec2Lines = wrapText(data.section_2, 16, printableWidth - 20);
+    const sec2H = Math.max(120, sec2Lines.length * 22 + 32);
     drawCell(marginX, currentY, printableWidth, sec2H);
 
     page.drawText('重點說明暨續辦摘要：', {
       x: marginX + 10,
-      y: currentY - 20,
+      y: currentY - 22,
       size: 16,
       font: kaiFont
     });
@@ -599,23 +582,21 @@
     sec2Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 42 - (idx * 20),
-        size: 14,
+        y: currentY - 46 - (idx * 22),
+        size: 16,
         font: kaiFont
       });
     });
     currentY -= sec2H;
 
-    // ----------------------------------------------------
-    // 7. 擬處理意見或建議事項: (大標題：16 pt，內文：14 pt)
-    // ----------------------------------------------------
-    const sec3Lines = wrapText(data.section_3, 14, printableWidth - 20);
-    const sec3H = Math.max(65, sec3Lines.length * 20 + 28);
+    // 區塊 4: 擬處理意見或建議事項:
+    const sec3Lines = wrapText(data.section_3, 16, printableWidth - 20);
+    const sec3H = Math.max(55, sec3Lines.length * 22 + 32);
     drawCell(marginX, currentY, printableWidth, sec3H);
 
     page.drawText('擬處理意見或建議事項:', {
       x: marginX + 10,
-      y: currentY - 20,
+      y: currentY - 22,
       size: 16,
       font: kaiFont
     });
@@ -623,63 +604,67 @@
     sec3Lines.forEach((line, idx) => {
       page.drawText(line, {
         x: marginX + 10,
-        y: currentY - 42 - (idx * 20),
-        size: 14,
+        y: currentY - 46 - (idx * 22),
+        size: 16,
         font: kaiFont
       });
     });
     currentY -= sec3H;
 
-    // ----------------------------------------------------
-    // 8. 本件分送（勾選） (規格：12 pt)
-    // ----------------------------------------------------
+    currentY -= 15;
+
+    // ====================================================
+    // 5. 本件分送（勾選） (無框線，規格：12 pt)
+    // ====================================================
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [data.dispatch_units].filter(Boolean);
-    const dispatchRowH = 85;
-    drawCell(marginX, currentY, printableWidth, dispatchRowH);
 
     page.drawText('本件分送（勾選）', {
-      x: marginX + 10,
-      y: currentY - 18,
+      x: marginX,
+      y: currentY - 14,
       size: 12,
       font: kaiFont
     });
 
     // 列 1: 署長辦公室, 王副署長辦公室, 黃副署長辦公室, 陳副署長辦公室
     const row1Units = ['署長辦公室', '王副署長辦公室', '黃副署長辦公室', '陳副署長辦公室'];
-    let dX1 = marginX + 10;
+    let dX1 = marginX + 105;
     row1Units.forEach(u => {
       const isChecked = dispatchUnits.includes(u);
       const str = formatOptionText(u, isChecked);
       page.drawText(str, {
         x: dX1,
-        y: currentY - 38,
+        y: currentY - 14,
         size: 12,
         font: kaiFont
       });
-      dX1 += 125;
+      dX1 += 102;
     });
+
+    currentY -= 20;
 
     // 列 2: 總工程司室, 主任秘書室
     const row2Units = ['總工程司室', '主任秘書室'];
-    let dX2 = marginX + 10;
+    let dX2 = marginX;
     row2Units.forEach(u => {
       const isChecked = dispatchUnits.includes(u);
       const str = formatOptionText(u, isChecked);
       page.drawText(str, {
         x: dX2,
-        y: currentY - 58,
+        y: currentY - 14,
         size: 12,
         font: kaiFont
       });
-      dX2 += 125;
+      dX2 += 115;
     });
+
+    currentY -= 20;
 
     // 列 3: 其他單位
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
     const otherBoxStr = formatOptionText('其他單位：', hasOther);
     page.drawText(otherBoxStr, {
-      x: marginX + 10,
-      y: currentY - 76,
+      x: marginX,
+      y: currentY - 14,
       size: 12,
       font: kaiFont
     });
@@ -687,32 +672,28 @@
     if (data.other_unit_text) {
       const prefixW = kaiFont.widthOfTextAtSize(otherBoxStr, 12);
       page.drawText(data.other_unit_text, {
-        x: marginX + 10 + prefixW + 2,
-        y: currentY - 76,
+        x: marginX + prefixW + 2,
+        y: currentY - 14,
         size: 12,
         font: kaiFont
       });
     }
 
-    currentY -= dispatchRowH;
+    currentY -= 25;
 
-    // ----------------------------------------------------
-    // 9. 聯絡資訊區 (規格：12 pt)
-    // ----------------------------------------------------
-    const contactRowH = 30;
-    drawCell(marginX, currentY, halfW, contactRowH);
-    drawCell(marginX + halfW, currentY, halfW, contactRowH);
-
+    // ====================================================
+    // 6. 聯絡資訊區 (無框線，規格：12 pt)
+    // ====================================================
     page.drawText(`本案聯絡人：${data.contact_person || ''}`, {
-      x: marginX + 10,
-      y: currentY - 20,
+      x: marginX,
+      y: currentY - 14,
       size: 12,
       font: kaiFont
     });
 
     page.drawText(`聯絡電話：${data.contact_phone || ''}`, {
-      x: marginX + halfW + 10,
-      y: currentY - 20,
+      x: marginX + halfW,
+      y: currentY - 14,
       size: 12,
       font: kaiFont
     });
@@ -724,14 +705,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成依據 Word 標準字號之 PDF...', 'info');
+      showStatus('正在生成依據最新標準規格之 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！版面與字號已完全符合 Word 標準。', 'success');
+      showStatus('PDF 匯出成功！版面與字號已完全符合最新標準。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
