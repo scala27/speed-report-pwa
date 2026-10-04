@@ -1,5 +1,5 @@
-// 升級至 v5.6，使用已上傳至 GitHub 本地的 kaiu.ttf (cwTeX Q 楷體)
-const CACHE_NAME = 'speed-report-v5.6';
+// 升級至 v5.7，將「叁」更正為「參」並更新快取
+const CACHE_NAME = 'speed-report-v5.7';
 
 const FILES_TO_CACHE = [
   './',
@@ -13,7 +13,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] 建立 v5.6 快取並預載本地 kaiu.ttf');
+      console.log('[Service Worker] 建立 v5.7 快取');
       return cache.addAll(FILES_TO_CACHE);
     })
   );
