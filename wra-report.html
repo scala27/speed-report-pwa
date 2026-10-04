@@ -7,10 +7,11 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#58b2dc">
   
-  <!-- CDN 套件：pdf-lib, fontkit, JSZip -->
+  <!-- CDN 套件：pdf-lib, fontkit, QRCode, Html5Qrcode -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
     :root {
@@ -38,7 +39,7 @@
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding: 12px 12px 110px 12px;
+      padding: 12px 12px 120px 12px;
       line-height: 1.5;
     }
 
@@ -236,17 +237,17 @@
       margin-top: 10px;
     }
 
-    /* 底部固定操作列 */
+    /* 底部固定操作列：響應式 5 按鈕 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--border-color);
-      padding: 12px 16px;
+      padding: 10px 12px;
       z-index: 1000;
       box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
     }
@@ -255,40 +256,47 @@
       max-width: 600px;
       margin: 0 auto;
       display: flex;
-      gap: 10px;
+      gap: 6px;
     }
 
     .btn {
-      padding: 13px 12px;
-      font-size: 0.92rem;
+      padding: 10px 6px;
+      font-size: 0.82rem;
       font-weight: 700;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: all 0.2s ease;
+      gap: 2px;
+      transition: all 0.18s ease;
+      flex: 1;
+      white-space: nowrap;
     }
 
     .btn:active {
-      transform: scale(0.98);
+      transform: scale(0.96);
     }
 
     .btn-hero {
-      flex: 2;
+      flex: 1.4;
       background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 100%);
       color: #ffffff;
-      font-size: 1rem;
-      box-shadow: 0 4px 14px rgba(88, 178, 220, 0.35);
+      box-shadow: 0 4px 12px rgba(88, 178, 220, 0.35);
     }
 
     .btn-sub {
-      flex: 1;
       background-color: #f1f5f9;
       color: #334155;
       border: 1px solid #cbd5e1;
+    }
+
+    .btn-sync {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
     }
 
     #status-msg {
@@ -303,6 +311,67 @@
     .status-info { background: #e0f2fe; color: #0369a1; }
     .status-success { background: #dcfce7; color: #15803d; }
     .status-error { background: #fee2e2; color: #b91c1c; }
+
+    /* 彈窗樣式 (QR Code 與 相機掃描) */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .qr-container {
+      margin: 16px auto;
+      display: flex;
+      justify-content: center;
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    #reader {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .btn-close-modal {
+      width: 100%;
+      padding: 10px;
+      background: #f1f5f9;
+      color: #475569;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -413,21 +482,42 @@
   </form>
 </div>
 
-<!-- 底部固定操作列 -->
+<!-- 底部固定操作列 (整合雙向離線同步按鈕) -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <button type="button" id="btnSaveTemp" class="btn btn-sub">💾 暫存</button>
-    <button type="button" id="btnLoadTemp" class="btn btn-sub">📂 載入</button>
-    <button type="button" id="btnExportPDF" class="btn btn-hero">📄 產出 PDF 檔</button>
+    <button type="button" id="btnSaveTemp" class="btn btn-sub">💾<span>暫存</span></button>
+    <button type="button" id="btnLoadTemp" class="btn btn-sub">📂<span>載入</span></button>
+    <button type="button" id="btnGenQR" class="btn btn-sync">📤<span>條碼</span></button>
+    <button type="button" id="btnScanQR" class="btn btn-sync">📷<span>掃描</span></button>
+    <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span>產出 PDF</span></button>
+  </div>
+</div>
+
+<!-- 彈窗 1：QR Code 條碼展示彈窗 -->
+<div id="qrModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-title">📱 離線同步條碼</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">請使用手機或另一裝置掃描同步表單</div>
+    <div id="qrcodeContainer" class="qr-container"></div>
+    <button type="button" id="btnCloseQRModal" class="btn-close-modal">關閉</button>
+  </div>
+</div>
+
+<!-- 彈窗 2：相機掃描彈窗 -->
+<div id="scanModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-title">📷 掃描同步條碼</div>
+    <div id="reader"></div>
+    <button type="button" id="btnCloseScanModal" class="btn-close-modal">取消掃描</button>
   </div>
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (v6.2)
+  // PWA Service Worker 註冊 (v6.3)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.2')
-        .then(reg => console.log('Service Worker v6.2 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.3')
+        .then(reg => console.log('Service Worker v6.3 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -484,15 +574,28 @@
     return data;
   }
 
+  function applyFormData(data) {
+    if (!data) return;
+    Object.keys(data).forEach(key => {
+      const field = document.getElementsByName(key)[0];
+      if (field) field.value = data[key];
+    });
+
+    if (Array.isArray(data.dispatch_units)) {
+      document.querySelectorAll('.chip-item').forEach(chip => {
+        const val = chip.getAttribute('data-value');
+        if (data.dispatch_units.includes(val)) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+  }
+
   // 1. 本地暫存資料
   document.getElementById('btnSaveTemp').addEventListener('click', () => {
     const data = getFormData();
-    const activeChips = [];
-    document.querySelectorAll('.chip-item.active').forEach(chip => {
-      activeChips.push(chip.getAttribute('data-value'));
-    });
-    data['active_chips'] = activeChips;
-
     localStorage.setItem('speed_report_temp_data_v5', JSON.stringify(data));
     showStatus('資料已成功暫存至手機本地！', 'success');
   });
@@ -504,26 +607,118 @@
       showStatus('未找到暫存資料！', 'error');
       return;
     }
-    const data = JSON.parse(saved);
-    Object.keys(data).forEach(key => {
-      const field = document.getElementsByName(key)[0];
-      if (field) field.value = data[key];
-    });
-
-    if (Array.isArray(data.active_chips)) {
-      document.querySelectorAll('.chip-item').forEach(chip => {
-        const val = chip.getAttribute('data-value');
-        if (data.active_chips.includes(val)) {
-          chip.classList.add('active');
-        } else {
-          chip.classList.remove('active');
-        }
-      });
-    }
+    applyFormData(JSON.parse(saved));
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
+  // 3. 鍵值極簡化與壓縮演算法 (Key Compression)
+  function compressFormData(data) {
+    return JSON.stringify({
+      mt: data.meeting_type || '',
+      as: data.assigner || '',
+      ru: data.reporting_unit || '',
+      ad: data.assigned_date || '',
+      rd: data.report_date || '',
+      s1: data.section_1 || '',
+      s2: data.section_2 || '',
+      s3: data.section_3 || '',
+      du: data.dispatch_units || [],
+      ot: data.other_unit_text || '',
+      cp: data.contact_person || '',
+      ph: data.contact_phone || ''
+    });
+  }
+
+  function decompressFormData(jsonStr) {
+    const raw = JSON.parse(jsonStr);
+    return {
+      meeting_type: raw.mt || '重要會議結論',
+      assigner: raw.as || '',
+      reporting_unit: raw.ru || '',
+      assigned_date: raw.ad || '',
+      report_date: raw.rd || '',
+      section_1: raw.s1 || '',
+      section_2: raw.s2 || '',
+      section_3: raw.s3 || '',
+      dispatch_units: raw.du || [],
+      other_unit_text: raw.ot || '',
+      contact_person: raw.cp || '',
+      contact_phone: raw.ph || ''
+    };
+  }
+
+  // 4. 生成 QR Code 條碼 (使用容錯率 M，產生顆粒大且易讀的微小條碼)
+  document.getElementById('btnGenQR').addEventListener('click', () => {
+    const data = getFormData();
+    const compressedStr = compressFormData(data);
+
+    const container = document.getElementById('qrcodeContainer');
+    container.innerHTML = '';
+
+    try {
+      new QRCode(container, {
+        text: compressedStr,
+        width: 220,
+        height: 220,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      document.getElementById('qrModal').style.display = 'flex';
+    } catch (err) {
+      showStatus('產生條碼失敗：資料量過大，請簡化文字後重試', 'error');
+    }
+  });
+
+  document.getElementById('btnCloseQRModal').addEventListener('click', () => {
+    document.getElementById('qrModal').style.display = 'none';
+  });
+
+  // 5. 相機鏡頭掃描條碼 (Html5Qrcode)
+  let html5QrcodeScanner = null;
+
+  document.getElementById('btnScanQR').addEventListener('click', async () => {
+    document.getElementById('scanModal').style.display = 'flex';
+    if (!html5QrcodeScanner) {
+      html5QrcodeScanner = new Html5Qrcode("reader");
+    }
+
+    const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+    try {
+      await html5QrcodeScanner.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText) => {
+          try {
+            const decompressedData = decompressFormData(decodedText);
+            applyFormData(decompressedData);
+            showStatus('已成功掃描並同步初擬資料！', 'success');
+            closeCameraScanner();
+          } catch (err) {
+            showStatus('無效的同步條碼格式', 'error');
+          }
+        },
+        () => {} // 忽略幀掃描失敗
+      );
+    } catch (err) {
+      showStatus('無法開啟相機鏡頭：請確定已授予權限', 'error');
+      closeCameraScanner();
+    }
+  });
+
+  function closeCameraScanner() {
+    if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+      html5QrcodeScanner.stop().then(() => {
+        document.getElementById('scanModal').style.display = 'none';
+      }).catch(() => {
+        document.getElementById('scanModal').style.display = 'none';
+      });
+    } else {
+      document.getElementById('scanModal').style.display = 'none';
+    }
+  }
+
+  document.getElementById('btnCloseScanModal').addEventListener('click', closeCameraScanner);
+
+  // 6. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
