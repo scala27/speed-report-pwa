@@ -1,6 +1,6 @@
 {
-  "short_name": "速報單 V2.8",
-  "name": "速報單填報系統 v2.8.2",
+  "short_name": "速報單 v5.0",
+  "name": "速報單填報系統 v5.0",
   "description": "水利應變純前端離線速報單填報系統",
   "icons": [
     {
@@ -17,8 +17,8 @@
     }
   ],
   "start_url": "./index.html",
-  "background_color": "#cbebfb",
-  "theme_color": "#d6f0ff",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
   "display": "standalone",
   "orientation": "portrait"
 }
