@@ -508,9 +508,9 @@
     pdfDoc.registerFontkit(fontkit);
 
     if (!cachedFontBytes) {
-      showStatus('載入標楷體字型檔 (kaiu.ttf)...', 'info');
-      const fontResponse = await fetch('./kaiu.ttf');
-      if (!fontResponse.ok) throw new Error('無法載入 kaiu.ttf 字型檔');
+      showStatus('載入標楷體字型檔 (kaiu.woff)...', 'info');
+      const fontResponse = await fetch('./kaiu.woff');
+      if (!fontResponse.ok) throw new Error('無法載入 kaiu.woff 字型檔');
       cachedFontBytes = await fontResponse.arrayBuffer();
     }
 
