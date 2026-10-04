@@ -1,5 +1,5 @@
-// 升級至 v5.0 快取名稱，強制清除所有 v2.8 / v4.x 舊快取
-const CACHE_NAME = 'speed-report-v5.0';
+// 升級快取版本，確保手機自動刷新載入 kaiu.woff
+const CACHE_NAME = 'speed-report-v5.4';
 
 const FILES_TO_CACHE = [
   './',
@@ -13,20 +13,20 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] 建立 v5.0 新快取');
+      console.log('[Service Worker] 建立 v5.4 新快取');
       return cache.addAll(FILES_TO_CACHE);
     })
   );
 });
 
-// 2. 啟用階段：比對並刪除所有舊版快取
+// 2. 啟用階段：清除所有舊版快取
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] 自動清除舊快取:', cache);
+            console.log('[Service Worker] 清除舊快取:', cache);
             return caches.delete(cache);
           }
         })
