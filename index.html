@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>速報單填報系統</title>
+  <title>速報單填報系統 v5.0</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#d6f0ff">
+  <meta name="theme-color" content="#0f172a">
   
   <!-- CDN 套件：pdf-lib, fontkit, JSZip -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -13,72 +13,116 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
+    :root {
+      --primary-navy: #0f172a;
+      --primary-blue: #0284c7;
+      --bg-slate: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-card: 18px;
+      --radius-input: 12px;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #cbebfb;
-      color: #1e293b;
-      padding: 16px 12px;
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      padding: 16px 12px 110px 12px; /* 留出底部固定欄空間 */
       line-height: 1.5;
     }
-    .container {
-      max-width: 640px;
+
+    .app-container {
+      max-width: 600px;
       margin: 0 auto;
-      background: #ffffff;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-      padding: 24px 20px;
     }
-    .header-title {
-      text-align: center;
-      margin-bottom: 20px;
+
+    /* 頂部 Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding: 8px 4px;
     }
-    .header-title h1 {
-      font-size: 1.6rem;
+
+    .app-title {
+      font-size: 1.35rem;
       font-weight: 800;
-      color: #0f172a;
-      display: inline-flex;
+      color: var(--primary-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .version-tag {
+      background: #e0f2fe;
+      color: var(--primary-blue);
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    /* 現代卡片區塊 */
+    .card-group {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-card);
+      padding: 20px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      margin-bottom: 14px;
+      display: flex;
       align-items: center;
       gap: 8px;
     }
-    .version-badge {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #16a34a;
+
+    .card-title .icon {
+      font-size: 1.1rem;
     }
-    .header-divider {
-      height: 2px;
-      background-color: #0284c7;
-      margin-top: 8px;
-      border-radius: 2px;
-    }
+
+    /* 表單元件 */
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
     .form-row {
       display: flex;
       gap: 12px;
     }
+
     .form-row .form-group {
       flex: 1;
     }
+
     label {
       display: block;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 700;
       margin-bottom: 6px;
       color: #334155;
     }
-    .section-label {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #0f172a;
-      margin: 20px 0 8px 0;
-    }
+
     input[type="text"],
     input[type="date"],
     select,
@@ -87,100 +131,127 @@
       padding: 12px 14px;
       font-size: 0.95rem;
       border: 1px solid #cbd5e1;
-      border-radius: 10px;
+      border-radius: var(--radius-input);
       background-color: #ffffff;
-      color: #1e293b;
-      transition: all 0.2s ease;
+      color: var(--text-main);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      appearance: none;
+      -webkit-appearance: none;
     }
+
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: #0284c7;
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
     }
+
     textarea {
       resize: vertical;
-      min-height: 120px;
+      min-height: 110px;
       font-family: inherit;
       line-height: 1.6;
     }
-    
-    .checkbox-container {
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 6px;
-    }
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    .checkbox-item {
+
+    /* 現代膠囊標籤 (Choice Chips) */
+    .chips-grid {
       display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: #334155;
-      cursor: pointer;
-    }
-    .checkbox-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: #0284c7;
-      cursor: pointer;
-    }
-    .other-unit-row {
-      margin-top: 12px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .other-unit-row label {
-      margin-bottom: 0;
-      white-space: nowrap;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
     }
 
-    .btn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 28px;
-      padding-top: 16px;
-      border-top: 1px dashed #cbd5e1;
+    .chip-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px 15px;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
     }
+
+    .chip-item.active {
+      background: var(--primary-blue);
+      color: #ffffff;
+      border-color: var(--primary-blue);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    .other-unit-input {
+      margin-top: 10px;
+    }
+
+    /* 手機底部吸附固定操作列 (Sticky Bottom Bar) */
+    .sticky-actions-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
+      padding: 12px 16px;
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    .actions-container {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+    }
+
     .btn {
-      padding: 14px 8px;
-      font-size: 0.98rem;
+      padding: 13px 12px;
+      font-size: 0.95rem;
       font-weight: 700;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      color: #ffffff;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-      transition: opacity 0.2s;
+      transition: all 0.2s ease;
     }
+
     .btn:active {
-      opacity: 0.85;
+      transform: scale(0.98);
     }
-    .btn-green { background-color: #22c55e; }
-    .btn-orange { background-color: #f97316; }
-    .btn-red { background-color: #ef4444; }
-    .btn-blue { background-color: #0284c7; }
+
+    /* Hero 主要按鈕 (產出 PDF) */
+    .btn-hero {
+      flex: 2;
+      background-color: var(--primary-navy);
+      color: #ffffff;
+      font-size: 1.02rem;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+    }
+
+    /* 次要功能按鈕 */
+    .btn-sub {
+      flex: 1;
+      background-color: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
 
     #status-msg {
-      margin-top: 14px;
+      margin-top: 10px;
       padding: 10px;
-      border-radius: 8px;
-      font-size: 0.88rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
       display: none;
       text-align: center;
-      font-weight: 600;
+      font-weight: 700;
     }
     .status-info { background: #e0f2fe; color: #0369a1; }
     .status-success { background: #dcfce7; color: #15803d; }
@@ -189,128 +260,150 @@
 </head>
 <body>
 
-<div class="container">
-  <div class="header-title">
-    <h1>速報單填報系統 <span class="version-badge">v4.6</span></h1>
-    <div class="header-divider"></div>
+<div class="app-container">
+  <!-- 頂部 App 標頭 -->
+  <div class="app-header">
+    <div class="app-title">
+      <span>速報單填報系統</span>
+    </div>
+    <span class="version-tag">v5.0</span>
   </div>
 
   <form id="speedReportForm">
-    <!-- 會議與基本屬性 -->
-    <div class="form-group">
-      <label for="meeting_type">會議/案由性質</label>
-      <select id="meeting_type" name="meeting_type">
-        <option value="部次長交辦事項">部次長交辦事項</option>
-        <option value="重要業務">重要業務</option>
-        <option value="重要會議結論" selected>重要會議結論</option>
-        <option value="首長訪視行程">首長訪視行程</option>
-        <option value="媒體受訪">媒體受訪</option>
-        <option value="其他">其他</option>
-      </select>
+    <!-- 卡片 1：會議基本資訊 -->
+    <div class="card-group">
+      <div class="card-title"><span class="icon">📋</span> 會議基本資訊</div>
+      
+      <div class="form-group">
+        <label for="meeting_type">會議/案由性質</label>
+        <select id="meeting_type" name="meeting_type">
+          <option value="部次長交辦事項">部次長交辦事項</option>
+          <option value="重要業務">重要業務</option>
+          <option value="重要會議結論" selected>重要會議結論</option>
+          <option value="首長訪視行程">首長訪視行程</option>
+          <option value="媒體受訪">媒體受訪</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="assigner">交辦長官</label>
+          <input type="text" id="assigner" name="assigner">
+        </div>
+        <div class="form-group">
+          <label for="reporting_unit">陳報單位</label>
+          <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：河川海岸組" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="assigned_date">交辦日期</label>
+          <input type="date" id="assigned_date" name="assigned_date" required>
+        </div>
+        <div class="form-group">
+          <label for="report_date">陳報日期</label>
+          <input type="date" id="report_date" name="report_date" required>
+        </div>
+      </div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="assigner">交辦長官</label>
-        <input type="text" id="assigner" name="assigner">
-      </div>
-      <div class="form-group">
-        <label for="reporting_unit">陳報單位</label>
-        <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：河川海岸組" required>
-      </div>
-    </div>
+    <!-- 卡片 2：案由與摘要內容 -->
+    <div class="card-group">
+      <div class="card-title"><span class="icon">📝</span> 案由與摘要內容</div>
 
-    <div class="form-row">
       <div class="form-group">
-        <label for="assigned_date">交辦日期</label>
-        <input type="date" id="assigned_date" name="assigned_date" required>
-      </div>
-      <div class="form-group">
-        <label for="report_date">陳報日期</label>
-        <input type="date" id="report_date" name="report_date" required>
-      </div>
-    </div>
-
-    <!-- 壹、案由： (預設固定內容) -->
-    <div class="section-label">壹、案由：</div>
-    <div class="form-group">
-      <textarea id="section_1" name="section_1" rows="5" required>一、開會時間：
+        <label for="section_1">壹、案由：</label>
+        <textarea id="section_1" name="section_1" rows="5" required>一、開會時間：
 二、開會地點：
 三、主持人：
 四、與會人員：</textarea>
-    </div>
+      </div>
 
-    <!-- 貳、重點說明暨續辦摘要： (預設固定內容) -->
-    <div class="section-label">貳、重點說明暨續辦摘要：</div>
-    <div class="form-group">
-      <textarea id="section_2" name="section_2" rows="7">一、
+      <div class="form-group">
+        <label for="section_2">貳、重點說明暨續辦摘要：</label>
+        <textarea id="section_2" name="section_2" rows="6">一、
 (一)
 1.
 (1)</textarea>
-    </div>
-
-    <!-- 叁、擬處理意見或建議事項： -->
-    <div class="section-label">叁、擬處理意見或建議事項：</div>
-    <div class="form-group">
-      <textarea id="section_3" name="section_3" rows="3" placeholder="請輸入擬處理意見或建議事項..."></textarea>
-    </div>
-
-    <!-- 本件分送單位 -->
-    <div class="section-label">本件分送（勾選）</div>
-    <div class="checkbox-container">
-      <div class="checkbox-grid">
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="署長辦公室"> 署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="王副署長辦公室"> 王副署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="黃副署長辦公室"> 黃副署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="陳副署長辦公室"> 陳副署長辦公室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="總工程司室"> 總工程司室</label>
-        <label class="checkbox-item"><input type="checkbox" name="dispatch_units" value="主任秘書室"> 主任秘書室</label>
       </div>
-      <div class="other-unit-row">
-        <label class="checkbox-item"><input type="checkbox" id="chk_other_unit"> 其他單位：</label>
-        <input type="text" id="other_unit_text" name="other_unit_text" placeholder="例如：河川海岸組、國會組">
-      </div>
-    </div>
 
-    <!-- 聯絡人與電話 -->
-    <div class="form-row" style="margin-top: 16px;">
       <div class="form-group">
-        <label for="contact_person">本案聯絡人</label>
-        <input type="text" id="contact_person" name="contact_person" placeholder="單位/職稱/姓名">
-      </div>
-      <div class="form-group">
-        <label for="contact_phone">聯絡電話</label>
-        <input type="text" id="contact_phone" name="contact_phone" placeholder="辦公室電話/行動電話">
+        <label for="section_3">叁、擬處理意見或建議事項：</label>
+        <textarea id="section_3" name="section_3" rows="3" placeholder="請輸入擬處理意見或建議事項..."></textarea>
       </div>
     </div>
 
-    <!-- 功能按鈕組 (2x2) -->
-    <div class="btn-grid">
-      <button type="button" id="btnSaveTemp" class="btn btn-green">💾 暫存雲端</button>
-      <button type="button" id="btnLoadTemp" class="btn btn-orange">📂 載入資料</button>
-      <button type="button" id="btnExportPDF" class="btn btn-red">📄 產出 PDF</button>
-      <button type="button" id="btnExportWord" class="btn btn-blue">📝 產出 Word</button>
+    <!-- 卡片 3：本件分送與聯絡資訊 -->
+    <div class="card-group">
+      <div class="card-title"><span class="icon">✉️</span> 本件分送與聯絡資訊</div>
+
+      <div class="form-group">
+        <label>本件分送單位（點擊切換）</label>
+        <div class="chips-grid" id="dispatchChipsGroup">
+          <div class="chip-item" data-value="署長辦公室">署長辦公室</div>
+          <div class="chip-item" data-value="王副署長辦公室">王副署長辦公室</div>
+          <div class="chip-item" data-value="黃副署長辦公室">黃副署長辦公室</div>
+          <div class="chip-item" data-value="陳副署長辦公室">陳副署長辦公室</div>
+          <div class="chip-item" data-value="總工程司室">總工程司室</div>
+          <div class="chip-item" data-value="主任秘書室">主任秘書室</div>
+          <div class="chip-item" id="chipOtherUnit" data-value="其他單位">其他單位</div>
+        </div>
+
+        <div class="other-unit-input">
+          <input type="text" id="other_unit_text" name="other_unit_text" placeholder="例如：河川海岸組、國會組">
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-top: 14px;">
+        <div class="form-group">
+          <label for="contact_person">本案聯絡人</label>
+          <input type="text" id="contact_person" name="contact_person" placeholder="單位/職稱/姓名">
+        </div>
+        <div class="form-group">
+          <label for="contact_phone">聯絡電話</label>
+          <input type="text" id="contact_phone" name="contact_phone" placeholder="辦公室電話/行動電話">
+        </div>
+      </div>
     </div>
 
     <div id="status-msg"></div>
   </form>
 </div>
 
+<!-- 手機底部吸附固定操作列 -->
+<div class="sticky-actions-bar">
+  <div class="actions-container">
+    <button type="button" id="btnSaveTemp" class="btn btn-sub">💾 暫存</button>
+    <button type="button" id="btnLoadTemp" class="btn btn-sub">📂 載入</button>
+    <button type="button" id="btnExportPDF" class="btn btn-hero">📄 產出 PDF 檔</button>
+  </div>
+</div>
+
 <script>
-  // PWA Service Worker 註冊 (更新版號 v4.6 強制刷新快取)
+  // PWA Service Worker 註冊 (v5.0 強制更新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=4.6')
-        .then(reg => console.log('Service Worker 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=5.0')
+        .then(reg => console.log('Service Worker v5.0 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 初始化日期
+  // 初始化日期與膠囊標籤切換事件
   document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
     if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
     if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
+
+    // 膠囊標籤（Choice Chips）點擊切換邏輯
+    const chipItems = document.querySelectorAll('.chip-item');
+    chipItems.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('active');
+      });
+    });
   });
 
   function showStatus(text, type = 'info') {
@@ -318,9 +411,10 @@
     msgEl.style.display = 'block';
     msgEl.className = `status-${type}`;
     msgEl.innerText = text;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
-  // 西元年轉民國年輔助函式 (例如 2026-10-03 -> 115年10月3日)
+  // 西元年轉民國年輔助函式
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
     const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -335,31 +429,45 @@
 
   let cachedFontBytes = null;
 
+  // 獲取表單資料 (包含膠囊標籤之選取狀態)
   function getFormData() {
     const form = document.getElementById('speedReportForm');
     const formData = new FormData(form);
     const data = {};
     formData.forEach((value, key) => {
-      if (key === 'dispatch_units') {
-        if (!data[key]) data[key] = [];
-        data[key].push(value);
-      } else {
-        data[key] = value;
+      data[key] = value;
+    });
+
+    // 收集切換標籤選取項目
+    const selectedDispatchUnits = [];
+    document.querySelectorAll('.chip-item.active').forEach(chip => {
+      const val = chip.getAttribute('data-value');
+      if (val !== '其他單位') {
+        selectedDispatchUnits.push(val);
       }
     });
+    data['dispatch_units'] = selectedDispatchUnits;
+
     return data;
   }
 
   // 1. 本地暫存資料
   document.getElementById('btnSaveTemp').addEventListener('click', () => {
     const data = getFormData();
-    localStorage.setItem('speed_report_temp_data', JSON.stringify(data));
+    // 額外記錄膠囊標籤狀態
+    const activeChips = [];
+    document.querySelectorAll('.chip-item.active').forEach(chip => {
+      activeChips.push(chip.getAttribute('data-value'));
+    });
+    data['active_chips'] = activeChips;
+
+    localStorage.setItem('speed_report_temp_data_v5', JSON.stringify(data));
     showStatus('資料已成功暫存至手機本地！', 'success');
   });
 
   // 2. 載入暫存資料
   document.getElementById('btnLoadTemp').addEventListener('click', () => {
-    const saved = localStorage.getItem('speed_report_temp_data');
+    const saved = localStorage.getItem('speed_report_temp_data_v5');
     if (!saved) {
       showStatus('未找到暫存資料！', 'error');
       return;
@@ -367,21 +475,24 @@
     const data = JSON.parse(saved);
     Object.keys(data).forEach(key => {
       const field = document.getElementsByName(key)[0];
-      if (field) {
-        if (field.type === 'checkbox') {
-          const checkboxes = document.getElementsByName(key);
-          checkboxes.forEach(cb => {
-            cb.checked = Array.isArray(data[key]) && data[key].includes(cb.value);
-          });
-        } else {
-          field.value = data[key];
-        }
-      }
+      if (field) field.value = data[key];
     });
+
+    // 還原膠囊標籤狀態
+    if (Array.isArray(data.active_chips)) {
+      document.querySelectorAll('.chip-item').forEach(chip => {
+        const val = chip.getAttribute('data-value');
+        if (data.active_chips.includes(val)) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (標題描邊 2.0 顯著粗體，無編號段落全行縮排 32pt)
+  // 3. 純前端標楷體 PDF 引擎 (完全保留 100% 正確套印排版與跨頁邏輯)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -403,17 +514,14 @@
     const pageBottomMargin = 40; // 40pt 安全觸發門檻
     const printableWidth = width - (marginX * 2); // 515.28 pt
 
-    // 格式化勾選選項文字 (原生 ■ 與 □)
     function formatOptionText(label, isChecked) {
       return (isChecked ? '■ ' : '□ ') + label;
     }
 
-    // 計算字串寬度輔助函式
     function measureTextWidth(text, size) {
       return kaiFont.widthOfTextAtSize(text, size);
     }
 
-    // 繪製向量粗體文字 (Vector Bold Effect)
     function drawBoldText(pageObj, text, x, y, size, strokeWidth = 2.0) {
       pageObj.drawText(text, {
         x: x,
@@ -426,38 +534,28 @@
       });
     }
 
-    // 多階層公務動態縮排解析器
     function processSection(title, contentText, fontSize, maxW) {
       const items = [];
-      // 1. 章節大標題 (頂格 0 pt，粗體)
       items.push({ text: title, isTitle: true, indent: 0 });
 
-      // 2. 內文段落階層解析
       const paragraphs = (contentText || '').split('\n');
       for (const para of paragraphs) {
         if (!para.trim()) continue;
 
         const trimmed = para.trim();
-        let baseIndent = 32; // 一般段落首行縮排 2 字 (32pt)
-        let hangIndent = 32; // 一般無編號段落：全部內文採縮排 2 字 (32pt)
+        let baseIndent = 32;
+        let hangIndent = 32;
 
-        // 第四層: (1), （1） -> 首行縮排 5 字 (80pt), 次行懸掛 90pt
         if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
           baseIndent = 80;
           hangIndent = 90;
-        }
-        // 第三層: 1., 2., １、, ２、 -> 首行縮排 4 字 (64pt), 次行懸掛 80pt
-        else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
+        } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
           baseIndent = 64;
           hangIndent = 80;
-        }
-        // 第二層: (一), （一） -> 首行縮排 3 字 (48pt), 次行懸掛 80pt
-        else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
+        } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
           baseIndent = 48;
           hangIndent = 80;
-        }
-        // 第一層: 一、, 二、 -> 首行縮排 2 字 (32pt), 次行懸掛 64pt
-        else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
+        } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
           baseIndent = 32;
           hangIndent = 64;
         }
@@ -486,11 +584,8 @@
       return items;
     }
 
-    // ====================================================
-    // 1. 頁首與會議性質區塊 (第一頁，14pt 選項 + strokeWidth 2.0 顯著粗體標題)
-    // ====================================================
-    const listTopY = height - marginTop; // 806.89 pt
-    const optionLineSpacing = 20; // 14pt 選項間距
+    const listTopY = height - marginTop;
+    const optionLineSpacing = 20;
 
     const types = [
       '部次長交辦事項',
@@ -501,7 +596,6 @@
       '其他'
     ];
 
-    // 中間一欄式 6 個勾選選項 (字體 14pt)
     const middleX = marginX + 175;
     types.forEach((t, idx) => {
       const isChecked = (data.meeting_type === t);
@@ -514,20 +608,14 @@
       });
     });
 
-    // 左側：經濟部水利署 (strokeWidth: 2.0 顯著粗體 20pt)
     drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20, 2.0);
 
-    // 右側：辦理現況速報單 (strokeWidth: 2.0 顯著粗體 20pt)
     const rightTitle = '辦理現況速報單';
     const rightTitleW = measureTextWidth(rightTitle, 20);
     drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20, 2.0);
 
-    // ====================================================
-    // 2. 基本資料區 (置於 14pt 第 6 個選項下方)
-    // ====================================================
     const basicInfoStartY = listTopY - (6 * optionLineSpacing) - 12;
 
-    // 第一列：交辦長官 / 交辦日期
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, {
       x: marginX,
       y: basicInfoStartY,
@@ -541,7 +629,6 @@
       font: kaiFont
     });
 
-    // 第二列：陳報單位 / 陳報日期
     currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, {
       x: marginX,
       y: basicInfoStartY - 22,
@@ -555,12 +642,8 @@
       font: kaiFont
     });
 
-    // 實體表格外框頂端 Y 座標
     let currentPageBoxStartY = basicInfoStartY - 22 - 14;
 
-    // ====================================================
-    // 3. 實體表格內文區 (章節大標題獨立 strokeWidth: 2.0 粗體、內文常規字型)
-    // ====================================================
     const textPaddingX = 10;
     const maxTextW = printableWidth - (textPaddingX * 2);
     const fontSize = 16;
@@ -576,9 +659,7 @@
 
     allSections.forEach(sectionItems => {
       sectionItems.forEach(item => {
-        // 觸發門檻 40 pt 跨頁偵測
         if (renderY - fontLeading < pageBottomMargin) {
-          // 1. 繪製並封閉當前頁面的表格大框線
           const currentBoxH = currentPageBoxStartY - (renderY + 6);
           currentPage.drawRectangle({
             x: marginX,
@@ -589,13 +670,11 @@
             borderWidth: 1
           });
 
-          // 2. 自動開啟全新頁面並重設頂部框線座標
           currentPage = pdfDoc.addPage([595.28, 841.89]);
           currentPageBoxStartY = height - marginTop - 10;
           renderY = currentPageBoxStartY - 24;
         }
 
-        // 繪製文字 (章節大標題採用 strokeWidth: 2.0 獨立顯著粗體，內文維持常規)
         if (item.isTitle) {
           drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, fontSize, 2.0);
         } else {
@@ -611,7 +690,6 @@
       renderY -= 6;
     });
 
-    // 繪製最後一頁的表格大框線
     const finalBoxEndY = renderY + 6;
     const finalBoxH = currentPageBoxStartY - finalBoxEndY;
     currentPage.drawRectangle({
@@ -625,17 +703,13 @@
 
     let currentY = finalBoxEndY - 20;
 
-    // ====================================================
-    // 4. 本件分送與聯絡資訊 (偵測剩餘空間，不足時自動開新頁)
-    // ====================================================
     if (currentY - 110 < pageBottomMargin) {
       currentPage = pdfDoc.addPage([595.28, 841.89]);
       currentY = height - marginTop - 20;
     }
 
-    const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [data.dispatch_units].filter(Boolean);
+    const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
 
-    // 標題
     currentPage.drawText('本件分送（勾選）', {
       x: marginX,
       y: currentY,
@@ -643,12 +717,10 @@
       font: kaiFont
     });
 
-    // 固定 3 欄 X 軸縱向點位對齊
     const colX1 = marginX + 105;
     const colX2 = marginX + 225;
     const colX3 = marginX + 345;
 
-    // 第一列: 署長辦公室, 王副署長辦公室, 黃副署長辦公室
     const row1List = [
       { name: '署長辦公室', x: colX1 },
       { name: '王副署長辦公室', x: colX2 },
@@ -667,7 +739,6 @@
 
     currentY -= 20;
 
-    // 第二列: 陳副署長辦公室, 總工程司室, 主任秘書室
     const row2List = [
       { name: '陳副署長辦公室', x: colX1 },
       { name: '總工程司室', x: colX2 },
@@ -686,7 +757,6 @@
 
     currentY -= 20;
 
-    // 第三列: 其他單位
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
     const otherBoxStr = formatOptionText('其他單位：', hasOther);
     currentPage.drawText(otherBoxStr, {
@@ -708,7 +778,6 @@
 
     currentY -= 24;
 
-    // 聯絡資訊區
     currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, {
       x: marginX,
       y: currentY,
@@ -730,34 +799,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成最新正式版 PDF...', 'info');
+      showStatus('正在生成 v5.0 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！版面已完成正式上線優化。', 'success');
-    } catch (err) {
-      showStatus(`匯出失敗: ${err.message}`, 'error');
-    }
-  });
-
-  // 匯出雙軌/Word 包
-  document.getElementById('btnExportWord').addEventListener('click', async () => {
-    try {
-      showStatus('正在打包檔案...', 'info');
-      const data = getFormData();
-      const pdfBlob = await generatePDFBlob(data);
-      const zip = new JSZip();
-      zip.file(`速報單_${data.report_date}.pdf`, pdfBlob);
-      zip.file(`速報單內容.json`, JSON.stringify(data, null, 2));
-      const zipContent = await zip.generateAsync({ type: 'blob' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(zipContent);
-      link.download = `速報單檔案包_${data.report_date}.zip`;
-      link.click();
-      showStatus('檔案包匯出成功！', 'success');
+      showStatus('PDF 匯出成功！版面完美適配。', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
