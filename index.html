@@ -349,7 +349,7 @@
       </div>
 
       <div class="form-group">
-        <label for="section_3">叁、擬處理意見或建議事項：</label>
+        <label for="section_3">參、擬處理意見或建議事項：</label>
         <textarea id="section_3" name="section_3" rows="3" placeholder="請輸入擬處理意見或建議事項..."></textarea>
       </div>
     </div>
@@ -398,11 +398,11 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (v5.6)
+  // PWA Service Worker 註冊 (v5.7)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=5.6')
-        .then(reg => console.log('Service Worker v5.6 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=5.7')
+        .then(reg => console.log('Service Worker v5.7 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -660,7 +660,7 @@
     const allSections = [
       processSection('壹、案由：', data.section_1, fontSize, maxTextW),
       processSection('貳、重點說明暨續辦摘要：', data.section_2, fontSize, maxTextW),
-      processSection('叁、擬處理意見或建議事項：', data.section_3, fontSize, maxTextW)
+      processSection('參、擬處理意見或建議事項：', data.section_3, fontSize, maxTextW)
     ];
 
     let renderY = currentPageBoxStartY - 24;
