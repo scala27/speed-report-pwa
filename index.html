@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>速報單填報系統 v5.1</title>
+  <title>速報單填報系統</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
   
@@ -17,7 +17,7 @@
       --primary-navy: #0f172a;
       --primary-blue: #0284c7;
       --primary-blue-hover: #0369a1;
-      --bg-gradient: linear-gradient(180deg, #e0f2fe 0%, #f1f5f9 250px);
+      --bg-gradient: linear-gradient(180deg, #e0f2fe 0%, #f1f5f9 220px);
       --card-bg: #ffffff;
       --border-color: #e2e8f0;
       --text-main: #0f172a;
@@ -47,13 +47,13 @@
       margin: 0 auto;
     }
 
-    /* 尊榮感頂部 Hero 品牌 Header 卡片 */
+    /* 尊榮感極簡頂部 Header 卡片 */
     .hero-header-card {
       background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0284c7 100%);
       border-radius: var(--radius-card);
-      padding: 22px 20px;
+      padding: 20px 20px 18px 20px;
       color: #ffffff;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
       position: relative;
       overflow: hidden;
@@ -70,57 +70,25 @@
       pointer-events: none;
     }
 
-    .badge-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
     .agency-tag {
+      display: inline-block;
       background: rgba(255, 255, 255, 0.18);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 999px;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 700;
       letter-spacing: 0.03em;
       border: 1px solid rgba(255, 255, 255, 0.25);
-    }
-
-    .status-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(34, 197, 94, 0.2);
-      color: #4ade80;
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      background-color: #4ade80;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #4ade80;
+      margin-bottom: 10px;
     }
 
     .hero-main-title {
-      font-size: 1.45rem;
+      font-size: 1.5rem;
       font-weight: 800;
       letter-spacing: -0.01em;
-      margin-bottom: 4px;
-    }
-
-    .hero-subtitle {
-      font-size: 0.82rem;
-      color: #93c5fd;
-      font-weight: 500;
+      line-height: 1.2;
     }
 
     /* 現代卡片區塊 */
@@ -134,17 +102,7 @@
       box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
     }
 
-    .card-title {
-      font-size: 0.98rem;
-      font-weight: 800;
-      color: var(--primary-navy);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    /* 表單欄位排版與窄螢幕溢出防護 */
+    /* 表單欄位排版與窄螢幕防爆框 */
     .form-group {
       margin-bottom: 14px;
       min-width: 0;
@@ -157,18 +115,12 @@
     .form-row {
       display: flex;
       gap: 10px;
+      width: 100%;
     }
 
     .form-row .form-group {
-      flex: 1;
-      min-width: 0; /* 徹底阻止Flex子項寬度爆開 */
-    }
-
-    @media (max-width: 380px) {
-      .form-row {
-        flex-direction: column;
-        gap: 12px;
-      }
+      flex: 1 1 0%;
+      min-width: 0; /* 徹底防禦 flex 子元素溢出 */
     }
 
     label {
@@ -184,8 +136,9 @@
     select,
     textarea {
       width: 100%;
-      padding: 11px 12px;
-      font-size: 0.92rem;
+      max-width: 100%;
+      padding: 11px 10px;
+      font-size: 0.9rem;
       border: 1px solid #cbd5e1;
       border-radius: var(--radius-input);
       background-color: #ffffff;
@@ -196,7 +149,6 @@
       box-sizing: border-box;
     }
 
-    /* 解決iOS/Android日期選擇器字體與圖示寬度擠壓 */
     input[type="date"] {
       min-height: 42px;
       font-family: inherit;
@@ -215,7 +167,7 @@
       line-height: 1.6;
     }
 
-    /* 現代整齊雙欄膠囊 Grid */
+    /* 雙欄膠囊 Grid */
     .chips-grid-2col {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -302,7 +254,6 @@
       transform: scale(0.98);
     }
 
-    /* Hero 主要匯出按鈕 */
     .btn-hero {
       flex: 2;
       background: linear-gradient(135deg, #0f172a 0%, #0284c7 100%);
@@ -311,7 +262,6 @@
       box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
     }
 
-    /* 次要按鈕 */
     .btn-sub {
       flex: 1;
       background-color: #f1f5f9;
@@ -336,21 +286,15 @@
 <body>
 
 <div class="app-container">
-  <!-- 尊榮感頂部 Hero 品牌 Header 卡片 -->
+  <!-- 精簡尊榮 Header 卡片 -->
   <div class="hero-header-card">
-    <div class="badge-row">
-      <span class="agency-tag">🏛️ 經濟部水利署</span>
-      <span class="status-tag"><span class="status-dot"></span> PWA v5.1 離線版</span>
-    </div>
+    <div class="agency-tag">🏛️ 經濟部水利署</div>
     <div class="hero-main-title">速報單填報系統</div>
-    <div class="hero-subtitle">智慧擬稿 ‧ 階層動態縮排 ‧ 100% 離線即時產出 PDF</div>
   </div>
 
   <form id="speedReportForm">
-    <!-- 卡片 1：會議基本資訊 -->
+    <!-- 卡片 1：會議與基本欄位 -->
     <div class="card-group">
-      <div class="card-title"><span class="icon">📋</span> 會議基本資訊</div>
-      
       <div class="form-group">
         <label for="meeting_type">會議/案由性質</label>
         <select id="meeting_type" name="meeting_type">
@@ -386,10 +330,8 @@
       </div>
     </div>
 
-    <!-- 卡片 2：案由與摘要內容 -->
+    <!-- 卡片 2：案由與摘要區域 -->
     <div class="card-group">
-      <div class="card-title"><span class="icon">📝</span> 案由與摘要內容</div>
-
       <div class="form-group">
         <label for="section_1">壹、案由：</label>
         <textarea id="section_1" name="section_1" rows="5" required>一、開會時間：
@@ -412,10 +354,8 @@
       </div>
     </div>
 
-    <!-- 卡片 3：本件分送與聯絡資訊 -->
+    <!-- 卡片 3：分送單位與聯絡資訊 -->
     <div class="card-group">
-      <div class="card-title"><span class="icon">✉️</span> 本件分送與聯絡資訊</div>
-
       <div class="form-group">
         <label>本件分送單位（點擊選擇）</label>
         <div class="chips-grid-2col" id="dispatchChipsGroup">
@@ -448,7 +388,7 @@
   </form>
 </div>
 
-<!-- 手機底部吸附固定操作列 -->
+<!-- 底部固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" id="btnSaveTemp" class="btn btn-sub">💾 暫存</button>
@@ -458,11 +398,11 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (v5.1 強制更新快取)
+  // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=5.1')
-        .then(reg => console.log('Service Worker v5.1 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=5.2')
+        .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -473,7 +413,6 @@
     if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
     if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
 
-    // 膠囊標籤（Choice Chips）點擊切換邏輯
     const chipItems = document.querySelectorAll('.chip-item');
     chipItems.forEach(chip => {
       chip.addEventListener('click', () => {
@@ -505,7 +444,6 @@
 
   let cachedFontBytes = null;
 
-  // 獲取表單資料 (包含膠囊標籤之選取狀態)
   function getFormData() {
     const form = document.getElementById('speedReportForm');
     const formData = new FormData(form);
@@ -514,7 +452,6 @@
       data[key] = value;
     });
 
-    // 收集切換標籤選取項目
     const selectedDispatchUnits = [];
     document.querySelectorAll('.chip-item.active').forEach(chip => {
       selectedDispatchUnits.push(chip.getAttribute('data-value'));
@@ -550,7 +487,6 @@
       if (field) field.value = data[key];
     });
 
-    // 還原膠囊標籤狀態
     if (Array.isArray(data.active_chips)) {
       document.querySelectorAll('.chip-item').forEach(chip => {
         const val = chip.getAttribute('data-value');
@@ -564,7 +500,7 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (完全保留 100% 正確套印排版與跨頁邏輯)
+  // 3. 純前端標楷體 PDF 引擎
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -578,13 +514,13 @@
     }
 
     const kaiFont = await pdfDoc.embedFont(cachedFontBytes);
-    let currentPage = pdfDoc.addPage([595.28, 841.89]); // A4 尺寸
+    let currentPage = pdfDoc.addPage([595.28, 841.89]);
     const { width, height } = currentPage.getSize();
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 40; // 40pt 安全觸發門檻
-    const printableWidth = width - (marginX * 2); // 515.28 pt
+    const pageBottomMargin = 40;
+    const printableWidth = width - (marginX * 2);
 
     function formatOptionText(label, isChecked) {
       return (isChecked ? '■ ' : '□ ') + label;
@@ -871,14 +807,14 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成 v5.1 PDF...', 'info');
+      showStatus('正在生成 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(pdfBlob);
       link.download = `速報單_${data.report_date || ''}.pdf`;
       link.click();
-      showStatus('PDF 匯出成功！版面完美適配。', 'success');
+      showStatus('PDF 匯出成功！', 'success');
     } catch (err) {
       showStatus(`匯出失敗: ${err.message}`, 'error');
     }
