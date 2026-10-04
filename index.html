@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>速報單填報系統</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#58b2dc">
   
   <!-- CDN 套件：pdf-lib, fontkit, JSZip -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -14,10 +14,10 @@
 
   <style>
     :root {
-      --primary-navy: #0f172a;
-      --primary-blue: #0284c7;
-      --primary-blue-hover: #0369a1;
-      --bg-gradient: linear-gradient(180deg, #e0f2fe 0%, #f1f5f9 220px);
+      --primary-water: rgb(88, 178, 220); /* #58b2dc */
+      --primary-dark: #2b81ad;
+      --primary-light: #eef7fc;
+      --bg-gradient: linear-gradient(180deg, #eaf5fb 0%, #f8fafc 220px);
       --card-bg: #ffffff;
       --border-color: #e2e8f0;
       --text-main: #0f172a;
@@ -47,14 +47,14 @@
       margin: 0 auto;
     }
 
-    /* 尊榮感極簡頂部 Header 卡片 */
+    /* 精簡尊榮 Header 卡片：RGB(88, 178, 220) 水利藍漸層 */
     .hero-header-card {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0284c7 100%);
+      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 60%, #7ac6e9 100%);
       border-radius: var(--radius-card);
       padding: 20px 20px 18px 20px;
       color: #ffffff;
       margin-bottom: 14px;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+      box-shadow: 0 10px 22px -5px rgba(88, 178, 220, 0.35);
       position: relative;
       overflow: hidden;
     }
@@ -66,13 +66,13 @@
       right: -20%;
       width: 200px;
       height: 200px;
-      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
       pointer-events: none;
     }
 
     .agency-tag {
       display: inline-block;
-      background: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.22);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       padding: 4px 12px;
@@ -80,7 +80,7 @@
       font-size: 0.82rem;
       font-weight: 700;
       letter-spacing: 0.03em;
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       margin-bottom: 10px;
     }
 
@@ -89,17 +89,18 @@
       font-weight: 800;
       letter-spacing: -0.01em;
       line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     /* 現代卡片區塊 */
     .card-group {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-top: 3px solid var(--primary-blue);
+      border-top: 3.5px solid var(--primary-water);
       border-radius: var(--radius-card);
       padding: 18px 16px;
       margin-bottom: 14px;
-      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
     }
 
     /* 表單欄位排版與窄螢幕防爆框 */
@@ -120,7 +121,7 @@
 
     .form-row .form-group {
       flex: 1 1 0%;
-      min-width: 0; /* 徹底防禦 flex 子元素溢出 */
+      min-width: 0;
     }
 
     label {
@@ -156,8 +157,8 @@
 
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: var(--primary-blue);
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      border-color: var(--primary-water);
+      box-shadow: 0 0 0 3px rgba(88, 178, 220, 0.2);
     }
 
     textarea {
@@ -167,7 +168,7 @@
       line-height: 1.6;
     }
 
-    /* 雙欄膠囊 Grid */
+    /* 雙欄膠囊 Grid (配搭 RGB(88, 178, 220) 色系) */
     .chips-grid-2col {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -199,10 +200,10 @@
     }
 
     .chip-item.active {
-      background: #eff6ff;
-      color: var(--primary-blue);
-      border-color: var(--primary-blue);
-      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+      background: #eef7fc;
+      color: var(--primary-dark);
+      border-color: var(--primary-water);
+      box-shadow: 0 2px 8px rgba(88, 178, 220, 0.2);
     }
 
     .chip-item.active .check-icon {
@@ -256,10 +257,10 @@
 
     .btn-hero {
       flex: 2;
-      background: linear-gradient(135deg, #0f172a 0%, #0284c7 100%);
+      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 100%);
       color: #ffffff;
       font-size: 1rem;
-      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+      box-shadow: 0 4px 14px rgba(88, 178, 220, 0.35);
     }
 
     .btn-sub {
@@ -401,7 +402,7 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=5.2')
+      navigator.serviceWorker.register('./service-worker.js?v=5.3')
         .then(reg => console.log('Service Worker 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
