@@ -103,7 +103,6 @@
       box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
     }
 
-    /* 表單欄位排版與窄螢幕防爆框 */
     .form-group {
       margin-bottom: 14px;
       min-width: 0;
@@ -215,7 +214,7 @@
       margin-top: 10px;
     }
 
-    /* 手機底部吸附固定操作列 */
+    /* 底部固定操作列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -399,16 +398,15 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (v5.4 版本更新)
+  // PWA Service Worker 註冊 (v5.6)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=5.4')
-        .then(reg => console.log('Service Worker v5.4 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=5.6')
+        .then(reg => console.log('Service Worker v5.6 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 初始化日期與膠囊標籤切換事件
   document.addEventListener('DOMContentLoaded', () => {
     const today = new Date().toISOString().split('T')[0];
     if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
@@ -430,7 +428,6 @@
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
-  // 西元年轉民國年輔助函式
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
     const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -501,17 +498,17 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎 (修正讀取 kaiu.woff)
+  // 3. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
 
     if (!cachedFontBytes) {
-      showStatus('載入全字庫正楷體字型檔 (kaiu.woff)...', 'info');
-      const fontResponse = await fetch('./kaiu.woff');
+      showStatus('載入字型檔 (kaiu.ttf)...', 'info');
+      const fontResponse = await fetch('./kaiu.ttf');
       if (!fontResponse.ok) {
-        throw new Error('無法載入 kaiu.woff 字型檔，請確認已成功上傳 kaiu.woff 至 GitHub');
+        throw new Error('無法載入 kaiu.ttf 字型檔，請確認已成功將字型檔上傳至 GitHub 專案根目錄');
       }
       cachedFontBytes = await fontResponse.arrayBuffer();
     }
