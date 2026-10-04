@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>速報單填報系統 - 經濟部水利署</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#58b2dc">
+  
+  <!-- CDN 套件：pdf-lib, fontkit, JSZip -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --primary-water: rgb(88, 178, 220); /* #58b2dc */
+      --primary-dark: #2b81ad;
+      --primary-light: #eef7fc;
+      --bg-gradient: linear-gradient(180deg, #eaf5fb 0%, #f8fafc 220px);
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-card: 18px;
+      --radius-input: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      padding: 12px 12px 110px 12px;
+      line-height: 1.5;
+    }
+
+    .app-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* 精簡尊榮 Header 卡片（含返回大廳按鈕） */
+    .hero-header-card {
+      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 60%, #7ac6e9 100%);
+      border-radius: var(--radius-card);
+      padding: 20px 20px 18px 20px;
+      color: #ffffff;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 22px -5px rgba(88, 178, 220, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-header-card::after {
+      content: "";
+      position: absolute;
+      top: -30%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+
+    .header-top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .agency-tag {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-back-portal {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .btn-back-portal:active {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-main-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 現代卡片區塊 */
+    .card-group {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-top: 3.5px solid var(--primary-water);
+      border-radius: var(--radius-card);
+      padding: 18px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .form-row .form-group {
+      flex: 1 1 0%;
+      min-width: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      max-width: 100%;
+      padding: 11px 10px;
+      font-size: 0.9rem;
+      border: 1px solid #cbd5e1;
+      border-radius: var(--radius-input);
+      background-color: #ffffff;
+      color: var(--text-main);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      appearance: none;
+      -webkit-appearance: none;
+      box-sizing: border-box;
+    }
+
+    input[type="date"] {
+      min-height: 42px;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-water);
+      box-shadow: 0 0 0 3px rgba(88, 178, 220, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 110px;
+      font-family: inherit;
+      line-height: 1.6;
+    }
+
+    /* 雙欄膠囊 Grid */
+    .chips-grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      background: #f8fafc;
+      color: #475569;
+      border: 1.5px solid #e2e8f0;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .chip-item .check-icon {
+      font-size: 0.8rem;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: all 0.2s ease;
+    }
+
+    .chip-item.active {
+      background: #eef7fc;
+      color: var(--primary-dark);
+      border-color: var(--primary-water);
+      box-shadow: 0 2px 8px rgba(88, 178, 220, 0.2);
+    }
+
+    .chip-item.active .check-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .other-unit-input {
+      margin-top: 10px;
+    }
+
+    /* 底部固定操作列 */
+    .sticky-actions-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
+      padding: 12px 16px;
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .actions-container {
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 13px 12px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-hero {
+      flex: 2;
+      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 100%);
+      color: #ffffff;
+      font-size: 1rem;
+      box-shadow: 0 4px 14px rgba(88, 178, 220, 0.35);
+    }
+
+    .btn-sub {
+      flex: 1;
+      background-color: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+
+    #status-msg {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: none;
+      text-align: center;
+      font-weight: 700;
+    }
+    .status-info { background: #e0f2fe; color: #0369a1; }
+    .status-success { background: #dcfce7; color: #15803d; }
+    .status-error { background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Header 卡片 -->
+  <div class="hero-header-card">
+    <div class="header-top-nav">
+      <div class="agency-tag">🏛️ 經濟部水利署</div>
+      <a href="./index.html" class="btn-back-portal">🏠 返回大廳</a>
+    </div>
+    <div class="hero-main-title">辦理現況速報單</div>
+  </div>
+
+  <form id="speedReportForm">
+    <!-- 卡片 1：會議與基本欄位 -->
+    <div class="card-group">
+      <div class="form-group">
+        <label for="meeting_type">會議/案由性質</label>
+        <select id="meeting_type" name="meeting_type">
+          <option value="部次長交辦事項">部次長交辦事項</option>
+          <option value="重要業務">重要業務</option>
+          <option value="重要會議結論" selected>重要會議結論</option>
+          <option value="首長訪視行程">首長訪視行程</option>
+          <option value="媒體受訪">媒體受訪</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="assigner">交辦長官</label>
+          <input type="text" id="assigner" name="assigner">
+        </div>
+        <div class="form-group">
+          <label for="reporting_unit">陳報單位</label>
+          <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：河川海岸組" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="assigned_date">交辦日期</label>
+          <input type="date" id="assigned_date" name="assigned_date" required>
+        </div>
+        <div class="form-group">
+          <label for="report_date">陳報日期</label>
+          <input type="date" id="report_date" name="report_date" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片 2：案由與摘要區域 -->
+    <div class="card-group">
+      <div class="form-group">
+        <label for="section_1">壹、案由：</label>
+        <textarea id="section_1" name="section_1" rows="5" required>一、開會時間：
+二、開會地點：
+三、主持人：
+四、與會人員：</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="section_2">貳、重點說明暨續辦摘要：</label>
+        <textarea id="section_2" name="section_2" rows="6">一、
+(一)
+1.
+(1)</textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="section_3">參、擬處理意見或建議事項：</label>
+        <textarea id="section_3" name="section_3" rows="3" placeholder="請輸入擬處理意見或建議事項..."></textarea>
+      </div>
+    </div>
+
+    <!-- 卡片 3：分送單位與聯絡資訊 -->
+    <div class="card-group">
+      <div class="form-group">
+        <label>本件分送單位（點擊選擇）</label>
+        <div class="chips-grid-2col" id="dispatchChipsGroup">
+          <div class="chip-item" data-value="署長辦公室"><span>署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="王副署長辦公室"><span>王副署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="黃副署長辦公室"><span>黃副署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="陳副署長辦公室"><span>陳副署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="總工程司室"><span>總工程司室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="主任秘書室"><span>主任秘書室</span><span class="check-icon">✓</span></div>
+        </div>
+
+        <div class="other-unit-input">
+          <input type="text" id="other_unit_text" name="other_unit_text" placeholder="例如：河川海岸組、國會組">
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-top: 14px;">
+        <div class="form-group">
+          <label for="contact_person">本案聯絡人</label>
+          <input type="text" id="contact_person" name="contact_person" placeholder="單位/職稱/姓名">
+        </div>
+        <div class="form-group">
+          <label for="contact_phone">聯絡電話</label>
+          <input type="text" id="contact_phone" name="contact_phone" placeholder="辦公室電話/行動電話">
+        </div>
+      </div>
+    </div>
+
+    <div id="status-msg"></div>
+  </form>
+</div>
+
+<!-- 底部固定操作列 -->
+<div class="sticky-actions-bar">
+  <div class="actions-container">
+    <button type="button" id="btnSaveTemp" class="btn btn-sub">💾 暫存</button>
+    <button type="button" id="btnLoadTemp" class="btn btn-sub">📂 載入</button>
+    <button type="button" id="btnExportPDF" class="btn btn-hero">📄 產出 PDF 檔</button>
+  </div>
+</div>
+
+<script>
+  // PWA Service Worker 註冊 (v6.0)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js?v=6.0')
+        .then(reg => console.log('Service Worker v6.0 註冊成功'))
+        .catch(err => console.log('Service Worker 註冊失敗:', err));
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
+    if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
+
+    const chipItems = document.querySelectorAll('.chip-item');
+    chipItems.forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('active');
+      });
+    });
+  });
+
+  function showStatus(text, type = 'info') {
+    const msgEl = document.getElementById('status-msg');
+    msgEl.style.display = 'block';
+    msgEl.className = `status-${type}`;
+    msgEl.innerText = text;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  function formatROCDate(dateStr) {
+    if (!dateStr) return '';
+    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+      const rocYear = parseInt(match[1], 10) - 1911;
+      const month = parseInt(match[2], 10);
+      const day = parseInt(match[3], 10);
+      return `${rocYear}年${month}月${day}日`;
+    }
+    return dateStr;
+  }
+
+  let cachedFontBytes = null;
+
+  function getFormData() {
+    const form = document.getElementById('speedReportForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    const selectedDispatchUnits = [];
+    document.querySelectorAll('.chip-item.active').forEach(chip => {
+      selectedDispatchUnits.push(chip.getAttribute('data-value'));
+    });
+    data['dispatch_units'] = selectedDispatchUnits;
+
+    return data;
+  }
+
+  // 1. 本地暫存資料
+  document.getElementById('btnSaveTemp').addEventListener('click', () => {
+    const data = getFormData();
+    const activeChips = [];
+    document.querySelectorAll('.chip-item.active').forEach(chip => {
+      activeChips.push(chip.getAttribute('data-value'));
+    });
+    data['active_chips'] = activeChips;
+
+    localStorage.setItem('speed_report_temp_data_v5', JSON.stringify(data));
+    showStatus('資料已成功暫存至手機本地！', 'success');
+  });
+
+  // 2. 載入暫存資料
+  document.getElementById('btnLoadTemp').addEventListener('click', () => {
+    const saved = localStorage.getItem('speed_report_temp_data_v5');
+    if (!saved) {
+      showStatus('未找到暫存資料！', 'error');
+      return;
+    }
+    const data = JSON.parse(saved);
+    Object.keys(data).forEach(key => {
+      const field = document.getElementsByName(key)[0];
+      if (field) field.value = data[key];
+    });
+
+    if (Array.isArray(data.active_chips)) {
+      document.querySelectorAll('.chip-item').forEach(chip => {
+        const val = chip.getAttribute('data-value');
+        if (data.active_chips.includes(val)) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+    showStatus('已成功載入暫存資料！', 'success');
+  });
+
+  // 3. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
+  async function generatePDFBlob(data) {
+    const { PDFDocument, rgb } = PDFLib;
+    const pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
+
+    if (!cachedFontBytes) {
+      showStatus('載入字型檔 (kaiu.ttf)...', 'info');
+      const fontResponse = await fetch('./kaiu.ttf');
+      if (!fontResponse.ok) {
+        throw new Error('無法載入 kaiu.ttf 字型檔，請確認已成功將字型檔上傳至 GitHub 專案根目錄');
+      }
+      cachedFontBytes = await fontResponse.arrayBuffer();
+    }
+
+    const kaiFont = await pdfDoc.embedFont(cachedFontBytes);
+    let currentPage = pdfDoc.addPage([595.28, 841.89]);
+    const { width, height } = currentPage.getSize();
+
+    const marginX = 40;
+    const marginTop = 35;
+    const pageBottomMargin = 40;
+    const printableWidth = width - (marginX * 2);
+
+    function formatOptionText(label, isChecked) {
+      return (isChecked ? '■ ' : '□ ') + label;
+    }
+
+    function measureTextWidth(text, size) {
+      return kaiFont.widthOfTextAtSize(text, size);
+    }
+
+    function drawBoldText(pageObj, text, x, y, size, strokeWidth = 2.0) {
+      pageObj.drawText(text, {
+        x: x,
+        y: y,
+        size: size,
+        font: kaiFont,
+        color: rgb(0, 0, 0),
+        strokeColor: rgb(0, 0, 0),
+        strokeWidth: strokeWidth
+      });
+    }
+
+    function processSection(title, contentText, fontSize, maxW) {
+      const items = [];
+      items.push({ text: title, isTitle: true, indent: 0 });
+
+      const paragraphs = (contentText || '').split('\n');
+      for (const para of paragraphs) {
+        if (!para.trim()) continue;
+
+        const trimmed = para.trim();
+        let baseIndent = 32;
+        let hangIndent = 32;
+
+        if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
+          baseIndent = 80;
+          hangIndent = 90;
+        } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
+          baseIndent = 64;
+          hangIndent = 80;
+        } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
+          baseIndent = 48;
+          hangIndent = 80;
+        } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
+          baseIndent = 32;
+          hangIndent = 64;
+        }
+
+        let currentLine = '';
+        let isFirstLine = true;
+
+        for (const char of para) {
+          const currentIndent = isFirstLine ? baseIndent : hangIndent;
+          const currentMaxW = maxW - currentIndent;
+          const testLine = currentLine + char;
+
+          if (measureTextWidth(testLine, fontSize) > currentMaxW && currentLine !== '') {
+            items.push({ text: currentLine, isTitle: false, indent: currentIndent });
+            currentLine = char;
+            isFirstLine = false;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine !== '') {
+          const currentIndent = isFirstLine ? baseIndent : hangIndent;
+          items.push({ text: currentLine, isTitle: false, indent: currentIndent });
+        }
+      }
+      return items;
+    }
+
+    const listTopY = height - marginTop;
+    const optionLineSpacing = 20;
+
+    const types = [
+      '部次長交辦事項',
+      '重要業務',
+      '重要會議結論',
+      '首長訪視行程',
+      '媒體受訪',
+      '其他'
+    ];
+
+    const middleX = marginX + 175;
+    types.forEach((t, idx) => {
+      const isChecked = (data.meeting_type === t);
+      const str = formatOptionText(t, isChecked);
+      currentPage.drawText(str, {
+        x: middleX,
+        y: listTopY - (idx * optionLineSpacing),
+        size: 14,
+        font: kaiFont
+      });
+    });
+
+    drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20, 2.0);
+
+    const rightTitle = '辦理現況速報單';
+    const rightTitleW = measureTextWidth(rightTitle, 20);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20, 2.0);
+
+    const basicInfoStartY = listTopY - (6 * optionLineSpacing) - 12;
+
+    currentPage.drawText(`交辦長官：${data.assigner || ''}`, {
+      x: marginX,
+      y: basicInfoStartY,
+      size: 15,
+      font: kaiFont
+    });
+    currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, {
+      x: marginX + 325,
+      y: basicInfoStartY,
+      size: 15,
+      font: kaiFont
+    });
+
+    currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, {
+      x: marginX,
+      y: basicInfoStartY - 22,
+      size: 15,
+      font: kaiFont
+    });
+    currentPage.drawText(`陳報日期：${formatROCDate(data.report_date)}`, {
+      x: marginX + 325,
+      y: basicInfoStartY - 22,
+      size: 15,
+      font: kaiFont
+    });
+
+    let currentPageBoxStartY = basicInfoStartY - 22 - 14;
+
+    const textPaddingX = 10;
+    const maxTextW = printableWidth - (textPaddingX * 2);
+    const fontSize = 16;
+    const fontLeading = 22;
+
+    const allSections = [
+      processSection('壹、案由：', data.section_1, fontSize, maxTextW),
+      processSection('貳、重點說明暨續辦摘要：', data.section_2, fontSize, maxTextW),
+      processSection('參、擬處理意見或建議事項：', data.section_3, fontSize, maxTextW)
+    ];
+
+    let renderY = currentPageBoxStartY - 24;
+
+    allSections.forEach(sectionItems => {
+      sectionItems.forEach(item => {
+        if (renderY - fontLeading < pageBottomMargin) {
+          const currentBoxH = currentPageBoxStartY - (renderY + 6);
+          currentPage.drawRectangle({
+            x: marginX,
+            y: renderY + 6,
+            width: printableWidth,
+            height: currentBoxH,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: 1
+          });
+
+          currentPage = pdfDoc.addPage([595.28, 841.89]);
+          currentPageBoxStartY = height - marginTop - 10;
+          renderY = currentPageBoxStartY - 24;
+        }
+
+        if (item.isTitle) {
+          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, fontSize, 2.0);
+        } else {
+          currentPage.drawText(item.text, {
+            x: marginX + textPaddingX + item.indent,
+            y: renderY,
+            size: fontSize,
+            font: kaiFont
+          });
+        }
+        renderY -= fontLeading;
+      });
+      renderY -= 6;
+    });
+
+    const finalBoxEndY = renderY + 6;
+    const finalBoxH = currentPageBoxStartY - finalBoxEndY;
+    currentPage.drawRectangle({
+      x: marginX,
+      y: finalBoxEndY,
+      width: printableWidth,
+      height: finalBoxH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1
+    });
+
+    let currentY = finalBoxEndY - 20;
+
+    if (currentY - 110 < pageBottomMargin) {
+      currentPage = pdfDoc.addPage([595.28, 841.89]);
+      currentY = height - marginTop - 20;
+    }
+
+    const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
+
+    currentPage.drawText('本件分送（勾選）', {
+      x: marginX,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
+
+    const colX1 = marginX + 105;
+    const colX2 = marginX + 225;
+    const colX3 = marginX + 345;
+
+    const row1List = [
+      { name: '署長辦公室', x: colX1 },
+      { name: '王副署長辦公室', x: colX2 },
+      { name: '黃副署長辦公室', x: colX3 }
+    ];
+    row1List.forEach(item => {
+      const isChecked = dispatchUnits.includes(item.name);
+      const str = formatOptionText(item.name, isChecked);
+      currentPage.drawText(str, {
+        x: item.x,
+        y: currentY,
+        size: 12,
+        font: kaiFont
+      });
+    });
+
+    currentY -= 20;
+
+    const row2List = [
+      { name: '陳副署長辦公室', x: colX1 },
+      { name: '總工程司室', x: colX2 },
+      { name: '主任秘書室', x: colX3 }
+    ];
+    row2List.forEach(item => {
+      const isChecked = dispatchUnits.includes(item.name);
+      const str = formatOptionText(item.name, isChecked);
+      currentPage.drawText(str, {
+        x: item.x,
+        y: currentY,
+        size: 12,
+        font: kaiFont
+      });
+    });
+
+    currentY -= 20;
+
+    const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
+    const otherBoxStr = formatOptionText('其他單位：', hasOther);
+    currentPage.drawText(otherBoxStr, {
+      x: colX1,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
+
+    if (data.other_unit_text) {
+      const prefixW = measureTextWidth(otherBoxStr, 12);
+      currentPage.drawText(data.other_unit_text, {
+        x: colX1 + prefixW + 2,
+        y: currentY,
+        size: 12,
+        font: kaiFont
+      });
+    }
+
+    currentY -= 24;
+
+    currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, {
+      x: marginX,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
+
+    currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, {
+      x: marginX + 260,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    return new Blob([pdfBytes], { type: 'application/pdf' });
+  }
+
+  // 匯出 PDF 檔
+  document.getElementById('btnExportPDF').addEventListener('click', async () => {
+    try {
+      showStatus('正在生成 PDF...', 'info');
+      const data = getFormData();
+      const pdfBlob = await generatePDFBlob(data);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `速報單_${data.report_date || ''}.pdf`;
+      link.click();
+      showStatus('PDF 匯出成功！', 'success');
+    } catch (err) {
+      showStatus(`匯出失敗: ${err.message}`, 'error');
+    }
+  });
+</script>
+</body>
+</html>
