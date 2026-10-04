@@ -203,13 +203,13 @@
 
   <div class="section-label">可用填報子系統</div>
 
-  <!-- 卡片 1：辦理現況速報單系統 -->
-  <a href="./speed-report.html" class="system-card">
+  <!-- 卡片 1：水利署速報單系統 (wra-report.html) -->
+  <a href="./wra-report.html" class="system-card">
     <div>
       <div class="card-top-row">
         <div class="card-icon-title">
           <div class="system-icon">📄</div>
-          <div class="system-title">辦理現況速報單</div>
+          <div class="system-title">水利署速報單系統</div>
         </div>
         <span class="badge-status badge-active">啟用中</span>
       </div>
@@ -220,34 +220,34 @@
     <div class="btn-enter">進入填報系統 ➔</div>
   </a>
 
-  <!-- 卡片 2：第二套填報系統（準備中） -->
+  <!-- 卡片 2：經濟部應變填報系統 (moea-report.html 預留) -->
   <div class="system-card disabled">
     <div>
       <div class="card-top-row">
         <div class="card-icon-title">
-          <div class="system-icon">⚙️</div>
-          <div class="system-title">第二套應變填報系統</div>
+          <div class="system-icon">🏢</div>
+          <div class="system-title">經濟部應變填報系統</div>
         </div>
-        <span class="badge-status badge-dev">規劃開發中</span>
+        <span class="badge-status badge-dev">規劃開發中 (moea-report.html)</span>
       </div>
       <div class="system-desc">
-        預留給未來擴充之水利防汛專用填報單據或表單格式。
+        預留給未來新建置之經濟部防汛應變專用填報單據與彙整表單。
       </div>
     </div>
     <div class="btn-enter">尚未開放</div>
   </div>
 
   <div class="footer-info">
-    經濟部水利署 防汛應變專用 PWA 系統 v6.0
+    經濟部水利署 防汛應變專用 PWA 系統 v6.2
   </div>
 </div>
 
 <script>
-  // 註冊入口大廳 Service Worker v6.0
+  // 註冊入口大廳 Service Worker v6.2
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.0')
-        .then(reg => console.log('Portal Service Worker v6.0 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.2')
+        .then(reg => console.log('Portal Service Worker v6.2 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
