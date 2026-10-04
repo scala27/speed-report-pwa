@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>速報單填報系統 v5.0</title>
+  <title>速報單填報系統 v5.1</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
   
@@ -16,7 +16,8 @@
     :root {
       --primary-navy: #0f172a;
       --primary-blue: #0284c7;
-      --bg-slate: #f8fafc;
+      --primary-blue-hover: #0369a1;
+      --bg-gradient: linear-gradient(180deg, #e0f2fe 0%, #f1f5f9 250px);
       --card-bg: #ffffff;
       --border-color: #e2e8f0;
       --text-main: #0f172a;
@@ -34,9 +35,10 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: var(--bg-slate);
+      background: var(--bg-gradient);
+      background-attachment: fixed;
       color: var(--text-main);
-      padding: 16px 12px 110px 12px; /* 留出底部固定欄空間 */
+      padding: 12px 12px 110px 12px;
       line-height: 1.5;
     }
 
@@ -45,46 +47,95 @@
       margin: 0 auto;
     }
 
-    /* 頂部 Header */
-    .app-header {
+    /* 尊榮感頂部 Hero 品牌 Header 卡片 */
+    .hero-header-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0284c7 100%);
+      border-radius: var(--radius-card);
+      padding: 22px 20px;
+      color: #ffffff;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-header-card::after {
+      content: "";
+      position: absolute;
+      top: -30%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+
+    .badge-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
-      padding: 8px 4px;
+      margin-bottom: 10px;
     }
 
-    .app-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: var(--primary-navy);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      letter-spacing: -0.02em;
-    }
-
-    .version-tag {
-      background: #e0f2fe;
-      color: var(--primary-blue);
+    .agency-tag {
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 4px 10px;
+      border-radius: 999px;
       font-size: 0.78rem;
-      font-weight: 800;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(34, 197, 94, 0.2);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.3);
       padding: 3px 10px;
       border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background-color: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #4ade80;
+    }
+
+    .hero-main-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+
+    .hero-subtitle {
+      font-size: 0.82rem;
+      color: #93c5fd;
+      font-weight: 500;
     }
 
     /* 現代卡片區塊 */
     .card-group {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
+      border-top: 3px solid var(--primary-blue);
       border-radius: var(--radius-card);
-      padding: 20px 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+      padding: 18px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
     }
 
     .card-title {
-      font-size: 1rem;
+      font-size: 0.98rem;
       font-weight: 800;
       color: var(--primary-navy);
       margin-bottom: 14px;
@@ -93,13 +144,10 @@
       gap: 8px;
     }
 
-    .card-title .icon {
-      font-size: 1.1rem;
-    }
-
-    /* 表單元件 */
+    /* 表單欄位排版與窄螢幕溢出防護 */
     .form-group {
       margin-bottom: 14px;
+      min-width: 0;
     }
 
     .form-group:last-child {
@@ -108,11 +156,19 @@
 
     .form-row {
       display: flex;
-      gap: 12px;
+      gap: 10px;
     }
 
     .form-row .form-group {
       flex: 1;
+      min-width: 0; /* 徹底阻止Flex子項寬度爆開 */
+    }
+
+    @media (max-width: 380px) {
+      .form-row {
+        flex-direction: column;
+        gap: 12px;
+      }
     }
 
     label {
@@ -128,8 +184,8 @@
     select,
     textarea {
       width: 100%;
-      padding: 12px 14px;
-      font-size: 0.95rem;
+      padding: 11px 12px;
+      font-size: 0.92rem;
       border: 1px solid #cbd5e1;
       border-radius: var(--radius-input);
       background-color: #ffffff;
@@ -137,12 +193,19 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       appearance: none;
       -webkit-appearance: none;
+      box-sizing: border-box;
+    }
+
+    /* 解決iOS/Android日期選擇器字體與圖示寬度擠壓 */
+    input[type="date"] {
+      min-height: 42px;
+      font-family: inherit;
     }
 
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary-blue);
-      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
 
     textarea {
@@ -152,54 +215,66 @@
       line-height: 1.6;
     }
 
-    /* 現代膠囊標籤 (Choice Chips) */
-    .chips-grid {
-      display: flex;
-      flex-wrap: wrap;
+    /* 現代整齊雙欄膠囊 Grid */
+    .chips-grid-2col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-top: 8px;
     }
 
     .chip-item {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 9px 15px;
-      border-radius: 9999px;
-      font-size: 0.88rem;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
       font-weight: 700;
-      background: #f1f5f9;
+      background: #f8fafc;
       color: #475569;
-      border: 1px solid #cbd5e1;
+      border: 1.5px solid #e2e8f0;
       cursor: pointer;
       user-select: none;
       transition: all 0.2s ease;
     }
 
+    .chip-item .check-icon {
+      font-size: 0.8rem;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: all 0.2s ease;
+    }
+
     .chip-item.active {
-      background: var(--primary-blue);
-      color: #ffffff;
+      background: #eff6ff;
+      color: var(--primary-blue);
       border-color: var(--primary-blue);
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+    }
+
+    .chip-item.active .check-icon {
+      opacity: 1;
+      transform: scale(1);
     }
 
     .other-unit-input {
       margin-top: 10px;
     }
 
-    /* 手機底部吸附固定操作列 (Sticky Bottom Bar) */
+    /* 手機底部吸附固定操作列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--border-color);
       padding: 12px 16px;
       z-index: 1000;
-      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
     }
 
     .actions-container {
@@ -211,7 +286,7 @@
 
     .btn {
       padding: 13px 12px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: 700;
       border: none;
       border-radius: 12px;
@@ -227,16 +302,16 @@
       transform: scale(0.98);
     }
 
-    /* Hero 主要按鈕 (產出 PDF) */
+    /* Hero 主要匯出按鈕 */
     .btn-hero {
       flex: 2;
-      background-color: var(--primary-navy);
+      background: linear-gradient(135deg, #0f172a 0%, #0284c7 100%);
       color: #ffffff;
-      font-size: 1.02rem;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+      font-size: 1rem;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
     }
 
-    /* 次要功能按鈕 */
+    /* 次要按鈕 */
     .btn-sub {
       flex: 1;
       background-color: #f1f5f9;
@@ -261,12 +336,14 @@
 <body>
 
 <div class="app-container">
-  <!-- 頂部 App 標頭 -->
-  <div class="app-header">
-    <div class="app-title">
-      <span>速報單填報系統</span>
+  <!-- 尊榮感頂部 Hero 品牌 Header 卡片 -->
+  <div class="hero-header-card">
+    <div class="badge-row">
+      <span class="agency-tag">🏛️ 經濟部水利署</span>
+      <span class="status-tag"><span class="status-dot"></span> PWA v5.1 離線版</span>
     </div>
-    <span class="version-tag">v5.0</span>
+    <div class="hero-main-title">速報單填報系統</div>
+    <div class="hero-subtitle">智慧擬稿 ‧ 階層動態縮排 ‧ 100% 離線即時產出 PDF</div>
   </div>
 
   <form id="speedReportForm">
@@ -340,15 +417,14 @@
       <div class="card-title"><span class="icon">✉️</span> 本件分送與聯絡資訊</div>
 
       <div class="form-group">
-        <label>本件分送單位（點擊切換）</label>
-        <div class="chips-grid" id="dispatchChipsGroup">
-          <div class="chip-item" data-value="署長辦公室">署長辦公室</div>
-          <div class="chip-item" data-value="王副署長辦公室">王副署長辦公室</div>
-          <div class="chip-item" data-value="黃副署長辦公室">黃副署長辦公室</div>
-          <div class="chip-item" data-value="陳副署長辦公室">陳副署長辦公室</div>
-          <div class="chip-item" data-value="總工程司室">總工程司室</div>
-          <div class="chip-item" data-value="主任秘書室">主任秘書室</div>
-          <div class="chip-item" id="chipOtherUnit" data-value="其他單位">其他單位</div>
+        <label>本件分送單位（點擊選擇）</label>
+        <div class="chips-grid-2col" id="dispatchChipsGroup">
+          <div class="chip-item" data-value="署長辦公室"><span>署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="王副署長辦公室"><span>王副署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="黃副署長辦公室"><span>黃副署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="陳副署長辦公室"><span>陳副署長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="總工程司室"><span>總工程司室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="主任秘書室"><span>主任秘書室</span><span class="check-icon">✓</span></div>
         </div>
 
         <div class="other-unit-input">
@@ -382,11 +458,11 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (v5.0 強制更新快取)
+  // PWA Service Worker 註冊 (v5.1 強制更新快取)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=5.0')
-        .then(reg => console.log('Service Worker v5.0 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=5.1')
+        .then(reg => console.log('Service Worker v5.1 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -441,10 +517,7 @@
     // 收集切換標籤選取項目
     const selectedDispatchUnits = [];
     document.querySelectorAll('.chip-item.active').forEach(chip => {
-      const val = chip.getAttribute('data-value');
-      if (val !== '其他單位') {
-        selectedDispatchUnits.push(val);
-      }
+      selectedDispatchUnits.push(chip.getAttribute('data-value'));
     });
     data['dispatch_units'] = selectedDispatchUnits;
 
@@ -454,7 +527,6 @@
   // 1. 本地暫存資料
   document.getElementById('btnSaveTemp').addEventListener('click', () => {
     const data = getFormData();
-    // 額外記錄膠囊標籤狀態
     const activeChips = [];
     document.querySelectorAll('.chip-item.active').forEach(chip => {
       activeChips.push(chip.getAttribute('data-value'));
@@ -799,7 +871,7 @@
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
-      showStatus('正在生成 v5.0 PDF...', 'info');
+      showStatus('正在生成 v5.1 PDF...', 'info');
       const data = getFormData();
       const pdfBlob = await generatePDFBlob(data);
       const link = document.createElement('a');
