@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>水利應變填報系統入口大廳</title>
+  <title>個人工作區</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#58b2dc">
+  <meta name="theme-color" content="#66bab7">
 
   <style>
     :root {
-      --primary-water: rgb(88, 178, 220); /* #58b2dc */
-      --primary-dark: #2b81ad;
-      --bg-gradient: linear-gradient(180deg, #eaf5fb 0%, #f8fafc 220px);
+      --primary-teal: rgb(102, 186, 183); /* #66bab7 */
+      --primary-dark: #3ba3a0;
+      --primary-light: #f0f8f8;
+      --bg-gradient: linear-gradient(180deg, #f2f9f9 0%, #fafcfc 100%);
       --card-bg: #ffffff;
-      --border-color: #e2e8f0;
+      --border-color: #e2eceb;
       --text-main: #0f172a;
       --text-muted: #64748b;
-      --radius-card: 18px;
+      --radius-card: 20px;
     }
 
     * {
@@ -31,23 +32,26 @@
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding: 16px 16px 40px 16px;
+      padding: 24px 16px 40px 16px;
       line-height: 1.5;
     }
 
     .portal-container {
-      max-width: 600px;
+      max-width: 500px;
       margin: 0 auto;
     }
 
-    /* 尊榮 Header 主卡片 */
+    /* 頂部 Header：極簡科技風 + 人形 Logo */
     .hero-header-card {
-      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 60%, #7ac6e9 100%);
+      background: linear-gradient(135deg, #4daaa7 0%, rgb(102, 186, 183) 60%, #83d4d1 100%);
       border-radius: var(--radius-card);
-      padding: 24px 20px 22px 20px;
+      padding: 24px 22px;
       color: #ffffff;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 22px -5px rgba(88, 178, 220, 0.35);
+      margin-bottom: 24px;
+      box-shadow: 0 12px 28px -6px rgba(102, 186, 183, 0.38);
+      display: flex;
+      align-items: center;
+      gap: 16px;
       position: relative;
       overflow: hidden;
     }
@@ -55,195 +59,163 @@
     .hero-header-card::after {
       content: "";
       position: absolute;
-      top: -30%;
+      top: -40%;
       right: -20%;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
       pointer-events: none;
     }
 
-    .agency-tag {
-      display: inline-block;
+    /* 極簡線條人形 Logo 容器 */
+    .avatar-icon-box {
+      width: 48px;
+      height: 48px;
       background: rgba(255, 255, 255, 0.22);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      margin-bottom: 10px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      flex-shrink: 0;
     }
 
     .hero-main-title {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 800;
-      letter-spacing: -0.01em;
-      line-height: 1.25;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
     }
 
-    .hero-sub-title {
-      font-size: 0.88rem;
-      opacity: 0.92;
-      margin-top: 6px;
-    }
-
-    /* 系統選擇卡片區塊 */
-    .section-label {
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-      padding-left: 4px;
+    /* 工作區卡片列表 */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     .system-card {
       background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-left: 5px solid var(--primary-water);
+      border: 1.5px solid var(--border-color);
       border-radius: var(--radius-card);
-      padding: 20px;
-      margin-bottom: 14px;
-      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
+      padding: 20px 22px;
       display: flex;
-      flex-direction: column;
+      align-items: center;
       justify-content: space-between;
       text-decoration: none;
-      color: inherit;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-main);
+      box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.03);
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .system-card:active {
+    .system-card:not(.disabled):active {
       transform: scale(0.98);
+      border-color: var(--primary-teal);
+      box-shadow: 0 6px 20px -4px rgba(102, 186, 183, 0.25);
       background-color: var(--primary-light);
-    }
-
-    .card-top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .card-icon-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .system-icon {
-      font-size: 1.5rem;
-      background: var(--primary-light);
-      padding: 8px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     .system-title {
       font-size: 1.15rem;
       font-weight: 800;
-      color: var(--text-main);
+      letter-spacing: -0.01em;
     }
 
-    .badge-status {
-      font-size: 0.75rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 999px;
-    }
-    .badge-active { background: #dcfce7; color: #15803d; }
-    .badge-dev { background: #f1f5f9; color: #64748b; }
-
-    .system-desc {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-top: 6px;
-    }
-
-    .btn-enter {
-      margin-top: 14px;
-      align-self: flex-end;
-      font-size: 0.88rem;
-      font-weight: 700;
-      color: var(--primary-dark);
+    /* 純圖示行動按鈕 (開門 / 施工中) */
+    .btn-action-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
     }
 
+    /* 卡片 1：開門圖示按鈕 */
+    .system-card:not(.disabled) .btn-action-icon {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border: 1px solid rgba(102, 186, 183, 0.3);
+    }
+
+    /* 卡片 2：建置中圖示按鈕 (停用狀態) */
     .system-card.disabled {
-      opacity: 0.65;
+      opacity: 0.55;
       pointer-events: none;
-      border-left-color: #cbd5e1;
+      background: #f8fafc;
+      border-color: #e2e8f0;
     }
 
+    .system-card.disabled .btn-action-icon {
+      background: #e2e8f0;
+      color: #94a3b8;
+    }
+
+    /* 頁尾文字 */
     .footer-info {
       text-align: center;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
+      font-weight: 600;
       color: #94a3b8;
-      margin-top: 24px;
+      margin-top: 36px;
+      letter-spacing: 0.05em;
     }
   </style>
 </head>
 <body>
 
 <div class="portal-container">
-  <!-- 頂部卡片 -->
+  <!-- 頂部 Header 卡片：極簡人像與個人工作區標題 -->
   <div class="hero-header-card">
-    <div class="agency-tag">🏛️ 經濟部水利署</div>
-    <div class="hero-main-title">水利應變填報系統</div>
-    <div class="hero-sub-title">請選擇欲操作的防汛應變填報子系統</div>
+    <div class="avatar-icon-box">
+      <!-- 簡約人形 SVG 線條圖示 -->
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </div>
+    <div class="hero-main-title">個人工作區</div>
   </div>
 
-  <div class="section-label">可用填報子系統</div>
-
-  <!-- 卡片 1：水利署速報單系統 (wra-report.html) -->
-  <a href="./wra-report.html" class="system-card">
-    <div>
-      <div class="card-top-row">
-        <div class="card-icon-title">
-          <div class="system-icon">📄</div>
-          <div class="system-title">水利署速報單系統</div>
-        </div>
-        <span class="badge-status badge-active">啟用中</span>
+  <div class="card-list">
+    <!-- 卡片 1：水利署速報單（開門進入圖示） -->
+    <a href="./wra-report.html" class="system-card">
+      <div class="system-title">水利署速報單</div>
+      <div class="btn-action-icon" title="進入系統">
+        <!-- 開門進入 (Door Enter) SVG 圖示 -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
+        </svg>
       </div>
-      <div class="system-desc">
-        適用於交辦事項、重要業務及會議結論速報單填寫，支援離線暫存與純前端標楷體 PDF 檔案匯出。
+    </a>
+
+    <!-- 卡片 2：經濟部速報單（建置中圖示） -->
+    <div class="system-card disabled">
+      <div class="system-title">經濟部速報單</div>
+      <div class="btn-action-icon" title="建置中">
+        <!-- 施工/工具 (Construction Tool) SVG 圖示 -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+        </svg>
       </div>
     </div>
-    <div class="btn-enter">進入填報系統 ➔</div>
-  </a>
-
-  <!-- 卡片 2：經濟部應變填報系統 (moea-report.html 預留) -->
-  <div class="system-card disabled">
-    <div>
-      <div class="card-top-row">
-        <div class="card-icon-title">
-          <div class="system-icon">🏢</div>
-          <div class="system-title">經濟部應變填報系統</div>
-        </div>
-        <span class="badge-status badge-dev">規劃開發中 (moea-report.html)</span>
-      </div>
-      <div class="system-desc">
-        預留給未來新建置之經濟部防汛應變專用填報單據與彙整表單。
-      </div>
-    </div>
-    <div class="btn-enter">尚未開放</div>
   </div>
 
+  <!-- 頁尾文字 -->
   <div class="footer-info">
-    經濟部水利署 防汛應變專用 PWA 系統 v6.2
+    水利監製 v6.2
   </div>
 </div>
 
 <script>
-  // 註冊入口大廳 Service Worker v6.2
+  // PWA Service Worker 註冊 v6.2
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js?v=6.2')
