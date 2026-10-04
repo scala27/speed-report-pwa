@@ -423,11 +423,11 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊 (v6.0)
+  // PWA Service Worker 註冊 (v6.2)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.0')
-        .then(reg => console.log('Service Worker v6.0 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.2')
+        .then(reg => console.log('Service Worker v6.2 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
