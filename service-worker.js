@@ -5,7 +5,7 @@ const FILES_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './kaiu.ttf'
+  './kaiu.woff'
 ];
 
 // 1. 安裝階段：立即跳過等待 (skipWaiting)
