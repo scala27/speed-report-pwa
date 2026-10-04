@@ -168,7 +168,7 @@
       line-height: 1.6;
     }
 
-    /* 雙欄膠囊 Grid (配搭 RGB(88, 178, 220) 色系) */
+    /* 雙欄膠囊 Grid */
     .chips-grid-2col {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -399,11 +399,11 @@
 </div>
 
 <script>
-  // PWA Service Worker 註冊
+  // PWA Service Worker 註冊 (v5.4 版本更新)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=5.3')
-        .then(reg => console.log('Service Worker 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=5.4')
+        .then(reg => console.log('Service Worker v5.4 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -501,16 +501,18 @@
     showStatus('已成功載入暫存資料！', 'success');
   });
 
-  // 3. 純前端標楷體 PDF 引擎
+  // 3. 純前端標楷體 PDF 引擎 (修正讀取 kaiu.woff)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
 
     if (!cachedFontBytes) {
-      showStatus('載入標楷體字型檔 (kaiu.woff)...', 'info');
+      showStatus('載入全字庫正楷體字型檔 (kaiu.woff)...', 'info');
       const fontResponse = await fetch('./kaiu.woff');
-      if (!fontResponse.ok) throw new Error('無法載入 kaiu.woff 字型檔');
+      if (!fontResponse.ok) {
+        throw new Error('無法載入 kaiu.woff 字型檔，請確認已成功上傳 kaiu.woff 至 GitHub');
+      }
       cachedFontBytes = await fontResponse.arrayBuffer();
     }
 
