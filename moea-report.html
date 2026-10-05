@@ -819,7 +819,7 @@
     document.getElementById('emailModal').style.display = 'none';
   });
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (極致空間與斷頁平滑演算法)
+  // 4. 純前端開源楷體 TTF PDF 引擎 (極致空間與距頁尾 25pt 平滑演算法)
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
@@ -842,7 +842,7 @@
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 40;
+    const pageBottomMargin = 25; // 調整頁尾極限距離為 25pt
     const printableWidth = width - (marginX * 2);
 
     function formatOptionText(label, isChecked) {
@@ -975,7 +975,7 @@
 
     currentY -= 16;
 
-    // 4 & 5. 核心內容表格區塊（動態預計算避免提前斷頁）
+    // 4 & 5. 核心內容表格區塊（向下延伸至距頁尾僅 25pt）
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -995,7 +995,7 @@
       secItems.forEach(item => allLineItems.push(item));
     });
 
-    const footerNeededHeight = 125; // 底部分送/聯絡人/簽核所需高度
+    const footerNeededHeight = 120; // 底部分送/聯絡人/簽核所需高度
     let renderY = tableBoxStartY - 22;
 
     for (let i = 0; i < allLineItems.length; i++) {
@@ -1006,8 +1006,8 @@
       // 檢查剩餘的所有表格內容與頁腳，是否能夠完全裝在當前頁面上
       const canFitEverythingOnCurrentPage = (renderY - pageBottomMargin) >= heightForRemaining;
 
-      // 若無法全部裝在同一頁，則第一頁向上填滿至頁尾極限（距底部僅 50pt），不提前中斷
-      if (!canFitEverythingOnCurrentPage && (renderY - fontLeading < pageBottomMargin + 10)) {
+      // 若無法全部裝在同一頁，第一頁極限向下填滿至距頁尾 25pt，不提前換頁
+      if (!canFitEverythingOnCurrentPage && (renderY - fontLeading < pageBottomMargin)) {
         const currentBoxH = tableBoxStartY - (renderY + 4);
         currentPage.drawRectangle({
           x: marginX, y: renderY + 4,
