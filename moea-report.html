@@ -819,7 +819,7 @@
     document.getElementById('emailModal').style.display = 'none';
   });
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (經濟部標楷體專屬優化排版)
+  // 4. 純前端開源楷體 TTF PDF 引擎 (極致空間與斷頁平滑演算法)
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
@@ -909,7 +909,7 @@
 
     let currentY = height - marginTop;
 
-    // 1. 機密等級標示：當選項為「無」時呈現完全空白
+    // 1. 機密等級標示
     const rawSecrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
     const activeSecrets = rawSecrets.filter(v => v !== '無');
     
@@ -925,17 +925,16 @@
 
     currentY -= 12;
 
-    // 2. 頁首大標題：22pt 粗體；頂部案件分類選項：14pt 標準楷體（左右置中）
+    // 2. 頁首大標題（22pt 粗體）與頂部案件分類（14pt 楷體，左右置中）
     const leftTitle = '經 濟 部';
     const rightTitle = '速 報 單';
-    const titleSize = 22; // 規格 1：22pt 粗體
+    const titleSize = 22;
 
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
-    const catFontSize = 14; // 規格 2：14pt 標準楷體
+    const catFontSize = 14;
     const catLineSpacing = 19;
 
-    // 計算 4 行選項（14pt）之最大寬度，將垂直區塊於頁面左右置中
     let maxCatWidth = 0;
     categoryOptions.forEach(cat => {
       const str = formatOptionText(cat, true);
@@ -946,7 +945,6 @@
     const midX = marginX + (printableWidth - maxCatWidth) / 2;
     const headerTopY = currentY;
 
-    // 繪製中央左右置中的 4 行案件分類 (14pt 楷體)
     categoryOptions.forEach((cat, idx) => {
       const isChecked = categories.includes(cat);
       const str = formatOptionText(cat, isChecked);
@@ -958,7 +956,6 @@
       });
     });
 
-    // 繪製左右兩側大標題 (22pt 粗體，與中間選項區塊高度中線垂直對齊)
     const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
     drawBoldText(currentPage, leftTitle, marginX, titleCenterY, titleSize, 2.2);
 
@@ -967,8 +964,8 @@
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
-    // 3. 基本資訊欄位：16pt 標準楷體
-    const infoFontSize = 16; // 規格 3：16pt 標準楷體
+    // 3. 基本資訊欄位（16pt 楷體）
+    const infoFontSize = 16;
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
     currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
     
@@ -978,12 +975,12 @@
 
     currentY -= 16;
 
-    // 4 & 5. 表格內各區塊標題（16pt 粗體）與內文（16pt 標準楷體）
+    // 4 & 5. 核心內容表格區塊（動態預計算避免提前斷頁）
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
-    const tableFontSize = 16; // 規格 4 & 5：16pt
-    const fontLeading = 22; // 搭配 16pt 字體的舒適行高
+    const tableFontSize = 16;
+    const fontLeading = 22;
 
     const sections = [
       processSection('案由：', data.section_subject, tableFontSize, maxTextW),
@@ -992,35 +989,52 @@
       processSection('擬處意見或建議事項：', data.section_suggestions, tableFontSize, maxTextW)
     ];
 
+    // 展開所有文字列
+    const allLineItems = [];
+    sections.forEach(secItems => {
+      secItems.forEach(item => allLineItems.push(item));
+    });
+
+    const footerNeededHeight = 125; // 底部分送/聯絡人/簽核所需高度
     let renderY = tableBoxStartY - 22;
 
-    sections.forEach(sectionItems => {
-      sectionItems.forEach(item => {
-        if (renderY - fontLeading < pageBottomMargin + 130) {
-          const currentBoxH = tableBoxStartY - (renderY + 4);
-          currentPage.drawRectangle({
-            x: marginX, y: renderY + 4,
-            width: printableWidth, height: currentBoxH,
-            borderColor: rgb(0, 0, 0), borderWidth: 1
-          });
+    for (let i = 0; i < allLineItems.length; i++) {
+      const item = allLineItems[i];
+      const remainingItemsCount = allLineItems.length - i;
+      const heightForRemaining = (remainingItemsCount * fontLeading) + footerNeededHeight;
 
-          currentPage = pdfDoc.addPage([595.28, 841.89]);
-          tableBoxStartY = height - marginTop - 10;
-          renderY = tableBoxStartY - 22;
-        }
+      // 檢查剩餘的所有表格內容與頁腳，是否能夠完全裝在當前頁面上
+      const canFitEverythingOnCurrentPage = (renderY - pageBottomMargin) >= heightForRemaining;
 
-        if (item.isTitle) {
-          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, tableFontSize, 2.0);
-        } else {
-          currentPage.drawText(item.text, {
-            x: marginX + textPaddingX + item.indent, y: renderY,
-            size: tableFontSize, font: kaiFont
-          });
-        }
-        renderY -= fontLeading;
-      });
-      renderY -= 4;
-    });
+      // 若無法全部裝在同一頁，則第一頁向上填滿至頁尾極限（距底部僅 50pt），不提前中斷
+      if (!canFitEverythingOnCurrentPage && (renderY - fontLeading < pageBottomMargin + 10)) {
+        const currentBoxH = tableBoxStartY - (renderY + 4);
+        currentPage.drawRectangle({
+          x: marginX, y: renderY + 4,
+          width: printableWidth, height: currentBoxH,
+          borderColor: rgb(0, 0, 0), borderWidth: 1
+        });
+
+        currentPage = pdfDoc.addPage([595.28, 841.89]);
+        tableBoxStartY = height - marginTop - 10;
+        renderY = tableBoxStartY - 22;
+      }
+
+      if (item.isTitle) {
+        drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, tableFontSize, 2.0);
+      } else {
+        currentPage.drawText(item.text, {
+          x: marginX + textPaddingX + item.indent, y: renderY,
+          size: tableFontSize, font: kaiFont
+        });
+      }
+
+      renderY -= fontLeading;
+
+      if (i < allLineItems.length - 1 && allLineItems[i + 1].isTitle) {
+        renderY -= 4;
+      }
+    }
 
     // 繪製主內容表格外框
     const finalBoxEndY = renderY + 4;
@@ -1033,8 +1047,14 @@
 
     currentY = finalBoxEndY - 18;
 
-    // 6. 分送單位與聯絡/簽核欄位：12pt 標準楷體
-    const footerFontSize = 12; // 規格 6：12pt 標準楷體
+    // 若最後表格結束後距離底部空間不足以放置頁腳，則開啟新頁放置頁腳
+    if (currentY - footerNeededHeight < pageBottomMargin) {
+      currentPage = pdfDoc.addPage([595.28, 841.89]);
+      currentY = height - marginTop - 20;
+    }
+
+    // 6. 本件分送與簽核區塊（12pt 楷體）
+    const footerFontSize = 12;
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
     currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
@@ -1075,7 +1095,6 @@
 
     currentY -= 20;
 
-    // 聯絡人、電話與簽核列 (12pt 楷體)
     currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
     currentY -= 17;
