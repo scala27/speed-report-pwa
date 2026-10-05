@@ -513,16 +513,11 @@
       </div>
 
       <div class="form-group">
-        <label for="section_keypoints">重點說明：</label>
-        <textarea id="section_keypoints" name="section_keypoints" rows="5">一、
+        <label for="section_conclusions">會議結論及指示事項：</label>
+        <textarea id="section_conclusions" name="section_conclusions" rows="6">一、
 (一)
 1.
 (1)</textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="section_conclusions">會議結論及指示事項：</label>
-        <textarea id="section_conclusions" name="section_conclusions" rows="4" placeholder="請輸入會議結論及指示事項..."></textarea>
       </div>
 
       <div class="form-group">
@@ -928,36 +923,44 @@
       });
     }
 
-    currentY -= 16;
+    currentY -= 12;
 
-    // 2. 頂部第 1 橫列：單一欄式「案件分類/會議性質」
+    // 2. 參照官方範本完美三欄式頂部結構
+    const leftTitle = '經 濟 部';
+    const rightTitle = '速 報 單';
+    const titleSize = 20;
+
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
     const catFontSize = 11;
-    let catX = marginX;
+    const catLineSpacing = 16;
 
-    categoryOptions.forEach(cat => {
+    // 中間案件分類垂直 4 行 X 軸位置設定
+    const midX = marginX + 130;
+    const headerTopY = currentY;
+
+    // 繪製中間 4 行案件分類
+    categoryOptions.forEach((cat, idx) => {
       const isChecked = categories.includes(cat);
       const str = formatOptionText(cat, isChecked);
       currentPage.drawText(str, {
-        x: catX,
-        y: currentY,
+        x: midX,
+        y: headerTopY - (idx * catLineSpacing),
         size: catFontSize,
         font: kaiFont
       });
-      catX += measureTextWidth(str, catFontSize) + 16;
     });
 
-    currentY -= 32;
+    // 繪製左右兩側大標題（置中靠齊於中間 4 行選項高度中央）
+    const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 4;
+    drawBoldText(currentPage, leftTitle, marginX, titleCenterY, titleSize, 2.2);
 
-    // 3. 頂部第 2 橫列：大標題「經 濟 部 速 報 單」(大字尊榮置中)
-    const mainTitle = '經 濟 部 速 報 單';
-    const titleW = measureTextWidth(mainTitle, 22);
-    drawBoldText(currentPage, mainTitle, marginX + (printableWidth - titleW) / 2, currentY, 22, 2.2);
+    const rightTitleW = measureTextWidth(rightTitle, titleSize);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, titleCenterY, titleSize, 2.2);
 
-    currentY -= 30;
+    currentY = headerTopY - (4 * catLineSpacing) - 20;
 
-    // 4. 交辦與陳報資訊列 (格式：115年10月5日)
+    // 3. 交辦與陳報資訊列 (格式：115年10月5日)
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: 14, font: kaiFont });
     currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 320, y: currentY, size: 14, font: kaiFont });
     
@@ -967,7 +970,7 @@
 
     currentY -= 14;
 
-    // 5. 核心內容表格區塊
+    // 4. 核心內容表格區塊 (已刪除重點說明)
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -977,7 +980,6 @@
     const sections = [
       processSection('案由：', data.section_subject, fontSize, maxTextW),
       processSection('出席人員：', data.section_attendees, fontSize, maxTextW),
-      processSection('重點說明：', data.section_keypoints, fontSize, maxTextW),
       processSection('會議結論及指示事項：', data.section_conclusions, fontSize, maxTextW),
       processSection('擬處意見或建議事項：', data.section_suggestions, fontSize, maxTextW)
     ];
@@ -1023,7 +1025,7 @@
 
     currentY = finalBoxEndY - 18;
 
-    // 6. 本件分送 (勾選) 區塊
+    // 5. 本件分送 (勾選) 區塊
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
     currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: 11, font: kaiFont });
@@ -1064,13 +1066,13 @@
 
     currentY -= 20;
 
-    // 7. 聯絡人、電話與簽核列 (左側完全對齊靠齊)
+    // 6. 聯絡人、電話與簽核列 (左側完全對齊靠齊)
     currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
 
     currentY -= 16;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
 
-    currentY -= 22; // 下移並維持適當垂直距離
+    currentY -= 22;
     currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: 11, font: kaiFont });
 
     const pdfBytes = await pdfDoc.save();
