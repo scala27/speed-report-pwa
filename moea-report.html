@@ -443,7 +443,7 @@
   <!-- Header 卡片 -->
   <div class="hero-header-card">
     <div class="header-top-nav">
-      <div class="agency-tag">🏛️ 經濟部本部</div>
+      <div class="agency-tag">🏛️ 經濟部</div>
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
     <div class="hero-main-title">經濟部速報單</div>
@@ -453,8 +453,9 @@
     <!-- 卡片 1：機密等級與案件分類 -->
     <div class="card-group">
       <div class="form-group">
-        <label>機密等級（具機敏性者請勾選）</label>
+        <label>機密等級（請勾選）</label>
         <div class="chips-grid" id="secretChips">
+          <div class="chip-item active" data-value="無"><span>無</span><span class="check-icon">✓</span></div>
           <div class="chip-item secret-danger" data-value="機密"><span>機密</span><span class="check-icon">✓</span></div>
           <div class="chip-item secret-danger" data-value="密"><span>密</span><span class="check-icon">✓</span></div>
           <div class="chip-item secret-danger" data-value="限閱"><span>限閱</span><span class="check-icon">✓</span></div>
@@ -607,11 +608,11 @@
     '本部國會聯絡組': ['sec2@moea.gov.tw']
   };
 
-  // PWA Service Worker 註冊 v6.5
+  // PWA Service Worker 註冊 v6.6
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.5')
-        .then(reg => console.log('MOEA Service Worker v6.5 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.6')
+        .then(reg => console.log('MOEA Service Worker v6.6 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -621,17 +622,39 @@
     if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
     if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
 
-    // 通用 Chip 切換邏輯
-    document.querySelectorAll('.chip-item').forEach(chip => {
+    // 機密等級專屬切換邏輯
+    document.querySelectorAll('#secretChips .chip-item').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const val = chip.getAttribute('data-value');
+        if (val === '無') {
+          document.querySelectorAll('#secretChips .chip-item').forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+        } else {
+          const noChip = document.querySelector('#secretChips .chip-item[data-value="無"]');
+          if (noChip) noChip.classList.remove('active');
+          chip.classList.toggle('active');
+          
+          const activeSecrets = document.querySelectorAll('#secretChips .chip-item.active');
+          if (activeSecrets.length === 0 && noChip) {
+            noChip.classList.add('active');
+          }
+        }
+        checkSecretWarning();
+      });
+    });
+
+    // 案件分類與分送單位切換邏輯
+    document.querySelectorAll('#categoryChips .chip-item, #dispatchChipsGroup .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
         chip.classList.toggle('active');
-        checkSecretWarning();
       });
     });
   });
 
   function checkSecretWarning() {
-    const hasSecret = document.querySelectorAll('#secretChips .chip-item.active').length > 0;
+    const activeSecrets = Array.from(document.querySelectorAll('#secretChips .chip-item.active'))
+                               .map(c => c.getAttribute('data-value'));
+    const hasSecret = activeSecrets.some(v => v !== '無');
     document.getElementById('secretWarning').style.display = hasSecret ? 'block' : 'none';
   }
 
@@ -643,6 +666,7 @@
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
+  // 日期格式化為：115年10月5日
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
     const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -650,7 +674,7 @@
       const rocYear = parseInt(match[1], 10) - 1911;
       const month = parseInt(match[2], 10);
       const day = parseInt(match[3], 10);
-      return `${rocYear}.${month}.${day}`;
+      return `${rocYear}年${month}月${day}日`;
     }
     return dateStr;
   }
@@ -804,7 +828,7 @@
     document.getElementById('emailModal').style.display = 'none';
   });
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (經濟部標楷體專屬排版)
+  // 4. 純前端開源楷體 TTF PDF 引擎 (經濟部標楷體專屬優化排版)
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
@@ -894,10 +918,13 @@
 
     let currentY = height - marginTop;
 
-    // 1. 機密等級 (右上角)
-    const secrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
-    const hasSecret = secrets.length > 0;
-    const secretText = hasSecret ? `機密等級：${secrets.join('、')}` : '機密(具機敏性者，請標註機密、密、限閱)';
+    // 1. 機密等級標示 (右上角)
+    const rawSecrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
+    const activeSecrets = rawSecrets.filter(v => v !== '無');
+    const secretText = activeSecrets.length > 0 
+      ? `機密等級：${activeSecrets.join('、')}` 
+      : '機密(具機敏性者，請標註機密、密、限閱)';
+      
     currentPage.drawText(secretText, {
       x: marginX + printableWidth - measureTextWidth(secretText, 10),
       y: currentY,
@@ -905,29 +932,50 @@
       font: kaiFont
     });
 
-    currentY -= 16;
+    currentY -= 20;
 
-    // 2. 案件分類 (頂部勾選項)
+    // 2. 頂部標題排版：[經 濟 部] ＋ [案件分類選項(置中)] ＋ [速 報 單]
+    const leftTitle = '經 濟 部';
+    drawBoldText(currentPage, leftTitle, marginX, currentY, 18, 2.0);
+    const leftTitleW = measureTextWidth(leftTitle, 18);
+
+    const rightTitle = '速 報 單';
+    const rightTitleW = measureTextWidth(rightTitle, 18);
+    const rightTitleX = marginX + printableWidth - rightTitleW;
+    drawBoldText(currentPage, rightTitle, rightTitleX, currentY, 18, 2.0);
+
+    // 計算中間放置案件分類的區域
+    const midLeftX = marginX + leftTitleW + 8;
+    const midRightX = rightTitleX - 8;
+    const midWidth = midRightX - midLeftX;
+
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
-    let catX = marginX;
-    categoryOptions.forEach(cat => {
-      const isChecked = categories.includes(cat);
-      const str = formatOptionText(cat, isChecked) + '  ';
-      currentPage.drawText(str, { x: catX, y: currentY, size: 12, font: kaiFont });
-      catX += measureTextWidth(str, 12) + 6;
+    const catFontSize = 9.5;
+    
+    const catStrings = categoryOptions.map(cat => formatOptionText(cat, categories.includes(cat)));
+    const totalCatW = catStrings.reduce((sum, str) => sum + measureTextWidth(str, catFontSize), 0);
+    
+    let gap = (midWidth - totalCatW) / (categoryOptions.length - 1);
+    if (gap < 2) gap = 2;
+
+    let catStartX = midLeftX + (midWidth - (totalCatW + gap * (categoryOptions.length - 1))) / 2;
+    if (catStartX < midLeftX) catStartX = midLeftX;
+
+    let curCatX = catStartX;
+    catStrings.forEach(str => {
+      currentPage.drawText(str, {
+        x: curCatX,
+        y: currentY + 3,
+        size: catFontSize,
+        font: kaiFont
+      });
+      curCatX += measureTextWidth(str, catFontSize) + gap;
     });
 
     currentY -= 30;
 
-    // 3. 大標題：經濟部速報單
-    const mainTitle = '經 濟 部 速 報 單';
-    const titleW = measureTextWidth(mainTitle, 22);
-    drawBoldText(currentPage, mainTitle, marginX + (printableWidth - titleW) / 2, currentY, 22, 2.2);
-
-    currentY -= 28;
-
-    // 4. 交辦與陳報資訊列
+    // 3. 交辦與陳報資訊列 (格式：115年10月5日)
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: 14, font: kaiFont });
     currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 320, y: currentY, size: 14, font: kaiFont });
     
@@ -937,7 +985,7 @@
 
     currentY -= 14;
 
-    // 5. 核心內容表格區塊
+    // 4. 核心內容表格區塊
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -956,8 +1004,7 @@
 
     sections.forEach(sectionItems => {
       sectionItems.forEach(item => {
-        if (renderY - fontLeading < pageBottomMargin + 120) {
-          // 若空間不夠，自動繪製當頁表格邊框並換頁
+        if (renderY - fontLeading < pageBottomMargin + 130) {
           const currentBoxH = tableBoxStartY - (renderY + 4);
           currentPage.drawRectangle({
             x: marginX, y: renderY + 4,
@@ -994,7 +1041,7 @@
 
     currentY = finalBoxEndY - 18;
 
-    // 6. 本件分送 (勾選) 區塊
+    // 5. 本件分送 (勾選) 區塊
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
     currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: 11, font: kaiFont });
@@ -1033,14 +1080,16 @@
       });
     }
 
-    currentY -= 22;
+    currentY -= 20;
 
-    // 7. 聯絡人與簽核列
+    // 6. 聯絡人與簽核列 (簽核區位於電話下方並保持間距)
     currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
-    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX + 290, y: currentY, size: 11, font: kaiFont });
 
     currentY -= 16;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
+
+    currentY -= 24; // 下移並維持適當簽核空間
+    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX + 290, y: currentY, size: 11, font: kaiFont });
 
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
