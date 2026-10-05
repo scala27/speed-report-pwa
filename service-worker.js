@@ -1,10 +1,11 @@
-// 升級至 v6.5，移除非必要之條碼庫，實現超極速 PWA 快取與檔案同步
-const CACHE_NAME = 'speed-report-v6.5';
+// 升級至 v6.6，新增經濟部速報單離線快取支援
+const CACHE_NAME = 'speed-report-v6.6';
 
 const FILES_TO_CACHE = [
   './',
   './index.html',
   './wra-report.html',
+  './moea-report.html',
   './manifest.json',
   './kaiu.ttf',
   'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
@@ -16,7 +17,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] 建立 v6.5 快取並預載所有核心檔案');
+      console.log('[Service Worker] 建立 v6.6 快取並預載所有系統頁面');
       return cache.addAll(FILES_TO_CACHE);
     })
   );
