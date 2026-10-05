@@ -114,6 +114,23 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
+    /* 長官審閱模式提示橫幅 */
+    .review-banner {
+      display: none;
+      background: #fffbebf5;
+      border: 1.5px solid #fcd34d;
+      border-radius: var(--radius-card);
+      padding: 14px;
+      margin-bottom: 14px;
+      font-size: 0.88rem;
+      color: #92400e;
+      font-weight: 700;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+      line-height: 1.4;
+    }
+
     /* 現代卡片區塊 */
     .card-group {
       background: var(--card-bg);
@@ -286,7 +303,7 @@
     }
 
     .btn-sign-trigger {
-      padding: 8px 16px;
+      padding: 9px 16px;
       background: #ffffff;
       color: var(--primary-dark);
       border: 1.5px solid var(--primary-teal);
@@ -324,7 +341,7 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--border-color);
-      padding: 10px 12px;
+      padding: 8px 6px;
       z-index: 1000;
       box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
     }
@@ -333,12 +350,12 @@
       max-width: 600px;
       margin: 0 auto;
       display: flex;
-      gap: 5px;
+      gap: 3px;
     }
 
     .btn {
-      padding: 10px 2px;
-      font-size: 0.78rem;
+      padding: 8px 1px;
+      font-size: 0.72rem;
       font-weight: 700;
       border: none;
       border-radius: 10px;
@@ -369,6 +386,12 @@
       border: 1px solid #bae6fd;
     }
 
+    .btn-share {
+      background-color: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
     .btn-tool {
       background-color: #f3e8ff;
       color: #6b21a8;
@@ -376,7 +399,7 @@
     }
 
     .btn-hero {
-      flex: 1.2;
+      flex: 1.1;
       background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
       color: #ffffff;
       box-shadow: 0 4px 12px rgba(102, 186, 183, 0.35);
@@ -438,7 +461,7 @@
       border-radius: 12px;
       margin: 10px 0;
       position: relative;
-      touch-action: none; /* 防止手機繪圖時觸發頁面滑動 */
+      touch-action: none;
     }
 
     #sigCanvas {
@@ -544,6 +567,15 @@
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
     <div class="hero-main-title">經濟部速報單</div>
+  </div>
+
+  <!-- 長官審閱模式提示橫幅 -->
+  <div id="reviewBanner" class="review-banner">
+    <span style="font-size: 1.2rem;">👀</span>
+    <div>
+      <strong>長官審閱模式 (初稿)</strong><br>
+      承辦人已填妥草稿內容，請審閱確認無誤後，於下方【親筆簽名】處完成簽署。
+    </div>
   </div>
 
   <form id="moeaReportForm">
@@ -683,8 +715,9 @@
   <div class="actions-container">
     <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
     <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
-    <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
-    <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入檔</span></button>
+    <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出</span></button>
+    <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入</span></button>
+    <button type="button" id="btnShareReview" class="btn btn-share">📤<span>傳送審閱</span></button>
     <button type="button" id="btnShowEmails" class="btn btn-tool">📧<span>通訊錄</span></button>
     <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span>產出 PDF</span></button>
   </div>
@@ -721,10 +754,8 @@
 </div>
 
 <script>
-  // 全域簽名資料庫（Base64 PNG）
   let currentSignatureBase64 = null;
 
-  // 部次長室官方 Email 通訊錄對照表
   const EMAIL_DIRECTORY = {
     '部長室': ['hhchou@moea.gov.tw', 'yichen2@moea.gov.tw', 'dplus1024@moea.gov.tw', 'pslu@moea.gov.tw', 'yychang2@moea.gov.tw'],
     '何政務次長室': ['cchsieh@moea.gov.tw', 'hwchen@moea.gov.tw'],
@@ -735,11 +766,11 @@
     '本部國會聯絡組': ['sec2@moea.gov.tw']
   };
 
-  // PWA Service Worker 註冊 v6.7
+  // PWA Service Worker 註冊 v6.8
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.7')
-        .then(reg => console.log('MOEA Service Worker v6.7 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.8')
+        .then(reg => console.log('MOEA Service Worker v6.8 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -749,7 +780,7 @@
     if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
     if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
 
-    // 機密等級專屬切換邏輯
+    // 切換選單
     document.querySelectorAll('#secretChips .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
         const val = chip.getAttribute('data-value');
@@ -770,15 +801,16 @@
       });
     });
 
-    // 案件分類與分送單位切換邏輯
     document.querySelectorAll('#categoryChips .chip-item, #dispatchChipsGroup .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
         chip.classList.toggle('active');
       });
     });
 
-    // 初始化手寫簽名板繪圖邏輯
     initSignatureCanvas();
+
+    // 檢查網址是否帶有長官審閱草稿資料
+    checkReviewUrlOnLoad();
   });
 
   function checkSecretWarning() {
@@ -796,7 +828,6 @@
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
-  // 日期格式化為：115年10月5日
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
     const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -809,7 +840,34 @@
     return dateStr;
   }
 
-  // 手寫簽名板 Canvas 繪圖邏輯與觸控事件
+  // 安全的 Base64 URL 編碼/解碼邏輯
+  function encodeDataForUrl(dataObj) {
+    const jsonStr = JSON.stringify(dataObj);
+    return btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+  }
+
+  function decodeDataFromUrl(base64Str) {
+    const jsonStr = decodeURIComponent(Array.prototype.map.call(atob(base64Str), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(jsonStr);
+  }
+
+  // 載入時檢查是否為審閱模式
+  function checkReviewUrlOnLoad() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const reviewDataParam = urlParams.get('review');
+    if (reviewDataParam) {
+      try {
+        const decodedData = decodeDataFromUrl(reviewDataParam);
+        applyFormData(decodedData);
+        document.getElementById('reviewBanner').style.display = 'flex';
+        showStatus('已成功載入承辦人傳送之草稿，請審閱後於下方【親筆簽名】！', 'info');
+      } catch (err) {
+        console.error('審閱網址解析失敗:', err);
+      }
+    }
+  }
+
+  // 手寫簽名板 Canvas 繪圖邏輯
   let sigCanvas, sigCtx, isDrawing = false;
 
   function initSignatureCanvas() {
@@ -827,7 +885,6 @@
       sigCtx.strokeStyle = '#000000';
     }
 
-    // 當開啟彈窗時調整畫布大小
     document.getElementById('btnOpenSigModal').addEventListener('click', () => {
       document.getElementById('sigModal').style.display = 'flex';
       setTimeout(resizeCanvas, 50);
@@ -837,7 +894,6 @@
       document.getElementById('sigModal').style.display = 'none';
     });
 
-    // 取得相對於畫布的座標
     function getCanvasPos(e) {
       const rect = sigCanvas.getBoundingClientRect();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -867,31 +923,26 @@
       isDrawing = false;
     }
 
-    // 滑鼠事件
     sigCanvas.addEventListener('mousedown', startDrawing);
     sigCanvas.addEventListener('mousemove', draw);
     sigCanvas.addEventListener('mouseup', stopDrawing);
     sigCanvas.addEventListener('mouseleave', stopDrawing);
 
-    // 觸控事件 (手機 / iPad)
     sigCanvas.addEventListener('touchstart', startDrawing);
     sigCanvas.addEventListener('touchmove', draw);
     sigCanvas.addEventListener('touchend', stopDrawing);
 
-    // 清除畫布
     document.getElementById('btnCanvasClear').addEventListener('click', () => {
       sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
     });
 
-    // 確認手寫簽名並匯出 Base64
     document.getElementById('btnCanvasConfirm').addEventListener('click', () => {
       const dataUrl = sigCanvas.toDataURL('image/png');
       updateSignatureUI(dataUrl);
       document.getElementById('sigModal').style.display = 'none';
-      showStatus('已成功帶入親筆手寫簽名！', 'success');
+      showStatus('已成功帶入長官親筆簽名！', 'success');
     });
 
-    // 清除已儲存的簽名
     document.getElementById('btnClearSig').addEventListener('click', () => {
       updateSignatureUI(null);
       showStatus('已清除親筆簽名', 'info');
@@ -915,7 +966,7 @@
     }
   }
 
-  // 全顯式資料抓取邏輯 (含手寫簽名)
+  // 抓取表單資料
   function getFormData() {
     const data = {
       assigner: document.getElementById('assigner')?.value || '',
@@ -956,7 +1007,7 @@
     return data;
   }
 
-  // 全顯式資料還原邏輯 (含手寫簽名)
+  // 還原表單資料
   function applyFormData(data) {
     if (!data || typeof data !== 'object') return;
 
@@ -995,7 +1046,6 @@
       });
     }
 
-    // 還原手寫簽名
     if (data.signature_png) {
       updateSignatureUI(data.signature_png);
     } else {
@@ -1058,7 +1108,47 @@
     reader.readAsText(file, 'UTF-8');
   });
 
-  // 3. 通訊錄彈窗
+  // 3. 傳送長官審閱（生成 Web Share / LINE 專用審閱網址）
+  document.getElementById('btnShareReview').addEventListener('click', async () => {
+    const data = getFormData();
+    if (!data.reporting_unit || !data.section_subject) {
+      alert('請先填寫「陳報單位」與「案由」');
+      return;
+    }
+
+    const encoded = encodeDataForUrl(data);
+    const baseUrl = window.location.origin + window.location.pathname;
+    const reviewUrl = `${baseUrl}?review=${encoded}`;
+
+    const shareTitle = `【速報單草稿待簽核】${data.reporting_unit} - ${data.report_date}`;
+    const shareText = `長官您好，已為您準備好速報單草稿，請點擊連結審閱並進行親筆簽名：\n${reviewUrl}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: reviewUrl
+        });
+        showStatus('已成功喚起傳送選單！', 'success');
+      } catch (err) {
+        copyToClipboard(reviewUrl);
+      }
+    } else {
+      copyToClipboard(reviewUrl);
+    }
+  });
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('已複製長官專用審閱連結！請貼上至 LINE 或 Email 發送給長官。');
+      showStatus('審閱連結已複製至剪貼簿！', 'success');
+    }).catch(() => {
+      prompt('請手動複製以下長官審閱連結：', text);
+    });
+  }
+
+  // 4. 通訊錄彈窗
   let currentTargetEmails = [];
 
   document.getElementById('btnShowEmails').addEventListener('click', () => {
@@ -1104,7 +1194,7 @@
     document.getElementById('emailModal').style.display = 'none';
   });
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (親筆手寫簽名壓印與極致邊界演算法)
+  // 5. 純前端開源楷體 TTF PDF 引擎
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
@@ -1145,7 +1235,6 @@
       });
     }
 
-    // 處理段落與縮排
     function processSection(title, contentText, fontSize, maxW) {
       const items = [];
       if (title) items.push({ text: title, isTitle: true, indent: 0 });
@@ -1194,7 +1283,6 @@
 
     let currentY = height - marginTop;
 
-    // 1. 機密等級標示
     const rawSecrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
     const activeSecrets = rawSecrets.filter(v => v !== '無');
     
@@ -1210,7 +1298,6 @@
 
     currentY -= 12;
 
-    // 2. 頁首大標題與案件分類（左右置中）
     const leftTitle = '經 濟 部';
     const rightTitle = '速 報 單';
     const titleSize = 22;
@@ -1249,7 +1336,6 @@
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
-    // 3. 基本資訊欄位（16pt 楷體）
     const infoFontSize = 16;
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
     currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
@@ -1260,7 +1346,6 @@
 
     currentY -= 16;
 
-    // 4 & 5. 核心內容表格區塊
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -1333,7 +1418,6 @@
       currentY = height - marginTop - 20;
     }
 
-    // 6. 本件分送與簽核區塊（12pt 楷體）
     const footerFontSize = 12;
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
@@ -1360,7 +1444,7 @@
     currentY -= 19;
 
     const hasGov = dispatchUnits.includes('本部國會聯絡組');
-    currentPage.drawText(formatOptionText('本部國會聯絡組', hasGov), { x: colX1, y: currentY, size: footerFontSize, font: kaiFont });
+    currentPage.drawText(formatOptionText('本部國會聯絡组', hasGov), { x: colX1, y: currentY, size: footerFontSize, font: kaiFont });
 
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
     const otherBoxStr = formatOptionText('其他單位：', hasOther);
@@ -1384,7 +1468,6 @@
     const sigText = `陳報單位首長/主管簽核：`;
     currentPage.drawText(sigText, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    // 如果有長官手寫簽名，壓印合成至簽核文字右側
     if (data.signature_png) {
       try {
         const sigPngImage = await pdfDoc.embedPng(data.signature_png);
@@ -1404,7 +1487,6 @@
     return new Blob([pdfBytes], { type: 'application/pdf' });
   }
 
-  // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
     try {
       showStatus('正在生成經濟部速報單 PDF...', 'info');
