@@ -1,5 +1,5 @@
-// 升級至 v6.3，將 QRCode 與 Html5Qrcode 套件寫入離線快取，確保 100% 斷網同步
-const CACHE_NAME = 'speed-report-v6.3';
+// 升級至 v6.5，移除非必要之條碼庫，實現超極速 PWA 快取與檔案同步
+const CACHE_NAME = 'speed-report-v6.5';
 
 const FILES_TO_CACHE = [
   './',
@@ -8,9 +8,7 @@ const FILES_TO_CACHE = [
   './manifest.json',
   './kaiu.ttf',
   'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
-  'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
-  'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+  'https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js'
 ];
 
 // 1. 安裝階段：強制跳過等待 (skipWaiting)
@@ -18,7 +16,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] 建立 v6.3 快取並預載雙向同步套件');
+      console.log('[Service Worker] 建立 v6.5 快取並預載所有核心檔案');
       return cache.addAll(FILES_TO_CACHE);
     })
   );
