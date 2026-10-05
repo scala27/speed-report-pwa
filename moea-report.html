@@ -305,28 +305,24 @@
       transform: scale(0.96);
     }
 
-    /* 分類 1：本地快取區塊 (石墨灰) */
     .btn-local {
       background-color: #f1f5f9;
       color: #475569;
       border: 1px solid #cbd5e1;
     }
 
-    /* 分類 2：跨裝置同步區塊 (天藍) */
     .btn-sync {
       background-color: #e0f2fe;
       color: #0369a1;
       border: 1px solid #bae6fd;
     }
 
-    /* 分類 3：輔助工具 (淡紫) */
     .btn-tool {
       background-color: #f3e8ff;
       color: #6b21a8;
       border: 1px solid #e9d5ff;
     }
 
-    /* 分類 4：最終產出區塊 (品牌尊榮漸層) */
     .btn-hero {
       flex: 1.2;
       background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
@@ -918,64 +914,50 @@
 
     let currentY = height - marginTop;
 
-    // 1. 機密等級標示 (右上角)
+    // 1. 機密等級標示：當選項為「無」時呈現完全空白
     const rawSecrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
     const activeSecrets = rawSecrets.filter(v => v !== '無');
-    const secretText = activeSecrets.length > 0 
-      ? `機密等級：${activeSecrets.join('、')}` 
-      : '機密(具機敏性者，請標註機密、密、限閱)';
-      
-    currentPage.drawText(secretText, {
-      x: marginX + printableWidth - measureTextWidth(secretText, 10),
-      y: currentY,
-      size: 10,
-      font: kaiFont
-    });
+    
+    if (activeSecrets.length > 0) {
+      const secretText = `機密等級：${activeSecrets.join('、')}`;
+      currentPage.drawText(secretText, {
+        x: marginX + printableWidth - measureTextWidth(secretText, 10),
+        y: currentY,
+        size: 10,
+        font: kaiFont
+      });
+    }
 
-    currentY -= 20;
+    currentY -= 16;
 
-    // 2. 頂部標題排版：[經 濟 部] ＋ [案件分類選項(置中)] ＋ [速 報 單]
-    const leftTitle = '經 濟 部';
-    drawBoldText(currentPage, leftTitle, marginX, currentY, 18, 2.0);
-    const leftTitleW = measureTextWidth(leftTitle, 18);
-
-    const rightTitle = '速 報 單';
-    const rightTitleW = measureTextWidth(rightTitle, 18);
-    const rightTitleX = marginX + printableWidth - rightTitleW;
-    drawBoldText(currentPage, rightTitle, rightTitleX, currentY, 18, 2.0);
-
-    // 計算中間放置案件分類的區域
-    const midLeftX = marginX + leftTitleW + 8;
-    const midRightX = rightTitleX - 8;
-    const midWidth = midRightX - midLeftX;
-
+    // 2. 頂部第 1 橫列：單一欄式「案件分類/會議性質」
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
-    const catFontSize = 9.5;
-    
-    const catStrings = categoryOptions.map(cat => formatOptionText(cat, categories.includes(cat)));
-    const totalCatW = catStrings.reduce((sum, str) => sum + measureTextWidth(str, catFontSize), 0);
-    
-    let gap = (midWidth - totalCatW) / (categoryOptions.length - 1);
-    if (gap < 2) gap = 2;
+    const catFontSize = 11;
+    let catX = marginX;
 
-    let catStartX = midLeftX + (midWidth - (totalCatW + gap * (categoryOptions.length - 1))) / 2;
-    if (catStartX < midLeftX) catStartX = midLeftX;
-
-    let curCatX = catStartX;
-    catStrings.forEach(str => {
+    categoryOptions.forEach(cat => {
+      const isChecked = categories.includes(cat);
+      const str = formatOptionText(cat, isChecked);
       currentPage.drawText(str, {
-        x: curCatX,
-        y: currentY + 3,
+        x: catX,
+        y: currentY,
         size: catFontSize,
         font: kaiFont
       });
-      curCatX += measureTextWidth(str, catFontSize) + gap;
+      catX += measureTextWidth(str, catFontSize) + 16;
     });
+
+    currentY -= 32;
+
+    // 3. 頂部第 2 橫列：大標題「經 濟 部 速 報 單」(大字尊榮置中)
+    const mainTitle = '經 濟 部 速 報 單';
+    const titleW = measureTextWidth(mainTitle, 22);
+    drawBoldText(currentPage, mainTitle, marginX + (printableWidth - titleW) / 2, currentY, 22, 2.2);
 
     currentY -= 30;
 
-    // 3. 交辦與陳報資訊列 (格式：115年10月5日)
+    // 4. 交辦與陳報資訊列 (格式：115年10月5日)
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: 14, font: kaiFont });
     currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 320, y: currentY, size: 14, font: kaiFont });
     
@@ -985,7 +967,7 @@
 
     currentY -= 14;
 
-    // 4. 核心內容表格區塊
+    // 5. 核心內容表格區塊
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -1041,7 +1023,7 @@
 
     currentY = finalBoxEndY - 18;
 
-    // 5. 本件分送 (勾選) 區塊
+    // 6. 本件分送 (勾選) 區塊
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
     currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: 11, font: kaiFont });
@@ -1082,14 +1064,14 @@
 
     currentY -= 20;
 
-    // 6. 聯絡人與簽核列 (簽核區位於電話下方並保持間距)
+    // 7. 聯絡人、電話與簽核列 (左側完全對齊靠齊)
     currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
 
     currentY -= 16;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
 
-    currentY -= 24; // 下移並維持適當簽核空間
-    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX + 290, y: currentY, size: 11, font: kaiFont });
+    currentY -= 22; // 下移並維持適當垂直距離
+    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: 11, font: kaiFont });
 
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
