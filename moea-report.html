@@ -925,21 +925,28 @@
 
     currentY -= 12;
 
-    // 2. 參照官方範本完美三欄式頂部結構
+    // 2. 頁首大標題：22pt 粗體；頂部案件分類選項：14pt 標準楷體（左右置中）
     const leftTitle = '經 濟 部';
     const rightTitle = '速 報 單';
-    const titleSize = 20;
+    const titleSize = 22; // 規格 1：22pt 粗體
 
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
-    const catFontSize = 11;
-    const catLineSpacing = 16;
+    const catFontSize = 14; // 規格 2：14pt 標準楷體
+    const catLineSpacing = 19;
 
-    // 中間案件分類垂直 4 行 X 軸位置設定
-    const midX = marginX + 130;
+    // 計算 4 行選項（14pt）之最大寬度，將垂直區塊於頁面左右置中
+    let maxCatWidth = 0;
+    categoryOptions.forEach(cat => {
+      const str = formatOptionText(cat, true);
+      const w = measureTextWidth(str, catFontSize);
+      if (w > maxCatWidth) maxCatWidth = w;
+    });
+
+    const midX = marginX + (printableWidth - maxCatWidth) / 2;
     const headerTopY = currentY;
 
-    // 繪製中間 4 行案件分類
+    // 繪製中央左右置中的 4 行案件分類 (14pt 楷體)
     categoryOptions.forEach((cat, idx) => {
       const isChecked = categories.includes(cat);
       const str = formatOptionText(cat, isChecked);
@@ -951,40 +958,41 @@
       });
     });
 
-    // 繪製左右兩側大標題（置中靠齊於中間 4 行選項高度中央）
-    const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 4;
+    // 繪製左右兩側大標題 (22pt 粗體，與中間選項區塊高度中線垂直對齊)
+    const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
     drawBoldText(currentPage, leftTitle, marginX, titleCenterY, titleSize, 2.2);
 
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
     drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, titleCenterY, titleSize, 2.2);
 
-    currentY = headerTopY - (4 * catLineSpacing) - 20;
+    currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
-    // 3. 交辦與陳報資訊列 (格式：115年10月5日)
-    currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: 14, font: kaiFont });
-    currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 320, y: currentY, size: 14, font: kaiFont });
+    // 3. 基本資訊欄位：16pt 標準楷體
+    const infoFontSize = 16; // 規格 3：16pt 標準楷體
+    currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
+    currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
     
-    currentY -= 20;
-    currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, { x: marginX, y: currentY, size: 14, font: kaiFont });
-    currentPage.drawText(`陳報日期：${formatROCDate(data.report_date)}`, { x: marginX + 320, y: currentY, size: 14, font: kaiFont });
+    currentY -= 22;
+    currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
+    currentPage.drawText(`陳報日期：${formatROCDate(data.report_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
 
-    currentY -= 14;
+    currentY -= 16;
 
-    // 4. 核心內容表格區塊 (已刪除重點說明)
+    // 4 & 5. 表格內各區塊標題（16pt 粗體）與內文（16pt 標準楷體）
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
-    const fontSize = 15;
-    const fontLeading = 20;
+    const tableFontSize = 16; // 規格 4 & 5：16pt
+    const fontLeading = 22; // 搭配 16pt 字體的舒適行高
 
     const sections = [
-      processSection('案由：', data.section_subject, fontSize, maxTextW),
-      processSection('出席人員：', data.section_attendees, fontSize, maxTextW),
-      processSection('會議結論及指示事項：', data.section_conclusions, fontSize, maxTextW),
-      processSection('擬處意見或建議事項：', data.section_suggestions, fontSize, maxTextW)
+      processSection('案由：', data.section_subject, tableFontSize, maxTextW),
+      processSection('出席人員：', data.section_attendees, tableFontSize, maxTextW),
+      processSection('會議結論及指示事項：', data.section_conclusions, tableFontSize, maxTextW),
+      processSection('擬處意見或建議事項：', data.section_suggestions, tableFontSize, maxTextW)
     ];
 
-    let renderY = tableBoxStartY - 20;
+    let renderY = tableBoxStartY - 22;
 
     sections.forEach(sectionItems => {
       sectionItems.forEach(item => {
@@ -998,15 +1006,15 @@
 
           currentPage = pdfDoc.addPage([595.28, 841.89]);
           tableBoxStartY = height - marginTop - 10;
-          renderY = tableBoxStartY - 20;
+          renderY = tableBoxStartY - 22;
         }
 
         if (item.isTitle) {
-          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, fontSize, 2.0);
+          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, tableFontSize, 2.0);
         } else {
           currentPage.drawText(item.text, {
             x: marginX + textPaddingX + item.indent, y: renderY,
-            size: fontSize, font: kaiFont
+            size: tableFontSize, font: kaiFont
           });
         }
         renderY -= fontLeading;
@@ -1025,55 +1033,56 @@
 
     currentY = finalBoxEndY - 18;
 
-    // 5. 本件分送 (勾選) 區塊
+    // 6. 分送單位與聯絡/簽核欄位：12pt 標準楷體
+    const footerFontSize = 12; // 規格 6：12pt 標準楷體
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
-    currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: 11, font: kaiFont });
+    currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    const colX1 = marginX + 95;
-    const colX2 = marginX + 215;
-    const colX3 = marginX + 345;
+    const colX1 = marginX + 100;
+    const colX2 = marginX + 225;
+    const colX3 = marginX + 355;
 
     const row1List = [{ name: '部長室', x: colX1 }, { name: '何政務次長室', x: colX2 }, { name: '江政務次長室', x: colX3 }];
     row1List.forEach(item => {
       const isChecked = dispatchUnits.includes(item.name);
-      currentPage.drawText(formatOptionText(item.name, isChecked), { x: item.x, y: currentY, size: 11, font: kaiFont });
+      currentPage.drawText(formatOptionText(item.name, isChecked), { x: item.x, y: currentY, size: footerFontSize, font: kaiFont });
     });
 
-    currentY -= 18;
+    currentY -= 19;
 
     const row2List = [{ name: '賴次長室', x: colX1 }, { name: '莊主任秘書室', x: colX2 }, { name: '本部綜規司', x: colX3 }];
     row2List.forEach(item => {
       const isChecked = dispatchUnits.includes(item.name);
-      currentPage.drawText(formatOptionText(item.name, isChecked), { x: item.x, y: currentY, size: 11, font: kaiFont });
+      currentPage.drawText(formatOptionText(item.name, isChecked), { x: item.x, y: currentY, size: footerFontSize, font: kaiFont });
     });
 
-    currentY -= 18;
+    currentY -= 19;
 
     const hasGov = dispatchUnits.includes('本部國會聯絡組');
-    currentPage.drawText(formatOptionText('本部國會聯絡組', hasGov), { x: colX1, y: currentY, size: 11, font: kaiFont });
+    currentPage.drawText(formatOptionText('本部國會聯絡組', hasGov), { x: colX1, y: currentY, size: footerFontSize, font: kaiFont });
 
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
     const otherBoxStr = formatOptionText('其他單位：', hasOther);
-    currentPage.drawText(otherBoxStr, { x: colX2, y: currentY, size: 11, font: kaiFont });
+    currentPage.drawText(otherBoxStr, { x: colX2, y: currentY, size: footerFontSize, font: kaiFont });
 
     if (data.other_unit_text) {
       currentPage.drawText(data.other_unit_text, {
-        x: colX2 + measureTextWidth(otherBoxStr, 11) + 2,
-        y: currentY, size: 11, font: kaiFont
+        x: colX2 + measureTextWidth(otherBoxStr, footerFontSize) + 2,
+        y: currentY, size: footerFontSize, font: kaiFont
       });
     }
 
     currentY -= 20;
 
-    // 6. 聯絡人、電話與簽核列 (左側完全對齊靠齊)
-    currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
+    // 聯絡人、電話與簽核列 (12pt 楷體)
+    currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    currentY -= 16;
-    currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: 11, font: kaiFont });
+    currentY -= 17;
+    currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
     currentY -= 22;
-    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: 11, font: kaiFont });
+    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
