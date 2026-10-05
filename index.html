@@ -113,7 +113,7 @@
       transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .system-card:not(.disabled):active {
+    .system-card:active {
       transform: scale(0.98);
       border-color: var(--primary-teal);
       box-shadow: 0 6px 20px -4px rgba(102, 186, 183, 0.25);
@@ -126,7 +126,7 @@
       letter-spacing: -0.01em;
     }
 
-    /* 純圖示行動按鈕 (開門 / 施工中) */
+    /* 純圖示行動按鈕 */
     .btn-action-icon {
       width: 48px;
       height: 48px;
@@ -136,26 +136,9 @@
       justify-content: center;
       transition: all 0.2s ease;
       flex-shrink: 0;
-    }
-
-    /* 卡片 1：開門圖示按鈕 */
-    .system-card:not(.disabled) .btn-action-icon {
       background: var(--primary-light);
       color: var(--primary-dark);
       border: 1px solid rgba(102, 186, 183, 0.3);
-    }
-
-    /* 卡片 2：建置中圖示按鈕 (停用狀態) */
-    .system-card.disabled {
-      opacity: 0.55;
-      pointer-events: none;
-      background: #f8fafc;
-      border-color: #e2e8f0;
-    }
-
-    .system-card.disabled .btn-action-icon {
-      background: #e2e8f0;
-      color: #94a3b8;
     }
 
     /* 頁尾文字 */
@@ -172,10 +155,9 @@
 <body>
 
 <div class="portal-container">
-  <!-- 頂部 Header 卡片：放大版人像與打工雲標題 -->
+  <!-- 頂部 Header 卡片 -->
   <div class="hero-header-card">
     <div class="avatar-icon-box">
-      <!-- 放大版簡約人形 SVG 線條圖示 -->
       <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
         <circle cx="12" cy="7" r="4"></circle>
@@ -185,11 +167,10 @@
   </div>
 
   <div class="card-list">
-    <!-- 卡片 1：水利署速報單（開門進入圖示） -->
+    <!-- 卡片 1：水利署速報單 -->
     <a href="./wra-report.html" class="system-card">
       <div class="system-title">水利署速報單</div>
       <div class="btn-action-icon" title="進入系統">
-        <!-- 開門進入 (Door Enter) SVG 圖示 -->
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
           <polyline points="10 17 15 12 10 7"></polyline>
@@ -198,30 +179,31 @@
       </div>
     </a>
 
-    <!-- 卡片 2：經濟部速報單（建置中圖示） -->
-    <div class="system-card disabled">
+    <!-- 卡片 2：經濟部速報單（已正式解鎖） -->
+    <a href="./moea-report.html" class="system-card">
       <div class="system-title">經濟部速報單</div>
-      <div class="btn-action-icon" title="建置中">
-        <!-- 施工/工具 (Construction Tool) SVG 圖示 -->
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+      <div class="btn-action-icon" title="進入系統">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+          <polyline points="10 17 15 12 10 7"></polyline>
+          <line x1="15" y1="12" x2="3" y2="12"></line>
         </svg>
       </div>
-    </div>
+    </a>
   </div>
 
   <!-- 頁尾文字 -->
   <div class="footer-info">
-    水利監製 v6.5
+    水利監製 v6.6
   </div>
 </div>
 
 <script>
-  // PWA Service Worker 註冊 v6.5
+  // PWA Service Worker 註冊 v6.6
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.5')
-        .then(reg => console.log('Portal Service Worker v6.5 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.6')
+        .then(reg => console.log('Portal Service Worker v6.6 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
