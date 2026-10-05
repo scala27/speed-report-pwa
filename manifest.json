@@ -1,6 +1,6 @@
 {
-  "name": "方寸完勝",
-  "short_name": "方寸完勝",
+  "name": "打工雲",
+  "short_name": "打工雲",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f2f9f9",
@@ -8,7 +8,7 @@
   "icons": [
     {
       "src": "icon-192.png",
-      "sizes": "192x192",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
