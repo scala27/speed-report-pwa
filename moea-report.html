@@ -7,9 +7,10 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#66bab7">
   
-  <!-- CDN 套件：pdf-lib, fontkit -->
+  <!-- CDN 套件：pdf-lib, fontkit, lz-string (網址高倍率壓縮) -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 
   <style>
     :root {
@@ -766,11 +767,11 @@
     '本部國會聯絡組': ['sec2@moea.gov.tw']
   };
 
-  // PWA Service Worker 註冊 v6.8
+  // PWA Service Worker 註冊 v7.0
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.8')
-        .then(reg => console.log('MOEA Service Worker v6.8 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.0')
+        .then(reg => console.log('MOEA Service Worker v7.0 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -840,15 +841,51 @@
     return dateStr;
   }
 
-  // 安全的 Base64 URL 編碼/解碼邏輯
+  // 欄位 Key 極小化 + LZ-String 雙重超高壓縮演算法
   function encodeDataForUrl(dataObj) {
-    const jsonStr = JSON.stringify(dataObj);
-    return btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)));
+    const compactObj = {};
+    if (dataObj.assigner) compactObj.a = dataObj.assigner;
+    if (dataObj.assigned_date) compactObj.ad = dataObj.assigned_date;
+    if (dataObj.reporting_unit) compactObj.u = dataObj.reporting_unit;
+    if (dataObj.report_date) compactObj.d = dataObj.report_date;
+    if (dataObj.section_subject) compactObj.s = dataObj.section_subject;
+    if (dataObj.section_attendees) compactObj.at = dataObj.section_attendees;
+    if (dataObj.section_conclusions) compactObj.c = dataObj.section_conclusions;
+    if (dataObj.section_suggestions) compactObj.su = dataObj.section_suggestions;
+    if (dataObj.other_unit_text) compactObj.ou = dataObj.other_unit_text;
+    if (dataObj.contact_person) compactObj.cp = dataObj.contact_person;
+    if (dataObj.contact_phone) compactObj.ph = dataObj.contact_phone;
+    if (dataObj.secret_levels && dataObj.secret_levels.length) compactObj.sl = dataObj.secret_levels;
+    if (dataObj.categories && dataObj.categories.length) compactObj.ca = dataObj.categories;
+    if (dataObj.dispatch_units && dataObj.dispatch_units.length) compactObj.du = dataObj.dispatch_units;
+    if (dataObj.signature_png) compactObj.sig = dataObj.signature_png;
+
+    const jsonStr = JSON.stringify(compactObj);
+    return LZString.compressToEncodedURIComponent(jsonStr);
   }
 
-  function decodeDataFromUrl(base64Str) {
-    const jsonStr = decodeURIComponent(Array.prototype.map.call(atob(base64Str), c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-    return JSON.parse(jsonStr);
+  function decodeDataFromUrl(compressedStr) {
+    const jsonStr = LZString.decompressFromEncodedURIComponent(compressedStr);
+    if (!jsonStr) return null;
+    const compactObj = JSON.parse(jsonStr);
+
+    return {
+      assigner: compactObj.a || '',
+      assigned_date: compactObj.ad || '',
+      reporting_unit: compactObj.u || '',
+      report_date: compactObj.d || '',
+      section_subject: compactObj.s || '',
+      section_attendees: compactObj.at || '',
+      section_conclusions: compactObj.c || '',
+      section_suggestions: compactObj.su || '',
+      other_unit_text: compactObj.ou || '',
+      contact_person: compactObj.cp || '',
+      contact_phone: compactObj.ph || '',
+      secret_levels: compactObj.sl || ['無'],
+      categories: compactObj.ca || ['府院部長官交辦案件'],
+      dispatch_units: compactObj.du || [],
+      signature_png: compactObj.sig || null
+    };
   }
 
   // 載入時檢查是否為審閱模式
@@ -858,9 +895,11 @@
     if (reviewDataParam) {
       try {
         const decodedData = decodeDataFromUrl(reviewDataParam);
-        applyFormData(decodedData);
-        document.getElementById('reviewBanner').style.display = 'flex';
-        showStatus('已成功載入承辦人傳送之草稿，請審閱後於下方【親筆簽名】！', 'info');
+        if (decodedData) {
+          applyFormData(decodedData);
+          document.getElementById('reviewBanner').style.display = 'flex';
+          showStatus('已成功載入承辦人傳送之草稿，請審閱後於下方【親筆簽名】！', 'info');
+        }
       } catch (err) {
         console.error('審閱網址解析失敗:', err);
       }
@@ -1108,7 +1147,7 @@
     reader.readAsText(file, 'UTF-8');
   });
 
-  // 3. 傳送長官審閱（生成 Web Share / LINE 專用審閱網址）
+  // 3. 傳送長官審閱（格式化 LINE 訊息 + 欄位極小化超短網址）
   document.getElementById('btnShareReview').addEventListener('click', async () => {
     const data = getFormData();
     if (!data.reporting_unit || !data.section_subject) {
@@ -1116,35 +1155,38 @@
       return;
     }
 
-    const encoded = encodeDataForUrl(data);
+    const compressedStr = encodeDataForUrl(data);
     const baseUrl = window.location.origin + window.location.pathname;
-    const reviewUrl = `${baseUrl}?review=${encoded}`;
+    const reviewUrl = `${baseUrl}?review=${compressedStr}`;
 
-    const shareTitle = `【速報單草稿待簽核】${data.reporting_unit} - ${data.report_date}`;
-    const shareText = `長官您好，已為您準備好速報單草稿，請點擊連結審閱並進行親筆簽名：\n${reviewUrl}`;
+    // 擷取案由前 35 個字作為大綱
+    const cleanSubject = data.section_subject.replace(/\n/g, ' ').substring(0, 35);
+    const subjectExcerpt = cleanSubject.length >= 35 ? `${cleanSubject}...` : cleanSubject;
+
+    const shareTitle = `【速報單草稿】${data.reporting_unit}`;
+    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatROCDate(data.report_date)}\n📄 案由：${subjectExcerpt}\n\n👇 請點擊下方連結進行線上審閱與親筆簽名：\n${reviewUrl}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: shareTitle,
-          text: shareText,
-          url: reviewUrl
+          text: shareText
         });
         showStatus('已成功喚起傳送選單！', 'success');
       } catch (err) {
-        copyToClipboard(reviewUrl);
+        copyToClipboard(shareText);
       }
     } else {
-      copyToClipboard(reviewUrl);
+      copyToClipboard(shareText);
     }
   });
 
   function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
-      alert('已複製長官專用審閱連結！請貼上至 LINE 或 Email 發送給長官。');
-      showStatus('審閱連結已複製至剪貼簿！', 'success');
+      alert('已複製長官專用審閱訊息！請貼上至 LINE 發送給長官。');
+      showStatus('審閱訊息已複製至剪貼簿！', 'success');
     }).catch(() => {
-      prompt('請手動複製以下長官審閱連結：', text);
+      prompt('請手動複製以下長官審閱訊息：', text);
     });
   }
 
@@ -1444,7 +1486,7 @@
     currentY -= 19;
 
     const hasGov = dispatchUnits.includes('本部國會聯絡組');
-    currentPage.drawText(formatOptionText('本部國會聯絡组', hasGov), { x: colX1, y: currentY, size: footerFontSize, font: kaiFont });
+    currentPage.drawText(formatOptionText('本部國會聯絡組', hasGov), { x: colX1, y: currentY, size: footerFontSize, font: kaiFont });
 
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
     const otherBoxStr = formatOptionText('其他單位：', hasOther);
