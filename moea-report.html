@@ -573,8 +573,8 @@
   </div>
 </div>
 
-<!-- 隱藏的檔案選擇器 -->
-<input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+<!-- 隱藏的檔案選擇器（升級 MIME Type 相容性） -->
+<input type="file" id="jsonFileInput" accept=".json,application/json,text/plain" style="display: none;">
 
 <!-- 彈窗：部次長室 Email 通訊錄 -->
 <div id="emailModal" class="modal-overlay">
@@ -670,55 +670,89 @@
     return dateStr;
   }
 
+  // 100% 精準的全顯式資料抓取邏輯
   function getFormData() {
-    const form = document.getElementById('moeaReportForm');
-    const formData = new FormData(form);
-    const data = {};
-    formData.forEach((value, key) => {
-      data[key] = value;
-    });
+    const data = {
+      assigner: document.getElementById('assigner')?.value || '',
+      assigned_date: document.getElementById('assigned_date')?.value || '',
+      reporting_unit: document.getElementById('reporting_unit')?.value || '',
+      report_date: document.getElementById('report_date')?.value || '',
+      section_subject: document.getElementById('section_subject')?.value || '',
+      section_attendees: document.getElementById('section_attendees')?.value || '',
+      section_conclusions: document.getElementById('section_conclusions')?.value || '',
+      section_suggestions: document.getElementById('section_suggestions')?.value || '',
+      other_unit_text: document.getElementById('other_unit_text')?.value || '',
+      contact_person: document.getElementById('contact_person')?.value || '',
+      contact_phone: document.getElementById('contact_phone')?.value || ''
+    };
 
     // 收集機密等級
     const secrets = [];
-    document.querySelectorAll('#secretChips .chip-item.active').forEach(c => secrets.push(c.getAttribute('data-value')));
+    document.querySelectorAll('#secretChips .chip-item.active').forEach(c => {
+      const val = c.getAttribute('data-value');
+      if (val) secrets.push(val);
+    });
     data['secret_levels'] = secrets;
 
     // 收集案件分類
     const categories = [];
-    document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => categories.push(c.getAttribute('data-value')));
+    document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => {
+      const val = c.getAttribute('data-value');
+      if (val) categories.push(val);
+    });
     data['categories'] = categories;
 
     // 收集分送單位
     const dispatch = [];
-    document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => dispatch.push(c.getAttribute('data-value')));
+    document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => {
+      const val = c.getAttribute('data-value');
+      if (val) dispatch.push(val);
+    });
     data['dispatch_units'] = dispatch;
 
     return data;
   }
 
+  // 100% 精準的全顯式資料還原邏輯
   function applyFormData(data) {
-    if (!data) return;
-    Object.keys(data).forEach(key => {
-      const field = document.getElementsByName(key)[0];
-      if (field) field.value = data[key];
+    if (!data || typeof data !== 'object') return;
+
+    // 1. 純文字與日期欄位還原
+    const textFields = [
+      'assigner', 'assigned_date', 'reporting_unit', 'report_date',
+      'section_subject', 'section_attendees', 'section_conclusions',
+      'section_suggestions', 'other_unit_text', 'contact_person', 'contact_phone'
+    ];
+
+    textFields.forEach(fieldId => {
+      const el = document.getElementById(fieldId);
+      if (el && data[fieldId] !== undefined) {
+        el.value = data[fieldId];
+      }
     });
 
+    // 2. 還原機密等級膠囊
     if (Array.isArray(data.secret_levels)) {
       document.querySelectorAll('#secretChips .chip-item').forEach(c => {
-        c.classList.toggle('active', data.secret_levels.includes(c.getAttribute('data-value')));
+        const val = c.getAttribute('data-value');
+        c.classList.toggle('active', data.secret_levels.includes(val));
       });
       checkSecretWarning();
     }
 
+    // 3. 還原案件分類膠囊
     if (Array.isArray(data.categories)) {
       document.querySelectorAll('#categoryChips .chip-item').forEach(c => {
-        c.classList.toggle('active', data.categories.includes(c.getAttribute('data-value')));
+        const val = c.getAttribute('data-value');
+        c.classList.toggle('active', data.categories.includes(val));
       });
     }
 
+    // 4. 還原分送單位膠囊
     if (Array.isArray(data.dispatch_units)) {
       document.querySelectorAll('#dispatchChipsGroup .chip-item').forEach(c => {
-        c.classList.toggle('active', data.dispatch_units.includes(c.getAttribute('data-value')));
+        const val = c.getAttribute('data-value');
+        c.classList.toggle('active', data.dispatch_units.includes(val));
       });
     }
   }
@@ -736,14 +770,18 @@
       showStatus('未找到暫存資料！', 'error');
       return;
     }
-    applyFormData(JSON.parse(saved));
-    showStatus('已成功載入經濟部速報單草稿！', 'success');
+    try {
+      applyFormData(JSON.parse(saved));
+      showStatus('已成功載入經濟部速報單草稿！', 'success');
+    } catch (err) {
+      showStatus('暫存資料解析失敗', 'error');
+    }
   });
 
-  // 2. JSON 檔案雙向匯出/讀入
+  // 2. JSON 檔案雙向匯出/讀入（升級相容性與讀取穩定度）
   document.getElementById('btnExportJson').addEventListener('click', () => {
     const data = getFormData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = `經濟部速報單草稿_${data.report_date || ''}.json`;
@@ -752,7 +790,9 @@
   });
 
   document.getElementById('btnImportJson').addEventListener('click', () => {
-    document.getElementById('jsonFileInput').click();
+    const fileInput = document.getElementById('jsonFileInput');
+    fileInput.value = ''; // 清空先前選取的檔案紀錄
+    fileInput.click();
   });
 
   document.getElementById('jsonFileInput').addEventListener('change', (e) => {
@@ -766,11 +806,10 @@
         applyFormData(importedData);
         showStatus('已成功讀入經濟部速報單草稿！', 'success');
       } catch (err) {
-        showStatus('讀取失敗：檔案格式不相符', 'error');
+        showStatus('讀取失敗：檔案格式不相符或檔案毀損', 'error');
       }
-      e.target.value = '';
     };
-    reader.readAsText(file);
+    reader.readAsText(file, 'UTF-8');
   });
 
   // 3. 通訊錄與 E-mail 複製彈窗
@@ -842,7 +881,7 @@
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 15; // 調整頁尾極限距離為 15pt
+    const pageBottomMargin = 15;
     const printableWidth = width - (marginX * 2);
 
     function formatOptionText(label, isChecked) {
@@ -989,13 +1028,12 @@
       processSection('擬處意見或建議事項：', data.section_suggestions, tableFontSize, maxTextW)
     ];
 
-    // 展開所有文字列
     const allLineItems = [];
     sections.forEach(secItems => {
       secItems.forEach(item => allLineItems.push(item));
     });
 
-    const footerNeededHeight = 115; // 底部分送/聯絡人/簽核所需高度
+    const footerNeededHeight = 115;
     let renderY = tableBoxStartY - 22;
 
     for (let i = 0; i < allLineItems.length; i++) {
@@ -1003,10 +1041,8 @@
       const remainingItemsCount = allLineItems.length - i;
       const heightForRemaining = (remainingItemsCount * fontLeading) + footerNeededHeight;
 
-      // 檢查剩餘的所有表格內容與頁腳，是否能夠完全裝在當前頁面上
       const canFitEverythingOnCurrentPage = (renderY - pageBottomMargin) >= heightForRemaining;
 
-      // 若無法全部裝在同一頁，第一頁極限向下填滿至距頁尾 15pt，不提前換頁
       if (!canFitEverythingOnCurrentPage && (renderY - fontLeading < pageBottomMargin)) {
         const currentBoxH = tableBoxStartY - (renderY + 4);
         currentPage.drawRectangle({
@@ -1047,7 +1083,6 @@
 
     currentY = finalBoxEndY - 18;
 
-    // 若最後表格結束後距離底部空間不足以放置頁腳，則開啟新頁放置頁腳
     if (currentY - footerNeededHeight < pageBottomMargin) {
       currentPage = pdfDoc.addPage([595.28, 841.89]);
       currentY = height - marginTop - 20;
