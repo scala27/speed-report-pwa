@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>陳報單位首長/主管簽核 - 經濟部速報單</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
   <style>
     :root {
@@ -74,7 +73,6 @@
     .btn-submit { background: var(--primary-green); color: white; transition: all 0.2s ease; }
     .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-clear { background: #cbd5e1; color: #334155; }
-    .btn-download { background: #0284c7; color: white; display: none; }
 
     .success-box { display: none; text-align: center; padding: 30px 10px; }
     .success-title { font-size: 22px; font-weight: bold; color: var(--primary-green); margin-bottom: 10px; }
@@ -122,14 +120,13 @@
 
   <div class="btn-group">
     <button type="button" class="btn btn-clear" id="btnClear" onclick="clearCanvas()">🧹 清除重簽</button>
-    <button type="button" class="btn btn-submit" id="btnSubmit" onclick="submitSignature()">✅ 長官簽名完成並送出</button>
-    <button type="button" class="btn btn-download" id="btnDownload" onclick="downloadSignature()">📥 下載簽名圖片 (LINE 傳回給承辦人)</button>
+    <button type="button" class="btn btn-submit" id="btnSubmit" onclick="submitSignature()">✅ 完成簽名並傳回 LINE</button>
   </div>
 </div>
 
 <div class="card success-box" id="successBox">
   <div class="success-title">🎉 簽名完成！</div>
-  <div style="font-size: 15px; color: #475569; line-height: 1.5;">已成功送出至承辦人手機，感謝長官核閱！<br><br><span style="font-size:12px; color:#94a3b8;">（此視窗可直接關閉）</span></div>
+  <div style="font-size: 15px; color: #475569; line-height: 1.5;">正在為您開啟 LINE 傳送連結予承辦人...<br><br><span style="font-size:12px; color:#94a3b8;">（傳送後此視窗即可關閉）</span></div>
 </div>
 
 <script>
@@ -170,6 +167,37 @@
   function stopDrawing() { isDrawing = false; }
   function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); hasSigned = false; }
 
+  // 自動裁切 Canvas 簽名空白區域（精減容量）
+  function getCroppedCanvas(sourceCanvas) {
+    const context = sourceCanvas.getContext('2d');
+    const w = sourceCanvas.width;
+    const h = sourceCanvas.height;
+    const imgData = context.getImageData(0, 0, w, h);
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const alpha = imgData.data[(y * w + x) * 4 + 3];
+        if (alpha > 0) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (maxX < minX || maxY < minY) return null;
+
+    const cropW = maxX - minX + 1;
+    const cropH = maxY - minY + 1;
+    const cut = document.createElement('canvas');
+    cut.width = cropW;
+    cut.height = cropH;
+    cut.getContext('2d').putImageData(context.getImageData(minX, minY, cropW, cropH), 0, 0);
+    return cut;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initCanvas();
     canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
@@ -183,81 +211,88 @@
       try {
         const jsonStr = LZString.decompressFromEncodedURIComponent(dParam);
         reportData = JSON.parse(jsonStr);
-        document.getElementById('disp_unit').innerText = reportData.u || '未填寫';
-        document.getElementById('disp_subject').innerText = reportData.s || '未填寫';
-        document.getElementById('disp_attendees').innerText = reportData.at || '無';
-        document.getElementById('disp_conclusions').innerText = reportData.c || '無';
-        document.getElementById('disp_suggestions').innerText = reportData.su || '無';
+        document.getElementById('disp_unit').innerText = reportData.reporting_unit || reportData.u || '未填寫';
+        document.getElementById('disp_subject').innerText = reportData.section_subject || reportData.s || '未填寫';
+        document.getElementById('disp_attendees').innerText = reportData.section_attendees || reportData.at || '無';
+        document.getElementById('disp_conclusions').innerText = reportData.section_conclusions || reportData.c || '無';
+        document.getElementById('disp_suggestions').innerText = reportData.section_suggestions || reportData.su || '無';
       } catch (err) {
         alert('草稿資料讀取失敗');
       }
     }
   });
 
-  function downloadSignature() {
-    if (!hasSigned) { alert('請先於方框內親筆簽名！'); return; }
-    const sigData = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = sigData;
-    link.download = `長官簽名檔.png`;
-    link.click();
+  // 使用 is.gd JSONP 縮網址
+  function getShortUrl(longUrl) {
+    return new Promise((resolve, reject) => {
+      const cbName = 'isgd_cb_' + Math.floor(Math.random() * 1000000);
+      const script = document.createElement('script');
+      
+      window[cbName] = function(res) {
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        if (res && res.shorturl) resolve(res.shorturl);
+        else reject(new Error(res ? res.errormessage : '縮網址失敗'));
+      };
+
+      script.src = `https://is.gd/create.php?format=jsonp&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
+      script.onerror = () => {
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error('縮網址網路連線失敗'));
+      };
+
+      document.body.appendChild(script);
+    });
   }
 
-  function submitSignature() {
+  async function submitSignature() {
     if (!hasSigned) { alert('請先於方框內親筆簽名！'); return; }
-    if (!reportData || !reportData.room) { alert('缺少連線資訊'); return; }
+    if (!reportData) { alert('草稿資料讀取異常，無法進行簽核'); return; }
 
     const submitBtn = document.getElementById('btnSubmit');
-    const downloadBtn = document.getElementById('btnDownload');
-
-    submitBtn.innerText = '⏳ 傳送簽名中...';
+    submitBtn.innerText = '⏳ 處理中...';
     submitBtn.disabled = true;
 
-    const sigData = canvas.toDataURL('image/png');
+    try {
+      const croppedCanvas = getCroppedCanvas(canvas);
+      const sigData = croppedCanvas ? croppedCanvas.toDataURL('image/png') : canvas.toDataURL('image/png');
 
-    // 建立含 Google STUN 打洞的 WebRTC Peer
-    const peer = new Peer({
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
+      // 將簽名檔壓入完整草稿資料
+      reportData.signature = sigData;
+
+      const jsonStr = JSON.stringify(reportData);
+      const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+
+      const reportBaseUrl = window.location.origin + window.location.pathname.replace('sign.html', 'moea-report.html');
+      const longReturnUrl = `${reportBaseUrl}?s=${compressed}`;
+
+      let shortReturnUrl = longReturnUrl;
+      try {
+        shortReturnUrl = await Promise.race([
+          getShortUrl(longReturnUrl),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('縮網址逾時')), 3000))
+        ]);
+      } catch (err) {
+        console.warn('縮網址逾時，使用原網址:', err);
       }
-    });
 
-    const handleConnectionFail = (errMsg) => {
-      alert(`⚠️ 自動連線回傳失敗（因承辦人手機頁面關閉或網路阻擋）\n\n已為您啟用備援模式：請點擊下方藍色按鈕【下載簽名圖片】，直接傳給承辦人即可！`);
-      submitBtn.innerText = '✅ 長官簽名完成並送出';
+      const lineMsg = `長官已完成速報單簽核，請點擊開啟速報單並產出 PDF：\n\n${shortReturnUrl}`;
+      const lineShareUrl = `https://line.me/R/share?text=${encodeURIComponent(lineMsg)}`;
+
+      // 喚起 LINE 直接傳回給承辦人
+      window.location.href = lineShareUrl;
+
+      setTimeout(() => {
+        document.getElementById('mainCard').style.display = 'none';
+        document.getElementById('successBox').style.display = 'block';
+      }, 600);
+
+    } catch (err) {
+      alert('處理簽名失敗: ' + err.message);
+      submitBtn.innerText = '✅ 完成簽名並傳回 LINE';
       submitBtn.disabled = false;
-      downloadBtn.style.display = 'block'; // 顯現下載備援按鈕
-    };
-
-    const timeout = setTimeout(() => {
-      try { peer.destroy(); } catch(e){}
-      handleConnectionFail('逾時');
-    }, 4500);
-
-    peer.on('open', () => {
-      const conn = peer.connect(reportData.room);
-      conn.on('open', () => {
-        clearTimeout(timeout);
-        conn.send({ type: 'SIGNATURE_SUBMITTED', signature: sigData });
-        setTimeout(() => {
-          document.getElementById('mainCard').style.display = 'none';
-          document.getElementById('successBox').style.display = 'block';
-        }, 400);
-      });
-
-      conn.on('error', (err) => {
-        clearTimeout(timeout);
-        handleConnectionFail(err);
-      });
-    });
-
-    peer.on('error', (err) => {
-      clearTimeout(timeout);
-      handleConnectionFail(err.message);
-    });
+    }
   }
 </script>
 </body>
