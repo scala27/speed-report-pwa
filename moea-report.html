@@ -275,6 +275,7 @@
       flex-direction: column;
       align-items: center;
       gap: 8px;
+      cursor: pointer;
     }
     .sig-preview-img {
       max-height: 55px;
@@ -513,11 +514,11 @@
 
       <div class="form-group" style="margin-top: 14px;">
         <label>陳報單位首長/主管簽核</label>
-        <div class="signature-area-box">
+        <div class="signature-area-box" id="sigAreaBox" title="點擊可手動選擇/更換長官簽名圖檔">
           <div id="sigPreviewContainer" style="display: none; text-align: center;">
             <img id="sigPreviewImg" class="sig-preview-img" alt="簽名檔">
           </div>
-          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請傳送連結給長官簽名）</div>
+          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請傳送連結給長官簽名，或點此上傳簽名圖）</div>
         </div>
       </div>
     </div>
@@ -526,7 +527,7 @@
   </form>
 </div>
 
-<!-- 底部固定操作列 (依要求移除通訊錄按鈕) -->
+<!-- 底部固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
@@ -540,6 +541,7 @@
 
 <!-- 隱藏的檔案選擇器 -->
 <input type="file" id="jsonFileInput" accept=".json,application/json,text/plain" style="display: none;">
+<input type="file" id="sigFileInput" accept="image/*" style="display: none;">
 
 <script>
   let currentSignatureBase64 = null;
@@ -587,7 +589,36 @@
         chip.classList.toggle('active');
       });
     });
+
+    // 手動點擊簽名區即可選取簽名圖檔（離線備援）
+    document.getElementById('sigAreaBox').addEventListener('click', () => {
+      document.getElementById('sigFileInput').click();
+    });
+
+    document.getElementById('sigFileInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        updateSignatureUI(event.target.result, '✅ 已載入長官親筆簽名檔');
+        showStatus('已手動載入簽名圖檔！', 'success');
+      };
+      reader.readAsDataURL(file);
+    });
   });
+
+  function updateSignatureUI(base64Png, statusMessage) {
+    currentSignatureBase64 = base64Png;
+    const imgEl = document.getElementById('sigPreviewImg');
+    const containerEl = document.getElementById('sigPreviewContainer');
+    const statusEl = document.getElementById('sigStatusText');
+    if (imgEl && containerEl && statusEl) {
+      imgEl.src = currentSignatureBase64;
+      containerEl.style.display = 'block';
+      statusEl.innerText = statusMessage || '✅ 長官已完成親筆簽名！';
+      statusEl.style.color = '#059669';
+    }
+  }
 
   function checkSecretWarning() {
     const activeSecrets = Array.from(document.querySelectorAll('#secretChips .chip-item.active'))
@@ -634,7 +665,6 @@
       signature: currentSignatureBase64
     };
 
-    // 收集機密等級
     const secrets = [];
     document.querySelectorAll('#secretChips .chip-item.active').forEach(c => {
       const val = c.getAttribute('data-value');
@@ -642,7 +672,6 @@
     });
     data['secret_levels'] = secrets;
 
-    // 收集案件分類
     const categories = [];
     document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => {
       const val = c.getAttribute('data-value');
@@ -650,7 +679,6 @@
     });
     data['categories'] = categories;
 
-    // 收集分送單位
     const dispatch = [];
     document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => {
       const val = c.getAttribute('data-value');
@@ -665,7 +693,6 @@
   function applyFormData(data) {
     if (!data || typeof data !== 'object') return;
 
-    // 1. 純文字與日期欄位還原
     const textFields = [
       'assigner', 'assigned_date', 'reporting_unit', 'report_date',
       'section_subject', 'section_attendees', 'section_conclusions',
@@ -679,7 +706,6 @@
       }
     });
 
-    // 2. 還原機密等級膠囊
     if (Array.isArray(data.secret_levels)) {
       document.querySelectorAll('#secretChips .chip-item').forEach(c => {
         const val = c.getAttribute('data-value');
@@ -688,7 +714,6 @@
       checkSecretWarning();
     }
 
-    // 3. 還原案件分類膠囊
     if (Array.isArray(data.categories)) {
       document.querySelectorAll('#categoryChips .chip-item').forEach(c => {
         const val = c.getAttribute('data-value');
@@ -696,7 +721,6 @@
       });
     }
 
-    // 4. 還原分送單位膠囊
     if (Array.isArray(data.dispatch_units)) {
       document.querySelectorAll('#dispatchChipsGroup .chip-item').forEach(c => {
         const val = c.getAttribute('data-value');
@@ -704,18 +728,8 @@
       });
     }
 
-    // 5. 還原長官簽名檔
     if (data.signature) {
-      currentSignatureBase64 = data.signature;
-      const imgEl = document.getElementById('sigPreviewImg');
-      const containerEl = document.getElementById('sigPreviewContainer');
-      const statusEl = document.getElementById('sigStatusText');
-      if (imgEl && containerEl && statusEl) {
-        imgEl.src = currentSignatureBase64;
-        containerEl.style.display = 'block';
-        statusEl.innerText = '✅ 已載入長官簽名檔';
-        statusEl.style.color = '#059669';
-      }
+      updateSignatureUI(data.signature, '✅ 已載入長官簽名檔');
     }
   }
 
@@ -799,7 +813,7 @@
         room: peerRoomId
       };
 
-      // 開啟 WebRTC 監聽
+      // 開啟 WebRTC 監聽 (含 Google STUN 打洞)
       initPeerListener(peerRoomId);
 
       // 壓縮資料並組成 sign.html 網址
@@ -828,8 +842,8 @@
 
       shareBtn.classList.add('listening');
       shareBtnText.innerText = '⏳ 等待簽名...';
-      showStatus('已開啟 P2P 即時監聽，等待長官簽名中...', 'info');
-      alert('🔗 長官簽名連結與訊息已成功複製！請貼上至 LINE 發送給長官。\n\n已開啟「即時監聽」，長官簽完名後手機將會響起通知聲。');
+      showStatus('已開啟 P2P 即時監聽！請注意：傳送後請保持此網頁開啟，長官簽完名後手機將會響起通知聲。', 'info');
+      alert('🔗 長官簽名連結已成功複製！請貼上至 LINE 發送給長官。\n\n💡 提示：請【保持此網頁開啟】，長官簽名後會自動傳回並響起聲音通知！');
 
     } catch (err) {
       alert('產生連結失敗: ' + err.message);
@@ -839,7 +853,7 @@
     }
   });
 
-  // 使用 is.gd JSONP 進行縮網址
+  // 使用 is.gd JSONP 縮網址
   function getShortUrl(longUrl) {
     return new Promise((resolve, reject) => {
       const cbName = 'isgd_cb_' + Math.floor(Math.random() * 1000000);
@@ -892,27 +906,26 @@
     }
   }
 
-  // 初始化 WebRTC 監聽頻道
+  // 初始化 WebRTC 監聽頻道 (含 STUN 伺服器穿透)
   function initPeerListener(roomId) {
     if (peer) {
       try { peer.destroy(); } catch(e){}
     }
-    peer = new Peer(roomId);
+    
+    // 加入 Google 官方免費 STUN 伺服器協助行動網路打洞
+    peer = new Peer(roomId, {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
+    });
 
     peer.on('connection', (conn) => {
       conn.on('data', (data) => {
         if (data && data.type === 'SIGNATURE_SUBMITTED') {
-          currentSignatureBase64 = data.signature;
-          
-          const imgEl = document.getElementById('sigPreviewImg');
-          const containerEl = document.getElementById('sigPreviewContainer');
-          const statusEl = document.getElementById('sigStatusText');
-          if (imgEl && containerEl && statusEl) {
-            imgEl.src = currentSignatureBase64;
-            containerEl.style.display = 'block';
-            statusEl.innerText = '✅ 長官已完成親筆簽名！';
-            statusEl.style.color = '#059669';
-          }
+          updateSignatureUI(data.signature, '✅ 長官已完成親筆簽名！');
 
           playNotificationSound();
           const pdfBtn = document.getElementById('btnExportPDF');
@@ -994,7 +1007,6 @@
       });
     }
 
-    // 處理段落與縮排
     function processSection(title, contentText, fontSize, maxW) {
       const items = [];
       if (title) items.push({ text: title, isTitle: true, indent: 0 });
@@ -1043,7 +1055,6 @@
 
     let currentY = height - marginTop;
 
-    // 1. 機密等級標示
     const rawSecrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
     const activeSecrets = rawSecrets.filter(v => v !== '無');
     
@@ -1059,7 +1070,6 @@
 
     currentY -= 12;
 
-    // 2. 頁首大標題（22pt 粗體）與頂部案件分類（14pt 楷體，左右置中）
     const leftTitle = '經 濟 部';
     const rightTitle = '速 報 單';
     const titleSize = 22;
@@ -1098,7 +1108,6 @@
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
-    // 3. 基本資訊欄位（16pt 楷體）
     const infoFontSize = 16;
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
     currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
@@ -1109,7 +1118,6 @@
 
     currentY -= 16;
 
-    // 4 & 5. 核心內容表格區塊（向下延伸至距頁尾僅 15pt）
     let tableBoxStartY = currentY;
     const textPaddingX = 8;
     const maxTextW = printableWidth - (textPaddingX * 2);
@@ -1167,7 +1175,6 @@
       }
     }
 
-    // 繪製主內容表格外框
     const finalBoxEndY = renderY + 4;
     const finalBoxH = tableBoxStartY - finalBoxEndY;
     currentPage.drawRectangle({
@@ -1183,7 +1190,6 @@
       currentY = height - marginTop - 20;
     }
 
-    // 6. 本件分送與簽核區塊（12pt 楷體）
     const footerFontSize = 12;
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
     
@@ -1233,7 +1239,6 @@
     currentY -= 22;
     currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    // 繪製長官親筆簽名圖檔
     if (currentSignatureBase64) {
       try {
         const sigImage = await pdfDoc.embedPng(currentSignatureBase64);
