@@ -45,7 +45,6 @@
       margin-bottom: 12px;
     }
 
-    /* 🔍 字體縮放控制列 */
     .zoom-control {
       display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 12px; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
     }
@@ -61,7 +60,6 @@
     .summary-label { font-weight: bold; color: var(--moea-blue); display: block; margin-bottom: 4px; }
     .summary-content { color: #1e293b; white-space: pre-wrap; word-break: break-word; }
 
-    /* 字級切換類別 */
     .font-normal { font-size: 14px; }
     .font-large { font-size: 17px; }
     .font-xlarge { font-size: 20px; }
@@ -76,6 +74,7 @@
     .btn-submit { background: var(--primary-green); color: white; transition: all 0.2s ease; }
     .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-clear { background: #cbd5e1; color: #334155; }
+    .btn-download { background: #0284c7; color: white; display: none; }
 
     .success-box { display: none; text-align: center; padding: 30px 10px; }
     .success-title { font-size: 22px; font-weight: bold; color: var(--primary-green); margin-bottom: 10px; }
@@ -86,7 +85,6 @@
 <div class="card" id="mainCard">
   <h3>經濟部速報單 - 主管簽核</h3>
 
-  <!-- 字體放大控制組 -->
   <div class="zoom-control">
     <span class="zoom-label">🔍 字體大小：</span>
     <button type="button" class="zoom-btn active" id="btnNormal" onclick="setFontSize('normal')">A 標準</button>
@@ -125,6 +123,7 @@
   <div class="btn-group">
     <button type="button" class="btn btn-clear" id="btnClear" onclick="clearCanvas()">🧹 清除重簽</button>
     <button type="button" class="btn btn-submit" id="btnSubmit" onclick="submitSignature()">✅ 長官簽名完成並送出</button>
+    <button type="button" class="btn btn-download" id="btnDownload" onclick="downloadSignature()">📥 下載簽名圖片 (LINE 傳回給承辦人)</button>
   </div>
 </div>
 
@@ -171,7 +170,6 @@
   function stopDrawing() { isDrawing = false; }
   function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); hasSigned = false; }
 
-  // 讀取網址中壓縮的草稿資料
   document.addEventListener('DOMContentLoaded', () => {
     initCanvas();
     canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
@@ -196,25 +194,48 @@
     }
   });
 
-  // 透過 WebRTC P2P 將簽名傳回承辦人手機（含逾時防卡機制）
+  function downloadSignature() {
+    if (!hasSigned) { alert('請先於方框內親筆簽名！'); return; }
+    const sigData = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = sigData;
+    link.download = `長官簽名檔.png`;
+    link.click();
+  }
+
   function submitSignature() {
     if (!hasSigned) { alert('請先於方框內親筆簽名！'); return; }
-    if (!reportData || !reportData.room) { alert('缺少連線資訊，請通知承辦人重新傳送長官簽名連結'); return; }
+    if (!reportData || !reportData.room) { alert('缺少連線資訊'); return; }
 
     const submitBtn = document.getElementById('btnSubmit');
+    const downloadBtn = document.getElementById('btnDownload');
+
     submitBtn.innerText = '⏳ 傳送簽名中...';
     submitBtn.disabled = true;
 
     const sigData = canvas.toDataURL('image/png');
-    const peer = new Peer();
 
-    // 5 秒連線逾時保護
-    const timeout = setTimeout(() => {
-      alert('⚠️ 連線逾時（可能是承辦人網頁已關閉或網路阻擋）。請通知承辦人保持「速報單網頁開啟」狀態，並重新點擊【長官簽名】按鈕。');
+    // 建立含 Google STUN 打洞的 WebRTC Peer
+    const peer = new Peer({
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
+    });
+
+    const handleConnectionFail = (errMsg) => {
+      alert(`⚠️ 自動連線回傳失敗（因承辦人手機頁面關閉或網路阻擋）\n\n已為您啟用備援模式：請點擊下方藍色按鈕【下載簽名圖片】，直接傳給承辦人即可！`);
       submitBtn.innerText = '✅ 長官簽名完成並送出';
       submitBtn.disabled = false;
+      downloadBtn.style.display = 'block'; // 顯現下載備援按鈕
+    };
+
+    const timeout = setTimeout(() => {
       try { peer.destroy(); } catch(e){}
-    }, 5000);
+      handleConnectionFail('逾時');
+    }, 4500);
 
     peer.on('open', () => {
       const conn = peer.connect(reportData.room);
@@ -229,17 +250,13 @@
 
       conn.on('error', (err) => {
         clearTimeout(timeout);
-        alert('傳送失敗：' + err);
-        submitBtn.innerText = '✅ 長官簽名完成並送出';
-        submitBtn.disabled = false;
+        handleConnectionFail(err);
       });
     });
 
     peer.on('error', (err) => {
       clearTimeout(timeout);
-      alert('P2P 連線建立失敗：' + err.message);
-      submitBtn.innerText = '✅ 長官簽名完成並送出';
-      submitBtn.disabled = false;
+      handleConnectionFail(err.message);
     });
   }
 </script>
