@@ -10,7 +10,6 @@
   <style>
     :root {
       --moea-blue: #003a6c;
-      --bg-color: #f1f5f9;
       --card-bg: #ffffff;
       --primary-green: #059669;
     }
@@ -74,7 +73,8 @@
 
     .btn-group { display: flex; flex-direction: column; gap: 8px; }
     .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
-    .btn-submit { background: var(--primary-green); color: white; }
+    .btn-submit { background: var(--primary-green); color: white; transition: all 0.2s ease; }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
     .btn-clear { background: #cbd5e1; color: #334155; }
 
     .success-box { display: none; text-align: center; padding: 30px 10px; }
@@ -123,8 +123,8 @@
   </div>
 
   <div class="btn-group">
-    <button type="button" class="btn btn-clear" onclick="clearCanvas()">🧹 清除重簽</button>
-    <button type="button" class="btn btn-submit" onclick="submitSignature()">✅ 長官簽名完成並送出</button>
+    <button type="button" class="btn btn-clear" id="btnClear" onclick="clearCanvas()">🧹 清除重簽</button>
+    <button type="button" class="btn btn-submit" id="btnSubmit" onclick="submitSignature()">✅ 長官簽名完成並送出</button>
   </div>
 </div>
 
@@ -175,7 +175,9 @@
   document.addEventListener('DOMContentLoaded', () => {
     initCanvas();
     canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('touchstart', startDrawing); canvas.addEventListener('touchmove', draw); canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing, { passive: false });
 
     const urlParams = new URLSearchParams(window.location.search);
     const dParam = urlParams.get('d');
@@ -194,23 +196,50 @@
     }
   });
 
-  // 透過 WebRTC P2P 將簽名傳回承辦人手機
+  // 透過 WebRTC P2P 將簽名傳回承辦人手機（含逾時防卡機制）
   function submitSignature() {
     if (!hasSigned) { alert('請先於方框內親筆簽名！'); return; }
-    if (!reportData || !reportData.room) { alert('缺少連線資訊，無法自動傳回承辦人'); return; }
+    if (!reportData || !reportData.room) { alert('缺少連線資訊，請通知承辦人重新傳送長官簽名連結'); return; }
+
+    const submitBtn = document.getElementById('btnSubmit');
+    submitBtn.innerText = '⏳ 傳送簽名中...';
+    submitBtn.disabled = true;
 
     const sigData = canvas.toDataURL('image/png');
     const peer = new Peer();
 
+    // 5 秒連線逾時保護
+    const timeout = setTimeout(() => {
+      alert('⚠️ 連線逾時（可能是承辦人網頁已關閉或網路阻擋）。請通知承辦人保持「速報單網頁開啟」狀態，並重新點擊【長官簽名】按鈕。');
+      submitBtn.innerText = '✅ 長官簽名完成並送出';
+      submitBtn.disabled = false;
+      try { peer.destroy(); } catch(e){}
+    }, 5000);
+
     peer.on('open', () => {
       const conn = peer.connect(reportData.room);
       conn.on('open', () => {
+        clearTimeout(timeout);
         conn.send({ type: 'SIGNATURE_SUBMITTED', signature: sigData });
         setTimeout(() => {
           document.getElementById('mainCard').style.display = 'none';
           document.getElementById('successBox').style.display = 'block';
-        }, 500);
+        }, 400);
       });
+
+      conn.on('error', (err) => {
+        clearTimeout(timeout);
+        alert('傳送失敗：' + err);
+        submitBtn.innerText = '✅ 長官簽名完成並送出';
+        submitBtn.disabled = false;
+      });
+    });
+
+    peer.on('error', (err) => {
+      clearTimeout(timeout);
+      alert('P2P 連線建立失敗：' + err.message);
+      submitBtn.innerText = '✅ 長官簽名完成並送出';
+      submitBtn.disabled = false;
     });
   }
 </script>
