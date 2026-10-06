@@ -7,10 +7,11 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#66bab7">
   
-  <!-- CDN 套件：pdf-lib, fontkit, lz-string -->
+  <!-- CDN 套件：pdf-lib, fontkit, lz-string, docx -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+  <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 
   <style>
     :root {
@@ -39,7 +40,7 @@
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding: 12px 12px 120px 12px;
+      padding: 12px 12px 140px 12px;
       line-height: 1.5;
     }
 
@@ -115,6 +116,16 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
+    .autosave-badge {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.88);
+      font-weight: 600;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     /* 現代卡片區塊 */
     .card-group {
       background: var(--card-bg);
@@ -146,12 +157,45 @@
       min-width: 0;
     }
 
+    .label-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
     label {
       display: block;
       font-size: 0.85rem;
       font-weight: 700;
-      margin-bottom: 6px;
       color: #334155;
+    }
+
+    /* 符號快速輸入工具列 */
+    .symbol-toolbar {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .symbol-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+
+    .symbol-btn:active {
+      background: var(--primary-light);
+      border-color: var(--primary-teal);
+      color: var(--primary-dark);
+      transform: scale(0.95);
     }
 
     input[type="text"],
@@ -286,17 +330,17 @@
       padding: 4px;
     }
 
-    /* 底部固定操作列 */
+    /* 雙層固定操作列（最佳化行動端多按鈕排版） */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--border-color);
-      padding: 10px 12px;
+      padding: 8px 10px;
       z-index: 1000;
       box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
     }
@@ -305,21 +349,28 @@
       max-width: 600px;
       margin: 0 auto;
       display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .actions-row {
+      display: flex;
       gap: 5px;
+      width: 100%;
     }
 
     .btn {
-      padding: 10px 2px;
+      padding: 8px 2px;
       font-size: 0.78rem;
       font-weight: 700;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 3px;
       transition: all 0.18s ease;
       flex: 1;
       white-space: nowrap;
@@ -339,6 +390,12 @@
       background-color: #e0f2fe;
       color: #0369a1;
       border: 1px solid #bae6fd;
+    }
+
+    .btn-docx {
+      background-color: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
     }
 
     .btn-share {
@@ -388,6 +445,7 @@
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
     <div class="hero-main-title">經濟部速報單</div>
+    <div class="autosave-badge" id="autosaveBadge">⏱️ 自動暫存服務準備中...</div>
   </div>
 
   <form id="moeaReportForm">
@@ -458,7 +516,15 @@
       </div>
 
       <div class="form-group">
-        <label for="section_conclusions">會議結論及指示事項：</label>
+        <div class="label-header">
+          <label for="section_conclusions">會議結論及指示事項：</label>
+          <div class="symbol-toolbar">
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_conclusions', '一、')">一、</button>
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_conclusions', '(一)')">(一)</button>
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_conclusions', '1.')">1.</button>
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_conclusions', '(1)')">(1)</button>
+          </div>
+        </div>
         <textarea id="section_conclusions" name="section_conclusions" rows="6">一、
 (一)
 1.
@@ -466,7 +532,15 @@
       </div>
 
       <div class="form-group">
-        <label for="section_suggestions">擬處意見或建議事項：</label>
+        <div class="label-header">
+          <label for="section_suggestions">擬處意見或建議事項：</label>
+          <div class="symbol-toolbar">
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_suggestions', '一、')">一、</button>
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_suggestions', '(一)')">(一)</button>
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_suggestions', '1.')">1.</button>
+            <button type="button" class="symbol-btn" onclick="insertSymbol('section_suggestions', '(1)')">(1)</button>
+          </div>
+        </div>
         <textarea id="section_suggestions" name="section_suggestions" rows="3" placeholder="請輸入擬處意見或建議事項..."></textarea>
       </div>
     </div>
@@ -516,15 +590,21 @@
   </form>
 </div>
 
-<!-- 底部固定操作列 -->
+<!-- 雙層固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
-    <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
-    <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
-    <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入檔</span></button>
-    <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
-    <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span id="pdfBtnText">產出 PDF</span></button>
+    <div class="actions-row">
+      <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
+      <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
+      <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出 JSON</span></button>
+      <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入 JSON</span></button>
+      <button type="button" id="btnCopyText" class="btn btn-local">📋<span>複製文字</span></button>
+    </div>
+    <div class="actions-row">
+      <button type="button" id="btnExportDocx" class="btn btn-docx">📝<span>產出 Word</span></button>
+      <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
+      <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span id="pdfBtnText">產出 PDF</span></button>
+    </div>
   </div>
 </div>
 
@@ -593,9 +673,60 @@
       reader.readAsDataURL(file);
     });
 
-    // 自動偵測網址是否帶有長官簽名帶回資料
+    // 自動定時暫存與網址帶回簽名檢查
     checkUrlForSignedData();
+    startAutoSave();
   });
+
+  // 階層符號快速插入功能
+  function insertSymbol(textareaId, symbolStr) {
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+
+    const startPos = el.selectionStart;
+    const endPos = el.selectionEnd;
+    const val = el.value;
+
+    const needNewline = (startPos > 0 && val.charAt(startPos - 1) !== '\n');
+    const textToInsert = (needNewline ? '\n' : '') + symbolStr;
+
+    el.value = val.substring(0, startPos) + textToInsert + val.substring(endPos);
+    el.selectionStart = el.selectionEnd = startPos + textToInsert.length;
+    el.focus();
+  }
+
+  // 30 秒自動備份機制
+  function startAutoSave() {
+    const badge = document.getElementById('autosaveBadge');
+    
+    // 頁面初次載入嘗試讀取最新的 AutoSave
+    const lastAutoSave = localStorage.getItem('moea_report_autosave_v1');
+    if (lastAutoSave) {
+      try {
+        const parsed = JSON.parse(lastAutoSave);
+        if (parsed && parsed.timestamp) {
+          const date = new Date(parsed.timestamp);
+          const timeStr = date.toTimeString().split(' ')[0];
+          if (badge) badge.innerText = `⏱️ 上次備份於 ${timeStr}`;
+        }
+      } catch (e) {}
+    }
+
+    setInterval(() => {
+      const data = getFormData();
+      const savePayload = {
+        timestamp: new Date().toISOString(),
+        data: data
+      };
+      localStorage.setItem('moea_report_autosave_v1', JSON.stringify(savePayload));
+      
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0];
+      if (badge) {
+        badge.innerText = `⏱️ 已於 ${timeStr} 自動定時暫存`;
+      }
+    }, 30000); // 30 秒
+  }
 
   function checkUrlForSignedData() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -742,19 +873,28 @@
     }
   }
 
-  // 1. 本地暫存區塊
+  // 1. 本地手動暫存區塊
   document.getElementById('btnSaveTemp').addEventListener('click', () => {
     const data = getFormData();
     localStorage.setItem('moea_report_temp_data_v1', JSON.stringify(data));
-    showStatus('經濟部速報單已暫存至本地！', 'success');
+    showStatus('經濟部速報單已成功手動儲存至本地！', 'success');
   });
 
   document.getElementById('btnLoadTemp').addEventListener('click', () => {
-    const saved = localStorage.getItem('moea_report_temp_data_v1');
+    let saved = localStorage.getItem('moea_report_temp_data_v1');
+    if (!saved) {
+      // 備援：若無手動暫存，嘗試讀取 AutoSave 備份
+      const autoSave = localStorage.getItem('moea_report_autosave_v1');
+      if (autoSave) {
+        try { saved = JSON.stringify(JSON.parse(autoSave).data); } catch(e){}
+      }
+    }
+
     if (!saved) {
       showStatus('未找到暫存資料！', 'error');
       return;
     }
+
     try {
       applyFormData(JSON.parse(saved));
       showStatus('已成功載入經濟部速報單草稿！', 'success');
@@ -763,7 +903,43 @@
     }
   });
 
-  // 2. JSON 檔案雙向匯出/讀入
+  // 2. 一鍵複製文字速報檔（格式化為 LINE/Email 懶人包）
+  document.getElementById('btnCopyText').addEventListener('click', async () => {
+    const data = getFormData();
+    const activeSecrets = (data.secret_levels || []).filter(v => v !== '無').join('、');
+    const secretStr = activeSecrets ? `【機密等級】：${activeSecrets}\n` : '';
+    const categoriesStr = (data.categories || []).join('、') || '無';
+    const dispatchStr = (data.dispatch_units || []).join('、') || '無';
+    const otherUnitStr = data.other_unit_text ? ` (${data.other_unit_text})` : '';
+
+    const textTemplate = `【經濟部速報單】
+${secretStr}【案件分類】：${categoriesStr}
+【交辦長官】：${data.assigner || '無'} (${formatROCDate(data.assigned_date)})
+【陳報單位】：${data.reporting_unit || '未填寫'} (${formatROCDate(data.report_date)})
+
+一、案由：
+${data.section_subject || '無'}
+
+二、出席人員：
+${data.section_attendees || '無'}
+
+三、會議結論及指示事項：
+${data.section_conclusions || '無'}
+
+四、擬處意見或建議事項：
+${data.section_suggestions || '無'}
+
+----------------------------------------
+【分送單位】：${dispatchStr}${otherUnitStr}
+【本案聯絡人】：${data.contact_person || '未填寫'}
+【聯絡電話】：${data.contact_phone || '未填寫'}`;
+
+    await copyToClipboard(textTemplate);
+    showStatus('已成功複製「文字速報」！可直接貼至 LINE 或 Email。', 'success');
+    alert('📋 已成功複製文字速報內容！您可以直接貼上發送給相關人員。');
+  });
+
+  // 3. JSON 檔案雙向匯出/讀入
   document.getElementById('btnExportJson').addEventListener('click', () => {
     const data = getFormData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
@@ -797,7 +973,7 @@
     reader.readAsText(file, 'UTF-8');
   });
 
-  // 3. 長官簽名連線與極短網址發送
+  // 4. 長官簽名連線與極短網址發送
   document.getElementById('btnShareReview').addEventListener('click', async () => {
     const shareBtn = document.getElementById('btnShareReview');
     const shareBtnText = document.getElementById('shareBtnText');
@@ -809,7 +985,6 @@
       shareBtnText.innerText = '⏳ 處理中...';
       shareBtn.disabled = true;
 
-      // 壓縮完整表單資料至 d 參數
       const jsonStr = JSON.stringify(data);
       const compressed = LZString.compressToEncodedURIComponent(jsonStr);
       const signBaseUrl = window.location.origin + window.location.pathname.replace(/moea-report(_2)?\.html/, 'sign.html');
@@ -840,6 +1015,86 @@
     } finally {
       shareBtnText.innerText = '長官簽名';
       shareBtn.disabled = false;
+    }
+  });
+
+  // 5. 純前端 Word (.docx) 文件生成引擎
+  document.getElementById('btnExportDocx').addEventListener('click', async () => {
+    try {
+      showStatus('正在生成 Word (.docx) 文件...', 'info');
+      const data = getFormData();
+      
+      const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle } = docx;
+
+      const createPara = (text, bold = false, size = 24) => new Paragraph({
+        children: [new TextRun({ text: text || '', bold: bold, size: size, font: "標楷體" })]
+      });
+
+      const createCell = (text, widthPct, bold = false) => new TableCell({
+        width: { size: widthPct, type: WidthType.PERCENTAGE },
+        children: (text || '').split('\n').map(line => createPara(line, bold, 24)),
+        margins: { top: 100, bottom: 100, left: 150, right: 150 }
+      });
+
+      const activeSecrets = (data.secret_levels || []).filter(v => v !== '無').join('、');
+      const docCategories = (data.categories || []).join('、');
+      const docDispatch = (data.dispatch_units || []).join('、');
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: [
+            activeSecrets ? new Paragraph({
+              alignment: AlignmentType.RIGHT,
+              children: [new TextRun({ text: `機密等級：${activeSecrets}`, size: 20, font: "標楷體" })]
+            }) : new Paragraph({ text: '' }),
+
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: `經 濟 部 速 報 單`, bold: true, size: 36, font: "標楷體" })]
+            }),
+
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [new TextRun({ text: `(案件分類：${docCategories})`, size: 22, font: "標楷體" })]
+            }),
+
+            new Paragraph({ text: '' }),
+
+            createPara(`交辦長官：${data.assigner || ''}   交辦日期：${formatROCDate(data.assigned_date)}`),
+            createPara(`陳報單位：${data.reporting_unit || ''}   陳報日期：${formatROCDate(data.report_date)}`),
+
+            new Paragraph({ text: '' }),
+
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: [
+                new TableRow({ children: [createCell(`案由：\n${data.section_subject || ''}`, 100)] }),
+                new TableRow({ children: [createCell(`出席人員：\n${data.section_attendees || ''}`, 100)] }),
+                new TableRow({ children: [createCell(`會議結論及指示事項：\n${data.section_conclusions || ''}`, 100)] }),
+                new TableRow({ children: [createCell(`擬處意見或建議事項：\n${data.section_suggestions || ''}`, 100)] })
+              ]
+            }),
+
+            new Paragraph({ text: '' }),
+
+            createPara(`本件分送：${docDispatch}${data.other_unit_text ? ' (' + data.other_unit_text + ')' : ''}`),
+            createPara(`本案聯絡人：${data.contact_person || ''}`),
+            createPara(`聯絡電話：${data.contact_phone || ''}`),
+            createPara(`陳報單位首長/主管簽核：`)
+          ]
+        }]
+      });
+
+      const blob = await Packer.toBlob(doc);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `經濟部速報單_${data.report_date || ''}.docx`;
+      link.click();
+
+      showStatus('經濟部速報單 Word (.docx) 匯出成功！', 'success');
+    } catch (err) {
+      showStatus(`Word 匯出失敗: ${err.message}`, 'error');
     }
   });
 
@@ -892,11 +1147,11 @@
       if (!successful) throw new Error();
     } catch (err) {
       document.body.removeChild(textArea);
-      prompt('請手動複製以下長官簽名訊息：', text);
+      prompt('請手動複製以下訊息：', text);
     }
   }
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (極致空間與距頁尾 15pt 平滑演算法)
+  // 6. 純前端開源楷體 TTF PDF 引擎 (極致空間與距頁尾 15pt 平滑演算法)
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
