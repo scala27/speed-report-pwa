@@ -341,12 +341,6 @@
       border: 1px solid #bae6fd;
     }
 
-    .btn-tool {
-      background-color: #f3e8ff;
-      color: #6b21a8;
-      border: 1px solid #e9d5ff;
-    }
-
     .btn-share {
       background-color: #fef3c7;
       color: #b45309;
@@ -392,95 +386,6 @@
     .status-info { background: #e0f2fe; color: #0369a1; }
     .status-success { background: #dcfce7; color: #15803d; }
     .status-error { background: #fee2e2; color: #b91c1c; }
-
-    /* 通訊錄彈窗 */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      padding: 20px;
-    }
-
-    .modal-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 20px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-      max-height: 85vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-title {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--text-main);
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .email-list-box {
-      overflow-y: auto;
-      margin: 10px 0;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 10px;
-      background: #f8fafc;
-      font-size: 0.82rem;
-      max-height: 250px;
-    }
-
-    .email-item {
-      padding: 6px 0;
-      border-bottom: 1px dashed #cbd5e1;
-    }
-
-    .email-item:last-child {
-      border-bottom: none;
-    }
-
-    .email-item-title {
-      font-weight: 700;
-      color: #334155;
-    }
-
-    .email-item-addr {
-      color: #0284c7;
-      word-break: break-all;
-    }
-
-    .btn-close-modal {
-      width: 100%;
-      padding: 10px;
-      background: #f1f5f9;
-      color: #475569;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-
-    .btn-copy-modal {
-      width: 100%;
-      padding: 10px;
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -621,48 +526,25 @@
   </form>
 </div>
 
-<!-- 底部固定操作列 -->
+<!-- 底部固定操作列 (依要求移除通訊錄按鈕) -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
     <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
     <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
     <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入檔</span></button>
-    <button type="button" id="btnShowEmails" class="btn btn-tool">📧<span>通訊錄</span></button>
     <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
     <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span id="pdfBtnText">產出 PDF</span></button>
   </div>
 </div>
 
-<!-- 隱藏的檔案選擇器（升級 MIME Type 相容性） -->
+<!-- 隱藏的檔案選擇器 -->
 <input type="file" id="jsonFileInput" accept=".json,application/json,text/plain" style="display: none;">
-
-<!-- 彈窗：部次長室 Email 通訊錄 -->
-<div id="emailModal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-title">📧 勾選單位傳送信箱</div>
-    <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center;">已自動根據勾選的分送單位整理以下 E-mail：</div>
-    <div id="emailListContainer" class="email-list-box"></div>
-    <button type="button" id="btnCopyEmails" class="btn-copy-modal">📋 一鍵複製所有收件 Email</button>
-    <button type="button" id="btnCloseEmailModal" class="btn-close-modal">關閉</button>
-  </div>
-</div>
 
 <script>
   let currentSignatureBase64 = null;
   let peer = null;
   let peerRoomId = null;
-
-  // 部次長室官方 Email 通訊錄對照表
-  const EMAIL_DIRECTORY = {
-    '部長室': ['hhchou@moea.gov.tw', 'yichen2@moea.gov.tw', 'dplus1024@moea.gov.tw', 'pslu@moea.gov.tw', 'yychang2@moea.gov.tw'],
-    '何政務次長室': ['cchsieh@moea.gov.tw', 'hwchen@moea.gov.tw'],
-    '江政務次長室': ['patty@moea.gov.tw', 'jtniu@moea.gov.tw'],
-    '賴次長室': ['ychsu2@moea.gov.tw', 'bruce@moea.gov.tw'],
-    '莊主任秘書室': ['e200007@moea.gov.tw'],
-    '本部綜規司': ['chchen3@moea.gov.tw', 'hyhsuan@moea.gov.tw'],
-    '本部國會聯絡組': ['sec2@moea.gov.tw']
-  };
 
   // PWA Service Worker 註冊 v6.6
   if ('serviceWorker' in navigator) {
@@ -858,7 +740,7 @@
     }
   });
 
-  // 2. JSON 檔案雙向匯出/讀入（升級相容性與讀取穩定度）
+  // 2. JSON 檔案雙向匯出/讀入
   document.getElementById('btnExportJson').addEventListener('click', () => {
     const data = getFormData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
@@ -871,7 +753,7 @@
 
   document.getElementById('btnImportJson').addEventListener('click', () => {
     const fileInput = document.getElementById('jsonFileInput');
-    fileInput.value = ''; // 清空先前選取的檔案紀錄
+    fileInput.value = '';
     fileInput.click();
   });
 
@@ -892,53 +774,7 @@
     reader.readAsText(file, 'UTF-8');
   });
 
-  // 3. 通訊錄與 E-mail 複製彈窗
-  let currentTargetEmails = [];
-
-  document.getElementById('btnShowEmails').addEventListener('click', () => {
-    const data = getFormData();
-    const container = document.getElementById('emailListContainer');
-    container.innerHTML = '';
-    currentTargetEmails = [];
-
-    const selectedUnits = data.dispatch_units || [];
-
-    if (selectedUnits.length === 0) {
-      container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">未勾選任何分送單位</div>';
-    } else {
-      selectedUnits.forEach(unit => {
-        const emails = EMAIL_DIRECTORY[unit] || [];
-        if (emails.length > 0) {
-          currentTargetEmails.push(...emails);
-          const item = document.createElement('div');
-          item.className = 'email-item';
-          item.innerHTML = `<div class="email-item-title">${unit}</div><div class="email-item-addr">${emails.join(', ')}</div>`;
-          container.appendChild(item);
-        }
-      });
-    }
-
-    document.getElementById('emailModal').style.display = 'flex';
-  });
-
-  document.getElementById('btnCopyEmails').addEventListener('click', () => {
-    if (currentTargetEmails.length === 0) {
-      alert('目前沒有可複製的 Email');
-      return;
-    }
-    const uniqueEmails = [...new Set(currentTargetEmails)].join('; ');
-    navigator.clipboard.writeText(uniqueEmails).then(() => {
-      alert('已成功複製所有勾選單位的 Email 收件人至剪貼簿！');
-    }).catch(() => {
-      prompt('請手動複製以下 Email：', uniqueEmails);
-    });
-  });
-
-  document.getElementById('btnCloseEmailModal').addEventListener('click', () => {
-    document.getElementById('emailModal').style.display = 'none';
-  });
-
-  // 4. 長官簽名連線與極短網址發送
+  // 3. 長官簽名連線與極短網址發送
   document.getElementById('btnShareReview').addEventListener('click', async () => {
     const shareBtn = document.getElementById('btnShareReview');
     const shareBtnText = document.getElementById('shareBtnText');
@@ -1117,7 +953,7 @@
     } catch(e) {}
   }
 
-  // 5. 純前端開源楷體 TTF PDF 引擎 (極致空間與距頁尾 15pt 平滑演算法)
+  // 4. 純前端開源楷體 TTF PDF 引擎 (極致空間與距頁尾 15pt 平滑演算法)
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
