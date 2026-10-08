@@ -603,7 +603,7 @@
     reader.readAsText(file);
   });
 
-  // 3. 匯出 Word (.docx) 文件（完美邊界、無框線、民國年格式與精準段落凸排）
+  // 3. 匯出 Word (.docx) 文件（完美邊界、無框線、民國年格式與縮排1字元）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -622,7 +622,7 @@
       insideHorizontal: noBorder, insideVertical: noBorder
     };
 
-    // 1. 頂部標題表格（選項置中，左右標題對齊）
+    // 1. 頂部標題表格（標題無空白、向內縮排1字元 [240 twips]）
     const types = ['部次長交辦事項', '重要業務', '重要會議結論', '首長訪視行程', '媒體受訪', '其他'];
     const typeParas = types.map(t => {
       const isChecked = (data.meeting_type === t);
@@ -645,9 +645,9 @@
               children: [
                 new Paragraph({
                   alignment: AlignmentType.LEFT,
-                  indent: { left: 480 }, // 縮排 2 字元 (480 twips)
+                  indent: { left: 240 }, // 縮排 1 字元 (240 twips)
                   spacing: { before: 0, after: 0, line: 240 },
-                  children: [new TextRun({ text: "經 濟 部 水 利 署", bold: true, size: 40, font: "標楷體" })]
+                  children: [new TextRun({ text: "經濟部水利署", bold: true, size: 40, font: "標楷體" })]
                 })
               ]
             }),
@@ -664,9 +664,9 @@
               children: [
                 new Paragraph({
                   alignment: AlignmentType.RIGHT,
-                  indent: { right: 480 }, // 縮排 2 字元
+                  indent: { right: 240 }, // 縮排 1 字元 (240 twips)
                   spacing: { before: 0, after: 0, line: 240 },
-                  children: [new TextRun({ text: "辦 理 現 況 速 報 單", bold: true, size: 40, font: "標楷體" })]
+                  children: [new TextRun({ text: "辦理現況速報單", bold: true, size: 40, font: "標楷體" })]
                 })
               ]
             })
@@ -984,11 +984,17 @@
       });
     });
 
-    drawBoldText(currentPage, '經濟部水利署', marginX, listTopY - (2 * optionLineSpacing), 20, 2.0);
-
+    const leftTitle = '經濟部水利署';
     const rightTitle = '辦理現況速報單';
-    const rightTitleW = measureTextWidth(rightTitle, 20);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, listTopY - (2 * optionLineSpacing), 20, 2.0);
+    const titleSize = 20;
+    const headerIndent1Char = titleSize; // 1 個字元縮排 (20 pt)
+
+    // 「經濟部水利署」：向內縮排 1 個字元
+    drawBoldText(currentPage, leftTitle, marginX + headerIndent1Char, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
+
+    // 「辦理現況速報單」：向內縮排 1 個字元
+    const rightTitleW = measureTextWidth(rightTitle, titleSize);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent1Char, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
 
     const basicInfoStartY = listTopY - (6 * optionLineSpacing) - 12;
 
