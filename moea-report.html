@@ -744,7 +744,7 @@
     }
   }
 
-  // 5. 匯出 Word (.docx) 文件
+  // 5. 匯出 Word (.docx) 文件（完美邊界與無框線排版）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -757,26 +757,32 @@
 
     const checkSym = (isChecked) => isChecked ? '■ ' : '□ ';
 
-    // 機密等級
+    // 無框線物件定義
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: "auto" };
+    const noBorders = {
+      top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
+      insideHorizontal: noBorder, insideVertical: noBorder
+    };
+
+    // 機密等級標記
     const activeSecrets = (data.secret_levels || []).filter(v => v !== '無');
     const secretPara = activeSecrets.length > 0 
       ? new Paragraph({
           alignment: AlignmentType.RIGHT,
+          spacing: { before: 0, after: 0, line: 240 },
           children: [new TextRun({ text: `機密等級：${activeSecrets.join('、')}`, size: 20, font: "標楷體" })]
         })
       : new Paragraph({ text: '' });
 
-    // 標題與案件分類
+    // 1. 頂部標題表格（全部無框線）
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
     const catParas = categoryOptions.map(cat => {
       const isChecked = (data.categories || []).includes(cat);
       return new Paragraph({
+        spacing: { before: 0, after: 0, line: 240 },
         children: [new TextRun({ text: checkSym(isChecked) + cat, font: "標楷體", size: 26 })]
       });
     });
-
-    const noBorder = { style: BorderStyle.NONE, size: 0, color: "auto" };
-    const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
 
     const headerTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
@@ -792,6 +798,7 @@
                 new Paragraph({
                   alignment: AlignmentType.LEFT,
                   indent: { left: 480 },
+                  spacing: { before: 0, after: 0, line: 240 },
                   children: [new TextRun({ text: "經 濟 部", bold: true, size: 44, font: "標楷體" })]
                 })
               ]
@@ -810,6 +817,7 @@
                 new Paragraph({
                   alignment: AlignmentType.RIGHT,
                   indent: { right: 480 },
+                  spacing: { before: 0, after: 0, line: 240 },
                   children: [new TextRun({ text: "速 報 單", bold: true, size: 44, font: "標楷體" })]
                 })
               ]
@@ -819,7 +827,7 @@
       ]
     });
 
-    // 基本資訊
+    // 2. 交辦與陳報基本資訊欄位（全部無框線，日期靠右對齊）
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -829,12 +837,12 @@
             new TableCell({
               width: { size: 55, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ children: [new TextRun({ text: `交辦長官：${data.assigner || ''}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦長官：${data.assigner || ''}`, font: "標楷體", size: 32 })] })]
             }),
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `交辦日期：${formatROCDate(data.assigned_date)}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatROCDate(data.assigned_date)}`, font: "標楷體", size: 32 })] })]
             })
           ]
         }),
@@ -843,24 +851,24 @@
             new TableCell({
               width: { size: 55, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ children: [new TextRun({ text: `陳報單位：${data.reporting_unit || ''}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報單位：${data.reporting_unit || ''}`, font: "標楷體", size: 32 })] })]
             }),
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `陳報日期：${formatROCDate(data.report_date)}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatROCDate(data.report_date)}`, font: "標楷體", size: 32 })] })]
             })
           ]
         })
       ]
     });
 
-    // 主體外框與階層縮排
+    // 3. 內文段落處理（縮排優化 + 前後距0行 + 單行間距）
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
         paras.push(new Paragraph({
-          spacing: { before: 140, after: 60 },
+          spacing: { before: 120, after: 0, line: 240 },
           children: [new TextRun({ text: title, bold: true, size: 32, font: "標楷體" })]
         }));
       }
@@ -871,21 +879,21 @@
           const trimmed = line.trim();
           if (!trimmed) return;
 
-          let indentTwips = 320;
+          let indentTwips = 320; // 預設 1 字元縮排
 
           if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
-            indentTwips = 1280;
+            indentTwips = 1280; // (1) 階層：縮排 4 字元
           } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
-            indentTwips = 960;
+            indentTwips = 960;  // 1. 階層：縮排 3 字元
           } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
-            indentTwips = 640;
+            indentTwips = 640;  // (一) 階層：縮排 2 字元
           } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
-            indentTwips = 320;
+            indentTwips = 320;  // 一、 階層：縮排 1 字元
           }
 
           paras.push(new Paragraph({
             indent: { left: indentTwips },
-            spacing: { before: 40, after: 40, line: 360 },
+            spacing: { before: 0, after: 0, line: 240 },
             children: [new TextRun({ text: trimmed, size: 32, font: "標楷體" })]
           }));
         });
@@ -900,6 +908,7 @@
       ...processDocxSection('擬處意見或建議事項：', data.section_suggestions)
     ];
 
+    // 5. 整合於單一標準外框（內部無分隔橫線）
     const singleBorder = { style: BorderStyle.SINGLE, size: 8, color: "000000" };
     const outerBoxBorders = {
       top: singleBorder,
@@ -918,7 +927,8 @@
           children: [
             new TableCell({
               width: { size: 100, type: WidthType.PERCENTAGE },
-              margins: { top: 160, bottom: 200, left: 180, right: 180 },
+              borders: outerBoxBorders,
+              margins: { top: 140, bottom: 180, left: 160, right: 160 },
               children: allMainParas
             })
           ]
@@ -926,14 +936,14 @@
       ]
     });
 
-    // 分送單位對齊表格
+    // 4. 本件分送單位欄位（全部無框線）
     const dispatchUnits = data.dispatch_units || [];
     const isDis = (name) => dispatchUnits.includes(name);
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
 
     const createCellTxt = (text) => new TableCell({
       borders: noBorders,
-      children: [new Paragraph({ children: [new TextRun({ text: text, font: "標楷體", size: 24 })] })]
+      children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: text, font: "標楷體", size: 24 })] })]
     });
 
     const dispatchTable = new Table({
@@ -967,7 +977,7 @@
       ]
     });
 
-    // 簽名檔內嵌
+    // 簽名檔自動內嵌處理
     const sigChildren = [
       new TextRun({ text: `陳報單位首長/主管簽核：`, font: "標楷體", size: 24 })
     ];
@@ -989,31 +999,39 @@
       }
     }
 
+    // 6. 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
     const doc = new Document({
       sections: [{
         properties: {
           page: {
-            margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 }
+            margin: {
+              top: 567,    // 上 1.0 公分
+              bottom: 680, // 下 1.2 公分
+              left: 737,   // 左 1.3 公分
+              right: 737   // 右 1.3 公分
+            }
           }
         },
         children: [
           secretPara,
           headerTable,
-          new Paragraph({ text: '' }),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
           infoTable,
-          new Paragraph({ text: '' }),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
           mainContentTable,
-          new Paragraph({ text: '' }),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
           dispatchTable,
-          new Paragraph({ text: '' }),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
           new Paragraph({
+            spacing: { before: 0, after: 0, line: 240 },
             children: [new TextRun({ text: `本案聯絡人：${data.contact_person || ''}`, font: "標楷體", size: 24 })]
           }),
           new Paragraph({
+            spacing: { before: 0, after: 0, line: 240 },
             children: [new TextRun({ text: `聯絡電話：${data.contact_phone || ''}`, font: "標楷體", size: 24 })]
           }),
-          new Paragraph({ text: '' }),
-          new Paragraph({ children: sigChildren })
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: sigChildren })
         ]
       }]
     });
