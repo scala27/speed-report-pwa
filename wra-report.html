@@ -502,15 +502,16 @@
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
-  function formatROCDate(dateStr) {
+  // 強制日期格式化為西元年：例如 2026年10月5日
+  function formatADDate(dateStr) {
     if (!dateStr) return '';
     if (dateStr.includes('年') && dateStr.includes('月') && dateStr.includes('日')) return dateStr;
     const match = dateStr.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
     if (match) {
-      const rocYear = parseInt(match[1], 10) - 1911;
+      const year = match[1];
       const month = parseInt(match[2], 10);
       const day = parseInt(match[3], 10);
-      return `${rocYear}年${month}月${day}日`;
+      return `${year}年${month}月${day}日`;
     }
     return dateStr;
   }
@@ -603,7 +604,7 @@
     reader.readAsText(file);
   });
 
-  // 3. 匯出 Word (.docx) 文件（調整欄寬比例：32%-32%-36%，確保「辦理現況速報單」不換行）
+  // 3. 匯出 Word (.docx) 文件（完美邊界、無框線、西元年格式與縮排1字元）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -652,13 +653,13 @@
               ]
             }),
             new TableCell({
-              width: { size: 32, type: WidthType.PERCENTAGE }, // 縮小案件性質欄寬
+              width: { size: 32, type: WidthType.PERCENTAGE },
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: typeParas
             }),
             new TableCell({
-              width: { size: 36, type: WidthType.PERCENTAGE }, // 放大右側標題欄寬
+              width: { size: 36, type: WidthType.PERCENTAGE },
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: [
@@ -675,7 +676,7 @@
       ]
     });
 
-    // 2. 交辦與陳報基本資訊欄位（民國年格式 + 無框線）
+    // 2. 交辦與陳報基本資訊欄位（西元年格式 + 無框線）
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -690,7 +691,7 @@
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatROCDate(data.assigned_date)}`, font: "標楷體", size: 30 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatADDate(data.assigned_date)}`, font: "標楷體", size: 30 })] })]
             })
           ]
         }),
@@ -704,7 +705,7 @@
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatROCDate(data.report_date)}`, font: "標楷體", size: 30 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatADDate(data.report_date)}`, font: "標楷體", size: 30 })] })]
             })
           ]
         })
@@ -866,7 +867,7 @@
     showStatus('水利署速報單 Word (.docx) 匯出成功！格式與 PDF 完全一致。', 'success');
   }
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (頂部標題調整為自左右邊界向內精準縮排 2 個字元 [40pt])
+  // 4. 純前端開源楷體 TTF PDF 引擎 (西元年格式與精準縮排 2 個字元 [40pt])
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -1004,7 +1005,7 @@
       size: 15,
       font: kaiFont
     });
-    currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, {
+    currentPage.drawText(`交辦日期：${formatADDate(data.assigned_date)}`, {
       x: marginX + 325,
       y: basicInfoStartY,
       size: 15,
@@ -1017,7 +1018,7 @@
       size: 15,
       font: kaiFont
     });
-    currentPage.drawText(`陳報日期：${formatROCDate(data.report_date)}`, {
+    currentPage.drawText(`陳報日期：${formatADDate(data.report_date)}`, {
       x: marginX + 325,
       y: basicInfoStartY - 22,
       size: 15,
