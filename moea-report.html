@@ -3,29 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>經濟部速報單 - 打工雲</title>
+  <title>速報單填報系統 - 經濟部</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#66bab7">
+  <meta name="theme-color" content="#2b81ad">
   
-  <!-- CDN 套件 (採用 cdnjs / jsDelivr 穩定備援鏈結) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+  <!-- CDN 套件：pdf-lib, fontkit, docx.js -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 
   <style>
     :root {
-      --primary-teal: rgb(102, 186, 183);
-      --primary-dark: #2c8582;
-      --primary-light: #f0f8f8;
-      --bg-gradient: linear-gradient(180deg, #f2f9f9 0%, #fafcfc 220px);
+      --primary-water: #2b81ad;
+      --primary-dark: #1e5c7d;
+      --primary-light: #eef7fc;
+      --bg-gradient: linear-gradient(180deg, #eaf5fb 0%, #f8fafc 220px);
       --card-bg: #ffffff;
-      --border-color: #e2eceb;
+      --border-color: #e2e8f0;
       --text-main: #0f172a;
       --text-muted: #64748b;
       --radius-card: 18px;
       --radius-input: 12px;
-      --danger-color: #ef4444;
     }
 
     * {
@@ -51,12 +49,12 @@
 
     /* Header 卡片 */
     .hero-header-card {
-      background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 60%, #7edbd8 100%);
+      background: linear-gradient(135deg, #1e5c7d 0%, #2b81ad 60%, #429bbb 100%);
       border-radius: var(--radius-card);
       padding: 20px 20px 18px 20px;
       color: #ffffff;
       margin-bottom: 14px;
-      box-shadow: 0 10px 22px -5px rgba(102, 186, 183, 0.35);
+      box-shadow: 0 10px 22px -5px rgba(43, 129, 173, 0.35);
       position: relative;
       overflow: hidden;
     }
@@ -68,7 +66,7 @@
       right: -20%;
       width: 200px;
       height: 200px;
-      background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 70%);
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
       pointer-events: none;
     }
 
@@ -116,21 +114,11 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
-    .autosave-badge {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.88);
-      font-weight: 600;
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
     /* 現代卡片區塊 */
     .card-group {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
-      border-top: 3.5px solid var(--primary-teal);
+      border-top: 3.5px solid var(--primary-water);
       border-radius: var(--radius-card);
       padding: 18px 16px;
       margin-bottom: 14px;
@@ -190,25 +178,18 @@
 
     input:focus, select:focus, textarea:focus {
       outline: none;
-      border-color: var(--primary-teal);
-      box-shadow: 0 0 0 3px rgba(102, 186, 183, 0.2);
+      border-color: var(--primary-water);
+      box-shadow: 0 0 0 3px rgba(43, 129, 173, 0.2);
     }
 
     textarea {
       resize: vertical;
-      min-height: 90px;
+      min-height: 110px;
       font-family: inherit;
       line-height: 1.6;
     }
 
-    /* 膠囊選擇按鈕 Grid */
-    .chips-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-    }
-
+    /* 雙欄膠囊 Grid */
     .chips-grid-2col {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -220,7 +201,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 9px 12px;
+      padding: 10px 12px;
       border-radius: 12px;
       font-size: 0.85rem;
       font-weight: 700;
@@ -232,12 +213,6 @@
       transition: all 0.2s ease;
     }
 
-    .chip-item.secret-danger.active {
-      background: #fef2f2;
-      color: #dc2626;
-      border-color: #fca5a5;
-    }
-
     .chip-item .check-icon {
       font-size: 0.8rem;
       opacity: 0;
@@ -246,10 +221,10 @@
     }
 
     .chip-item.active {
-      background: var(--primary-light);
+      background: #eef7fc;
       color: var(--primary-dark);
-      border-color: var(--primary-teal);
-      box-shadow: 0 2px 8px rgba(102, 186, 183, 0.2);
+      border-color: var(--primary-water);
+      box-shadow: 0 2px 8px rgba(43, 129, 173, 0.2);
     }
 
     .chip-item.active .check-icon {
@@ -257,59 +232,23 @@
       transform: scale(1);
     }
 
-    .secret-warning-box {
-      display: none;
-      margin-top: 10px;
-      padding: 10px 12px;
-      background: #fff1f2;
-      border: 1px solid #fecdd3;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      color: #9f1239;
-      font-weight: 600;
-      line-height: 1.4;
-    }
-
     .other-unit-input {
       margin-top: 10px;
     }
 
-    /* 長官簽名預覽區 */
-    .signature-area-box {
-      margin-top: 10px;
-      padding: 12px;
-      background: #f8fafc;
-      border: 1.5px dashed #cbd5e1;
-      border-radius: var(--radius-input);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .sig-preview-img {
-      max-height: 55px;
-      max-width: 100%;
-      object-fit: contain;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 4px;
-    }
-
-    /* 整潔雙層固定操作列 */
+    /* 底部固定操作列 (優化雙層排列) */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-top: 1px solid var(--border-color);
       padding: 10px 12px;
       z-index: 1000;
-      box-shadow: 0 -4px 22px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
     }
 
     .actions-container {
@@ -347,46 +286,45 @@
       transform: scale(0.96);
     }
 
-    /* 上層：草稿與檔案管理按鈕 */
-    .btn-draft {
+    /* 分類 1：本地快取區塊 (低調石墨灰) */
+    .btn-local {
       background-color: #f1f5f9;
-      color: #334155;
+      color: #475569;
       border: 1px solid #cbd5e1;
     }
-    .btn-json {
-      background-color: #f0f9ff;
+    .btn-local:active {
+      background-color: #e2e8f0;
+    }
+
+    /* 分類 2：跨裝置同步區塊 (高辨識天藍) */
+    .btn-sync {
+      background-color: #e0f2fe;
       color: #0369a1;
       border: 1px solid #bae6fd;
     }
+    .btn-sync:active {
+      background-color: #bae6fd;
+    }
 
-    /* 下層：核心輸出按鈕 */
+    /* 分類 3：Word 匯出 (紫藍專屬色彩) */
     .btn-docx {
       background-color: #e0e7ff;
       color: #3730a3;
       border: 1px solid #c7d2fe;
     }
-
-    .btn-share {
-      background-color: #fef3c7;
-      color: #b45309;
-      border: 1px solid #fde68a;
+    .btn-docx:active {
+      background-color: #c7d2fe;
     }
 
+    /* 分類 4：PDF 匯出 (品牌尊榮漸層) */
     .btn-hero {
       flex: 1.2;
-      background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
+      background: linear-gradient(135deg, #1e5c7d 0%, #2b81ad 100%);
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(102, 186, 183, 0.35);
+      box-shadow: 0 4px 12px rgba(43, 129, 173, 0.35);
     }
-    .btn-hero.pulse-ready {
-      animation: pulse-ready 1.2s infinite;
-      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    }
-
-    @keyframes pulse-ready {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    .btn-hero:active {
+      background: linear-gradient(135deg, #184862 0%, #236c91 100%);
     }
 
     #status-msg {
@@ -412,54 +350,39 @@
       <div class="agency-tag">🏛️ 經濟部</div>
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
-    <div class="hero-main-title">經濟部速報單</div>
-    <div class="autosave-badge" id="autosaveBadge">⏱ 自動暫存服務準備中...</div>
+    <div class="hero-main-title">辦理現況速報單</div>
   </div>
 
-  <form id="moeaReportForm">
-    <!-- 卡片 1：機密等級與案件分類 -->
+  <form id="speedReportForm">
+    <!-- 卡片 1：會議與基本欄位 -->
     <div class="card-group">
       <div class="form-group">
-        <label>機密等級（請勾選）</label>
-        <div class="chips-grid" id="secretChips">
-          <div class="chip-item active" data-value="無"><span>無</span><span class="check-icon">✓</span></div>
-          <div class="chip-item secret-danger" data-value="機密"><span>機密</span><span class="check-icon">✓</span></div>
-          <div class="chip-item secret-danger" data-value="密"><span>密</span><span class="check-icon">✓</span></div>
-          <div class="chip-item secret-danger" data-value="限閱"><span>限閱</span><span class="check-icon">✓</span></div>
-        </div>
-        <div id="secretWarning" class="secret-warning-box">
-          ⚠️ 具機密/敏感性速報單請以專人或加密信箱傳遞，避免使用一般 Email 直傳。
-        </div>
+        <label for="meeting_type">會議/案由性質</label>
+        <select id="meeting_type" name="meeting_type">
+          <option value="部次長交辦事項">部次長交辦事項</option>
+          <option value="重要業務">重要業務</option>
+          <option value="重要會議結論" selected>重要會議結論</option>
+          <option value="首長訪視行程">首長訪視行程</option>
+          <option value="媒體受訪">媒體受訪</option>
+          <option value="其他">其他</option>
+        </select>
       </div>
 
-      <div class="form-group" style="margin-top: 14px;">
-        <label>案件分類（點擊選擇）</label>
-        <div class="chips-grid" id="categoryChips">
-          <div class="chip-item active" data-value="府院部長官交辦案件"><span>府院部長官交辦案件</span><span class="check-icon">✓</span></div>
-          <div class="chip-item" data-value="重要會議結論"><span>重要會議結論</span><span class="check-icon">✓</span></div>
-          <div class="chip-item" data-value="立委監委關切事項"><span>立委監委關切事項</span><span class="check-icon">✓</span></div>
-          <div class="chip-item" data-value="其他"><span>其他</span><span class="check-icon">✓</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 卡片 2：交辦與陳報基本資訊 -->
-    <div class="card-group">
       <div class="form-row">
         <div class="form-group">
           <label for="assigner">交辦長官</label>
           <input type="text" id="assigner" name="assigner">
         </div>
         <div class="form-group">
-          <label for="assigned_date">交辦日期</label>
-          <input type="date" id="assigned_date" name="assigned_date" required>
+          <label for="reporting_unit">陳報單位</label>
+          <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：水利署" required>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="reporting_unit">陳報單位</label>
-          <input type="text" id="reporting_unit" name="reporting_unit" placeholder="例如：水利署" required>
+          <label for="assigned_date">交辦日期</label>
+          <input type="date" id="assigned_date" name="assigned_date" required>
         </div>
         <div class="form-group">
           <label for="report_date">陳報日期</label>
@@ -468,51 +391,44 @@
       </div>
     </div>
 
-    <!-- 卡片 3：案由與主要會議內容 -->
+    <!-- 卡片 2：案由與摘要區域 -->
     <div class="card-group">
       <div class="form-group">
-        <label for="section_subject">案由：</label>
-        <textarea id="section_subject" name="section_subject" rows="4" required>[輸入案由]
+        <label for="section_1">壹、案由：</label>
+        <textarea id="section_1" name="section_1" rows="5" required>[輸入案由]
 一、開會時間：
 二、開會地點：
-三、主持人：</textarea>
+三、主持人：
+四、與會人員：</textarea>
       </div>
 
       <div class="form-group">
-        <label for="section_attendees">出席人員：</label>
-        <textarea id="section_attendees" name="section_attendees" rows="2" placeholder="請輸入本案或會議出席人員..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="section_conclusions">會議結論及指示事項：</label>
-        <textarea id="section_conclusions" name="section_conclusions" rows="6">一、
+        <label for="section_2">貳、重點說明暨續辦摘要：</label>
+        <textarea id="section_2" name="section_2" rows="6">一、
 (一)
 1.
 (1)</textarea>
       </div>
 
       <div class="form-group">
-        <label for="section_suggestions">擬處意見或建議事項：</label>
-        <textarea id="section_suggestions" name="section_suggestions" rows="3" placeholder="請輸入擬處意見或建議事項..."></textarea>
+        <label for="section_3">參、擬處理意見或建議事項：</label>
+        <textarea id="section_3" name="section_3" rows="3" placeholder="請輸入擬處理意見或建議事項..."></textarea>
       </div>
     </div>
 
-    <!-- 卡片 4：分送單位與聯絡/簽核資訊 -->
+    <!-- 卡片 3：分送單位與聯絡資訊 -->
     <div class="card-group">
       <div class="form-group">
-        <label>本件分送單位（勾選）</label>
+        <label>本件分送單位（點擊選擇）</label>
         <div class="chips-grid-2col" id="dispatchChipsGroup">
-          <div class="chip-item active" data-value="部長室"><span>部長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="何政務次長室"><span>何政務次長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="江政務次長室"><span>江政務次長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="賴次長室"><span>賴次長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="莊主任秘書室"><span>莊主任秘書室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="本部綜規司"><span>本部綜規司</span><span class="check-icon">✓</span></div>
-          <div class="chip-item" data-value="本部國會聯絡組"><span>本部國會聯絡組</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="部長辦公室"><span>部長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="次長辦公室"><span>次長辦公室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="主任秘書室"><span>主任秘書室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="參事室"><span>參事室</span><span class="check-icon">✓</span></div>
         </div>
 
         <div class="other-unit-input">
-          <input type="text" id="other_unit_text" name="other_unit_text" placeholder="其他單位（例如：商業署、產業園區管理局）">
+          <input type="text" id="other_unit_text" name="other_unit_text" placeholder="例如：國會組、新聞組">
         </div>
       </div>
 
@@ -526,16 +442,6 @@
           <input type="text" id="contact_phone" name="contact_phone" placeholder="辦公室電話/行動電話">
         </div>
       </div>
-
-      <div class="form-group" style="margin-top: 14px;">
-        <label>陳報單位首長/主管簽核</label>
-        <div class="signature-area-box" id="sigAreaBox" title="點擊可手動更換簽名圖檔">
-          <div id="sigPreviewContainer" style="display: none; text-align: center;">
-            <img id="sigPreviewImg" class="sig-preview-img" alt="簽名檔">
-          </div>
-          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請傳送連結給長官簽名）</div>
-        </div>
-      </div>
     </div>
 
     <div id="status-msg"></div>
@@ -547,209 +453,57 @@
   <div class="actions-container">
     <!-- 上層：草稿與 JSON 備份功能 -->
     <div class="actions-row">
-      <button type="button" id="btnSaveTemp" class="btn btn-draft">💾<span>暫存</span></button>
-      <button type="button" id="btnLoadTemp" class="btn btn-draft">📂<span>載入</span></button>
-      <button type="button" id="btnExportJson" class="btn btn-json">📥<span>匯出 JSON</span></button>
-      <button type="button" id="btnImportJson" class="btn btn-json">📂<span>讀入 JSON</span></button>
+      <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
+      <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
+      <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
+      <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入檔</span></button>
     </div>
-    <!-- 下層：核心輸出按鈕 -->
+    <!-- 下層：核心 Word / PDF 產出功能 -->
     <div class="actions-row">
       <button type="button" id="btnExportDocx" class="btn btn-docx">📝<span>產出 Word</span></button>
-      <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
-      <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span id="pdfBtnText">產出 PDF</span></button>
+      <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span>產出 PDF</span></button>
     </div>
   </div>
 </div>
 
 <!-- 隱藏的檔案選擇器 -->
-<input type="file" id="jsonFileInput" accept=".json,application/json,text/plain" style="display: none;">
-<input type="file" id="sigFileInput" accept="image/*" style="display: none;">
+<input type="file" id="jsonFileInput" accept=".json" style="display: none;">
 
 <script>
-  let currentSignatureBase64 = null;
-
-  // PWA Service Worker 註冊 v6.6
+  // PWA Service Worker 註冊 (v6.6)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js?v=6.6')
-        .then(reg => console.log('MOEA Service Worker v6.6 註冊成功'))
+        .then(reg => console.log('Service Worker v6.6 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 頁面加載完成主初始化流程
   document.addEventListener('DOMContentLoaded', () => {
-    try {
-      initApp();
-    } catch (err) {
-      console.error('初始化失敗:', err);
-      alert('系統初始化時發生錯誤：' + err.message);
-    }
-  });
-
-  function initApp() {
     const today = new Date().toISOString().split('T')[0];
-    const assignDateEl = document.getElementById('assigned_date');
-    const reportDateEl = document.getElementById('report_date');
-    if (assignDateEl && !assignDateEl.value) assignDateEl.value = today;
-    if (reportDateEl && !reportDateEl.value) reportDateEl.value = today;
+    if (!document.getElementById('assigned_date').value) document.getElementById('assigned_date').value = today;
+    if (!document.getElementById('report_date').value) document.getElementById('report_date').value = today;
 
-    // 機密等級專屬切換邏輯
-    document.querySelectorAll('#secretChips .chip-item').forEach(chip => {
-      chip.addEventListener('click', () => {
-        const val = chip.getAttribute('data-value');
-        if (val === '無') {
-          document.querySelectorAll('#secretChips .chip-item').forEach(c => c.classList.remove('active'));
-          chip.classList.add('active');
-        } else {
-          const noChip = document.querySelector('#secretChips .chip-item[data-value="無"]');
-          if (noChip) noChip.classList.remove('active');
-          chip.classList.toggle('active');
-          
-          const activeSecrets = document.querySelectorAll('#secretChips .chip-item.active');
-          if (activeSecrets.length === 0 && noChip) {
-            noChip.classList.add('active');
-          }
-        }
-        checkSecretWarning();
-      });
-    });
-
-    // 案件分類與分送單位切換邏輯
-    document.querySelectorAll('#categoryChips .chip-item, #dispatchChipsGroup .chip-item').forEach(chip => {
+    const chipItems = document.querySelectorAll('.chip-item');
+    chipItems.forEach(chip => {
       chip.addEventListener('click', () => {
         chip.classList.toggle('active');
       });
     });
+  });
 
-    // 手動備援點擊上傳簽名圖檔
-    const sigBox = document.getElementById('sigAreaBox');
-    const sigInput = document.getElementById('sigFileInput');
-    if (sigBox && sigInput) {
-      sigBox.addEventListener('click', () => sigInput.click());
-      sigInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          updateSignatureUI(event.target.result, '✅ 已載入長官親筆簽名檔');
-          showStatus('已手動載入簽名圖檔！', 'success');
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    // 讀入 JSON 檔案選擇事件綁定
-    const jsonInput = document.getElementById('jsonFileInput');
-    if (jsonInput) {
-      jsonInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const importedData = JSON.parse(event.target.result);
-            applyFormData(importedData);
-            showStatus('已成功讀入經濟部速報單草稿！', 'success');
-          } catch (err) {
-            showStatus('讀取失敗：檔案格式不相符或檔案毀損', 'error');
-            alert('讀取失敗：檔案格式不相符或檔案毀損');
-          }
-        };
-        reader.readAsText(file, 'UTF-8');
-      });
-    }
-
-    // 安全防護：將所有底端操作功能按鈕全數綁定監聽器
-    bindButton('btnSaveTemp', handleSaveTemp);
-    bindButton('btnLoadTemp', handleLoadTemp);
-    bindButton('btnExportJson', handleExportJson);
-    bindButton('btnImportJson', handleImportJson);
-    bindButton('btnExportDocx', handleExportDocx);
-    bindButton('btnShareReview', handleShareReview);
-    bindButton('btnExportPDF', handleExportPDF);
-
-    // 檢查簽名帶回與開啟自動定時暫存
-    checkUrlForSignedData();
-    startAutoSave();
+  function showStatus(text, type = 'info') {
+    const msgEl = document.getElementById('status-msg');
+    msgEl.style.display = 'block';
+    msgEl.className = `status-${type}`;
+    msgEl.innerText = text;
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   }
 
-  // 通用事件安全綁定器（附帶 Error 提示）
-  function bindButton(btnId, handler) {
-    const btn = document.getElementById(btnId);
-    if (btn) {
-      btn.addEventListener('click', async (e) => {
-        try {
-          await handler(e);
-        } catch (err) {
-          console.error(`執行 ${btnId} 時發生錯誤:`, err);
-          showStatus(`操作失敗: ${err.message}`, 'error');
-          alert(`操作失敗: ${err.message}`);
-        }
-      });
-    } else {
-      console.warn(`警告：找不到按鈕元件 #${btnId}`);
-    }
-  }
-
-  // 1. 本地手動暫存
-  function handleSaveTemp() {
-    const data = getFormData();
-    localStorage.setItem('moea_report_temp_data_v1', JSON.stringify(data));
-    showStatus('經濟部速報單已成功手動儲存至本地！', 'success');
-  }
-
-  // 2. 本地草稿載入
-  function handleLoadTemp() {
-    let saved = localStorage.getItem('moea_report_temp_data_v1');
-    if (!saved) {
-      const autoSave = localStorage.getItem('moea_report_autosave_v1');
-      if (autoSave) {
-        try { saved = JSON.stringify(JSON.parse(autoSave).data); } catch(e){}
-      }
-    }
-
-    if (!saved) {
-      showStatus('未找到暫存資料！', 'error');
-      alert('未找到暫存資料！');
-      return;
-    }
-
-    try {
-      applyFormData(JSON.parse(saved));
-      showStatus('已成功載入經濟部速報單草稿！', 'success');
-    } catch (err) {
-      showStatus('暫存資料解析失敗', 'error');
-      alert('暫存資料解析失敗');
-    }
-  }
-
-  // 3. 匯出 JSON 檔
-  function handleExportJson() {
-    const data = getFormData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `經濟部速報單草稿_${data.report_date || ''}.json`;
-    link.click();
-    showStatus('經濟部速報單草稿 (.json) 匯出成功！', 'success');
-  }
-
-  // 4. 讀入 JSON 檔
-  function handleImportJson() {
-    const fileInput = document.getElementById('jsonFileInput');
-    if (fileInput) {
-      fileInput.value = '';
-      fileInput.click();
-    }
-  }
-
-  // 強制日期格式化為西元年：2026年10月5日
+  // 強制日期格式化為西元年：例如 2026年10月5日
   function formatADDate(dateStr) {
     if (!dateStr) return '';
-    if (dateStr.includes('年') && dateStr.includes('月') && dateStr.includes('日')) {
-      return dateStr;
-    }
+    if (dateStr.includes('年') && dateStr.includes('月') && dateStr.includes('日')) return dateStr;
     const match = dateStr.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
     if (match) {
       const year = match[1];
@@ -760,43 +514,120 @@
     return dateStr;
   }
 
-  // 5. 匯出 Word (.docx) 文件
+  let cachedFontBytes = null;
+
+  function getFormData() {
+    const form = document.getElementById('speedReportForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    const selectedDispatchUnits = [];
+    document.querySelectorAll('.chip-item.active').forEach(chip => {
+      selectedDispatchUnits.push(chip.getAttribute('data-value'));
+    });
+    data['dispatch_units'] = selectedDispatchUnits;
+
+    return data;
+  }
+
+  function applyFormData(data) {
+    if (!data) return;
+    Object.keys(data).forEach(key => {
+      const field = document.getElementsByName(key)[0];
+      if (field) field.value = data[key];
+    });
+
+    if (Array.isArray(data.dispatch_units)) {
+      document.querySelectorAll('.chip-item').forEach(chip => {
+        const val = chip.getAttribute('data-value');
+        if (data.dispatch_units.includes(val)) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+  }
+
+  // 1. 本地暫存區塊 (單機 Memory)
+  document.getElementById('btnSaveTemp').addEventListener('click', () => {
+    const data = getFormData();
+    localStorage.setItem('moea_speed_report_temp_data_v5', JSON.stringify(data));
+    showStatus('資料已成功暫存至手機本地！', 'success');
+  });
+
+  document.getElementById('btnLoadTemp').addEventListener('click', () => {
+    const saved = localStorage.getItem('moea_speed_report_temp_data_v5');
+    if (!saved) {
+      showStatus('未找到暫存資料！', 'error');
+      return;
+    }
+    applyFormData(JSON.parse(saved));
+    showStatus('已成功載入暫存資料！', 'success');
+  });
+
+  // 2. 跨裝置同步區塊 (電腦 ⇄ 手機 JSON 檔案雙向傳送)
+  document.getElementById('btnExportJson').addEventListener('click', () => {
+    const data = getFormData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `經濟部速報單草稿_${data.report_date || ''}.json`;
+    link.click();
+    showStatus('草稿檔 (.json) 已成功匯出！可傳送至手機/電腦讀取。', 'success');
+  });
+
+  document.getElementById('btnImportJson').addEventListener('click', () => {
+    document.getElementById('jsonFileInput').click();
+  });
+
+  document.getElementById('jsonFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        applyFormData(importedData);
+        showStatus('已成功讀入草稿檔 (.json) 並自動帶入欄位！', 'success');
+      } catch (err) {
+        showStatus('讀取失敗：檔案格式不符合速報單格式', 'error');
+      }
+      e.target.value = ''; // 清空選擇器以利再次選擇相同檔案
+    };
+    reader.readAsText(file);
+  });
+
+  // 3. 匯出 Word (.docx) 文件（完美邊界、無框線、西元年格式與縮排1字元）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
     }
 
-    showStatus('正在生成完美排版之 Word (.docx) 文件...', 'info');
+    showStatus('正在生成經濟部速報單 Word (.docx) 文件...', 'info');
     const data = getFormData();
-    
-    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, ImageRun, VerticalAlign } = docx;
+
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, VerticalAlign } = docx;
 
     const checkSym = (isChecked) => isChecked ? '■ ' : '□ ';
 
-    // 無框線物件定義
     const noBorder = { style: BorderStyle.NONE, size: 0, color: "auto" };
     const noBorders = {
       top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
       insideHorizontal: noBorder, insideVertical: noBorder
     };
 
-    // 機密等級標記
-    const activeSecrets = (data.secret_levels || []).filter(v => v !== '無');
-    const secretPara = activeSecrets.length > 0 
-      ? new Paragraph({
-          alignment: AlignmentType.RIGHT,
-          spacing: { before: 0, after: 0, line: 240 },
-          children: [new TextRun({ text: `機密等級：${activeSecrets.join('、')}`, size: 20, font: "標楷體" })]
-        })
-      : new Paragraph({ text: '' });
-
-    // 1. 頂部標題表格（全部無框線）
-    const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
-    const catParas = categoryOptions.map(cat => {
-      const isChecked = (data.categories || []).includes(cat);
+    // 1. 頂部標題表格（調整比例：左 32%、中 32%、右 36% 確保右標題完美一行容納）
+    const types = ['部次長交辦事項', '重要業務', '重要會議結論', '首長訪視行程', '媒體受訪', '其他'];
+    const typeParas = types.map(t => {
+      const isChecked = (data.meeting_type === t);
       return new Paragraph({
         spacing: { before: 0, after: 0, line: 240 },
-        children: [new TextRun({ text: checkSym(isChecked) + cat, font: "標楷體", size: 26 })]
+        children: [new TextRun({ text: checkSym(isChecked) + t, font: "標楷體", size: 26 })]
       });
     });
 
@@ -807,34 +638,34 @@
         new TableRow({
           children: [
             new TableCell({
-              width: { size: 28, type: WidthType.PERCENTAGE },
+              width: { size: 32, type: WidthType.PERCENTAGE },
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: [
                 new Paragraph({
                   alignment: AlignmentType.LEFT,
-                  indent: { left: 480 },
+                  indent: { left: 240 }, // 縮排 1 字元
                   spacing: { before: 0, after: 0, line: 240 },
-                  children: [new TextRun({ text: "經 濟 部", bold: true, size: 44, font: "標楷體" })]
+                  children: [new TextRun({ text: "經  濟  部", bold: true, size: 40, font: "標楷體" })]
                 })
               ]
             }),
             new TableCell({
-              width: { size: 44, type: WidthType.PERCENTAGE },
+              width: { size: 32, type: WidthType.PERCENTAGE },
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
-              children: catParas
+              children: typeParas
             }),
             new TableCell({
-              width: { size: 28, type: WidthType.PERCENTAGE },
+              width: { size: 36, type: WidthType.PERCENTAGE },
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: [
                 new Paragraph({
                   alignment: AlignmentType.RIGHT,
-                  indent: { right: 480 },
+                  indent: { right: 240 }, // 縮排 1 字元
                   spacing: { before: 0, after: 0, line: 240 },
-                  children: [new TextRun({ text: "速 報 單", bold: true, size: 44, font: "標楷體" })]
+                  children: [new TextRun({ text: "辦理現況速報單", bold: true, size: 40, font: "標楷體" })]
                 })
               ]
             })
@@ -843,7 +674,7 @@
       ]
     });
 
-    // 2. 交辦與陳報基本資訊欄位（確實顯示西元年：2026年10月5日）
+    // 2. 交辦與陳報基本資訊欄位（西元年格式 + 無框線）
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -853,12 +684,12 @@
             new TableCell({
               width: { size: 55, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦長官：${data.assigner || ''}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦長官：${data.assigner || ''}`, font: "標楷體", size: 30 })] })]
             }),
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatADDate(data.assigned_date)}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatADDate(data.assigned_date)}`, font: "標楷體", size: 30 })] })]
             })
           ]
         }),
@@ -867,19 +698,19 @@
             new TableCell({
               width: { size: 55, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報單位：${data.reporting_unit || ''}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報單位：${data.reporting_unit || ''}`, font: "標楷體", size: 30 })] })]
             }),
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatADDate(data.report_date)}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatADDate(data.report_date)}`, font: "標楷體", size: 30 })] })]
             })
           ]
         })
       ]
     });
 
-    // 3. 內文段落處理（縮排 + 「一、」「(一)」設定凸排2字元，[1.]「(1)」設定凸排1字元）
+    // 3. 內文段落處理（「一、」「(一)」設定凸排2字元，[1.]「(1)」設定凸排1字元）
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
@@ -898,16 +729,12 @@
           let indentObj = { left: 320 }; // 預設 1 字元縮排
 
           if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
-            // (1) 階層：縮排 4 字元、換行凸排 1 字元 (left: 1600, hanging: 320)
             indentObj = { left: 1600, hanging: 320 };
           } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
-            // 1. 階層：縮排 3 字元、換行凸排 1 字元 (left: 1280, hanging: 320)
             indentObj = { left: 1280, hanging: 320 };
           } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
-            // (一) 階層：縮排 2 字元、換行凸排 2 字元 (left: 1280, hanging: 640)
             indentObj = { left: 1280, hanging: 640 };
           } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
-            // 一、 階層：縮排 1 字元、換行凸排 2 字元 (left: 960, hanging: 640)
             indentObj = { left: 960, hanging: 640 };
           }
 
@@ -922,21 +749,15 @@
     }
 
     const allMainParas = [
-      ...processDocxSection('案由：', data.section_subject),
-      ...processDocxSection('出席人員：', data.section_attendees),
-      ...processDocxSection('會議結論及指示事項：', data.section_conclusions),
-      ...processDocxSection('擬處意見或建議事項：', data.section_suggestions)
+      ...processDocxSection('壹、案由：', data.section_1),
+      ...processDocxSection('貳、重點說明暨續辦摘要：', data.section_2),
+      ...processDocxSection('參、擬處理意見或建議事項：', data.section_3)
     ];
 
-    // 整合於單一標準外框（內部無分隔橫線）
     const singleBorder = { style: BorderStyle.SINGLE, size: 8, color: "000000" };
     const outerBoxBorders = {
-      top: singleBorder,
-      bottom: singleBorder,
-      left: singleBorder,
-      right: singleBorder,
-      insideHorizontal: noBorder,
-      insideVertical: noBorder
+      top: singleBorder, bottom: singleBorder, left: singleBorder, right: singleBorder,
+      insideHorizontal: noBorder, insideVertical: noBorder
     };
 
     const mainContentTable = new Table({
@@ -973,23 +794,15 @@
         new TableRow({
           children: [
             createCellTxt("本件分送（勾選）"),
-            createCellTxt(checkSym(isDis('部長室')) + "部長室"),
-            createCellTxt(checkSym(isDis('何政務次長室')) + "何政務次長室"),
-            createCellTxt(checkSym(isDis('江政務次長室')) + "江政務次長室")
+            createCellTxt(checkSym(isDis('部長辦公室')) + "部長辦公室"),
+            createCellTxt(checkSym(isDis('次長辦公室')) + "次長辦公室"),
+            createCellTxt(checkSym(isDis('主任秘書室')) + "主任秘書室")
           ]
         }),
         new TableRow({
           children: [
             createCellTxt(""),
-            createCellTxt(checkSym(isDis('賴次長室')) + "賴次長室"),
-            createCellTxt(checkSym(isDis('莊主任秘書室')) + "莊主任秘書室"),
-            createCellTxt(checkSym(isDis('本部綜規司')) + "本部綜規司")
-          ]
-        }),
-        new TableRow({
-          children: [
-            createCellTxt(""),
-            createCellTxt(checkSym(isDis('本部國會聯絡組')) + "本部國會聯絡組"),
+            createCellTxt(checkSym(isDis('參事室')) + "參事室"),
             createCellTxt(checkSym(hasOther) + "其他單位：" + (data.other_unit_text || '')),
             createCellTxt("")
           ]
@@ -997,29 +810,7 @@
       ]
     });
 
-    // 簽名檔自動內嵌處理
-    const sigChildren = [
-      new TextRun({ text: `陳報單位首長/主管簽核：`, font: "標楷體", size: 24 })
-    ];
-
-    if (currentSignatureBase64) {
-      try {
-        const base64Data = currentSignatureBase64.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
-        const binaryStr = atob(base64Data);
-        const bytes = new Uint8Array(binaryStr.length);
-        for (let i = 0; i < binaryStr.length; i++) {
-          bytes[i] = binaryStr.charCodeAt(i);
-        }
-        sigChildren.push(new ImageRun({
-          data: bytes,
-          transformation: { width: 120, height: 36 }
-        }));
-      } catch(e) {
-        console.warn("Word 簽名檔內嵌失敗:", e);
-      }
-    }
-
-    // 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
+    // 5. 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
     const doc = new Document({
       sections: [{
         properties: {
@@ -1033,7 +824,6 @@
           }
         },
         children: [
-          secretPara,
           headerTable,
           new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
           infoTable,
@@ -1049,9 +839,7 @@
           new Paragraph({
             spacing: { before: 0, after: 0, line: 240 },
             children: [new TextRun({ text: `聯絡電話：${data.contact_phone || ''}`, font: "標楷體", size: 24 })]
-          }),
-          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
-          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: sigChildren })
+          })
         ]
       }]
     });
@@ -1062,290 +850,10 @@
     link.download = `經濟部速報單_${data.report_date || ''}.docx`;
     link.click();
 
-    showStatus('經濟部速報單 Word (.docx) 匯出成功！格式已精準對應 PDF 排版。', 'success');
+    showStatus('經濟部速報單 Word (.docx) 匯出成功！格式與 PDF 完全一致。', 'success');
   }
 
-  // 6. 長官簽名連線
-  async function handleShareReview() {
-    const shareBtn = document.getElementById('btnShareReview');
-    const shareBtnText = document.getElementById('shareBtnText');
-
-    const data = getFormData();
-    if (!data.reporting_unit || !data.section_subject) { 
-      alert('請先填寫「陳報單位」與「案由」'); 
-      return; 
-    }
-
-    try {
-      if (shareBtnText) shareBtnText.innerText = '⏳ 處理中...';
-      if (shareBtn) shareBtn.disabled = true;
-
-      const jsonStr = JSON.stringify(data);
-      const compressed = LZString.compressToEncodedURIComponent(jsonStr);
-      const signBaseUrl = window.location.origin + window.location.pathname.replace(/moea-report(_2)?\.html/, 'sign.html');
-      const longUrl = `${signBaseUrl}?d=${compressed}`;
-
-      showStatus('正在生成長官專用簽名連結...', 'info');
-
-      let targetUrl = longUrl;
-      try {
-        targetUrl = await Promise.race([
-          getShortUrl(longUrl),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('縮網址連線逾時')), 3000))
-        ]);
-      } catch (err) {
-        console.warn('縮網址服務無法連線，使用備用連結:', err);
-      }
-
-      const cleanSubject = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
-      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
-
-      await copyToClipboard(shareText);
-
-      showStatus('簽名連結已成功複製！請貼上至 LINE 發送給長官。', 'success');
-      alert('🔗 長官簽名連結與訊息已成功複製！請貼上至 LINE 發送給長官。\n\n💡 長官簽名後會透過 LINE 將「完成簽名連結」傳回給您，點擊即可帶入簽名並產出 PDF！');
-
-    } finally {
-      if (shareBtnText) shareBtnText.innerText = '長官簽名';
-      if (shareBtn) shareBtn.disabled = false;
-    }
-  }
-
-  // 7. 匯出 PDF 文件（頂部標題縮排與格式精確對齊）
-  async function handleExportPDF() {
-    if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
-      throw new Error('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
-    }
-
-    showStatus('正在生成經濟部速報單 PDF...', 'info');
-    const data = getFormData();
-    const pdfBlob = await generatePDFBlob(data);
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob = pdfBlob);
-    link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
-    link.click();
-    showStatus('經濟部速報單 PDF 匯出成功！', 'success');
-  }
-
-  // 自動備份機制
-  function startAutoSave() {
-    const badge = document.getElementById('autosaveBadge');
-    
-    const lastAutoSave = localStorage.getItem('moea_report_autosave_v1');
-    if (lastAutoSave) {
-      try {
-        const parsed = JSON.parse(lastAutoSave);
-        if (parsed && parsed.timestamp) {
-          const date = new Date(parsed.timestamp);
-          const timeStr = date.toTimeString().split(' ')[0];
-          if (badge) badge.innerText = `⏱️ 上次備份於 ${timeStr}`;
-        }
-      } catch (e) {}
-    }
-
-    setInterval(() => {
-      const data = getFormData();
-      const savePayload = {
-        timestamp: new Date().toISOString(),
-        data: data
-      };
-      localStorage.setItem('moea_report_autosave_v1', JSON.stringify(savePayload));
-      
-      const now = new Date();
-      const timeStr = now.toTimeString().split(' ')[0];
-      if (badge) {
-        badge.innerText = `⏱️ 已於 ${timeStr} 自動定時暫存`;
-      }
-    }, 30000);
-  }
-
-  function checkUrlForSignedData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const signedParam = urlParams.get('s') || urlParams.get('signed');
-    if (signedParam) {
-      try {
-        const jsonStr = LZString.decompressFromEncodedURIComponent(signedParam);
-        if (jsonStr) {
-          const data = JSON.parse(jsonStr);
-          applyFormData(data);
-          showStatus('🎉 已成功接收長官簽名檔與速報單內容！請點擊「產出 PDF」。', 'success');
-          const pdfBtn = document.getElementById('btnExportPDF');
-          if (pdfBtn) pdfBtn.classList.add('pulse-ready');
-        }
-      } catch (err) {
-        console.warn('解析長官簽名帶回資料失敗:', err);
-      }
-    }
-  }
-
-  function updateSignatureUI(base64Png, statusMessage) {
-    currentSignatureBase64 = base64Png;
-    const imgEl = document.getElementById('sigPreviewImg');
-    const containerEl = document.getElementById('sigPreviewContainer');
-    const statusEl = document.getElementById('sigStatusText');
-    if (imgEl && containerEl && statusEl) {
-      imgEl.src = currentSignatureBase64;
-      containerEl.style.display = 'block';
-      statusEl.innerText = statusMessage || '✅ 長官已完成親筆簽名！';
-      statusEl.style.color = '#059669';
-    }
-  }
-
-  function checkSecretWarning() {
-    const activeSecrets = Array.from(document.querySelectorAll('#secretChips .chip-item.active'))
-                               .map(c => c.getAttribute('data-value'));
-    const hasSecret = activeSecrets.some(v => v !== '無');
-    const warnBox = document.getElementById('secretWarning');
-    if (warnBox) warnBox.style.display = hasSecret ? 'block' : 'none';
-  }
-
-  function showStatus(text, type = 'info') {
-    const msgEl = document.getElementById('status-msg');
-    if (msgEl) {
-      msgEl.style.display = 'block';
-      msgEl.className = `status-${type}`;
-      msgEl.innerText = text;
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
-  }
-
-  function getFormData() {
-    const data = {
-      assigner: document.getElementById('assigner')?.value || '',
-      assigned_date: document.getElementById('assigned_date')?.value || '',
-      reporting_unit: document.getElementById('reporting_unit')?.value || '',
-      report_date: document.getElementById('report_date')?.value || '',
-      section_subject: document.getElementById('section_subject')?.value || '',
-      section_attendees: document.getElementById('section_attendees')?.value || '',
-      section_conclusions: document.getElementById('section_conclusions')?.value || '',
-      section_suggestions: document.getElementById('section_suggestions')?.value || '',
-      other_unit_text: document.getElementById('other_unit_text')?.value || '',
-      contact_person: document.getElementById('contact_person')?.value || '',
-      contact_phone: document.getElementById('contact_phone')?.value || '',
-      signature: currentSignatureBase64
-    };
-
-    const secrets = [];
-    document.querySelectorAll('#secretChips .chip-item.active').forEach(c => {
-      const val = c.getAttribute('data-value');
-      if (val) secrets.push(val);
-    });
-    data['secret_levels'] = secrets;
-
-    const categories = [];
-    document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => {
-      const val = c.getAttribute('data-value');
-      if (val) categories.push(val);
-    });
-    data['categories'] = categories;
-
-    const dispatch = [];
-    document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => {
-      const val = c.getAttribute('data-value');
-      if (val) dispatch.push(val);
-    });
-    data['dispatch_units'] = dispatch;
-
-    return data;
-  }
-
-  function applyFormData(data) {
-    if (!data || typeof data !== 'object') return;
-
-    const textFields = [
-      'assigner', 'assigned_date', 'reporting_unit', 'report_date',
-      'section_subject', 'section_attendees', 'section_conclusions',
-      'section_suggestions', 'other_unit_text', 'contact_person', 'contact_phone'
-    ];
-
-    textFields.forEach(fieldId => {
-      const el = document.getElementById(fieldId);
-      if (el && data[fieldId] !== undefined) {
-        el.value = data[fieldId];
-      }
-    });
-
-    if (Array.isArray(data.secret_levels)) {
-      document.querySelectorAll('#secretChips .chip-item').forEach(c => {
-        const val = c.getAttribute('data-value');
-        c.classList.toggle('active', data.secret_levels.includes(val));
-      });
-      checkSecretWarning();
-    }
-
-    if (Array.isArray(data.categories)) {
-      document.querySelectorAll('#categoryChips .chip-item').forEach(c => {
-        const val = c.getAttribute('data-value');
-        c.classList.toggle('active', data.categories.includes(val));
-      });
-    }
-
-    if (Array.isArray(data.dispatch_units)) {
-      document.querySelectorAll('#dispatchChipsGroup .chip-item').forEach(c => {
-        const val = c.getAttribute('data-value');
-        c.classList.toggle('active', data.dispatch_units.includes(val));
-      });
-    }
-
-    if (data.signature) {
-      updateSignatureUI(data.signature, '✅ 已載入長官親筆簽名檔');
-    }
-  }
-
-  function getShortUrl(longUrl) {
-    return new Promise((resolve, reject) => {
-      const cbName = 'isgd_cb_' + Math.floor(Math.random() * 1000000);
-      const script = document.createElement('script');
-      
-      window[cbName] = function(res) {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-        if (res && res.shorturl) resolve(res.shorturl);
-        else reject(new Error(res ? res.errormessage : '縮網址失敗'));
-      };
-
-      script.src = `https://is.gd/create.php?format=jsonp&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
-      script.onerror = () => {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-        reject(new Error('縮網址網路連線失敗'));
-      };
-
-      document.body.appendChild(script);
-    });
-  }
-
-  async function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return;
-      } catch (err) {
-        console.warn('Clipboard API 失敗，改用傳統複製模式');
-      }
-    }
-
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.opacity = '0';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-
-    try {
-      const successful = document.execCommand('copy');
-      document.body.removeChild(textArea);
-      if (!successful) throw new Error();
-    } catch (err) {
-      document.body.removeChild(textArea);
-      prompt('請手動複製以下訊息：', text);
-    }
-  }
-
-  // 純前端楷體 PDF 引擎
-  let cachedFontBytes = null;
-
+  // 4. 純前端開源楷體 TTF PDF 引擎 (西元年格式與精準縮排 2 個字元 [40pt])
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -1355,7 +863,7 @@
       showStatus('載入字型檔 (kaiu.ttf)...', 'info');
       const fontResponse = await fetch('./kaiu.ttf');
       if (!fontResponse.ok) {
-        throw new Error('無法載入 kaiu.ttf 字型檔');
+        throw new Error('無法載入 kaiu.ttf 字型檔，請確認已成功將字型檔上傳至 GitHub 專案根目錄');
       }
       cachedFontBytes = await fontResponse.arrayBuffer();
     }
@@ -1366,7 +874,7 @@
 
     const marginX = 40;
     const marginTop = 35;
-    const pageBottomMargin = 15;
+    const pageBottomMargin = 40;
     const printableWidth = width - (marginX * 2);
 
     function formatOptionText(label, isChecked) {
@@ -1379,31 +887,40 @@
 
     function drawBoldText(pageObj, text, x, y, size, strokeWidth = 2.0) {
       pageObj.drawText(text, {
-        x: x, y: y, size: size, font: kaiFont,
-        color: rgb(0, 0, 0), strokeColor: rgb(0, 0, 0), strokeWidth: strokeWidth
+        x: x,
+        y: y,
+        size: size,
+        font: kaiFont,
+        color: rgb(0, 0, 0),
+        strokeColor: rgb(0, 0, 0),
+        strokeWidth: strokeWidth
       });
     }
 
     function processSection(title, contentText, fontSize, maxW) {
       const items = [];
-      if (title) items.push({ text: title, isTitle: true, indent: 0 });
+      items.push({ text: title, isTitle: true, indent: 0 });
 
       const paragraphs = (contentText || '').split('\n');
       for (const para of paragraphs) {
         if (!para.trim()) continue;
 
         const trimmed = para.trim();
-        let baseIndent = 16;
-        let hangIndent = 16;
+        let baseIndent = 32;
+        let hangIndent = 32;
 
         if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
-          baseIndent = 64; hangIndent = 74;
+          baseIndent = 80;
+          hangIndent = 90;
         } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
-          baseIndent = 48; hangIndent = 64;
+          baseIndent = 64;
+          hangIndent = 80;
         } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
-          baseIndent = 32; hangIndent = 64;
+          baseIndent = 48;
+          hangIndent = 80;
         } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
-          baseIndent = 16; hangIndent = 48;
+          baseIndent = 32;
+          hangIndent = 64;
         }
 
         let currentLine = '';
@@ -1430,213 +947,245 @@
       return items;
     }
 
-    let currentY = height - marginTop;
+    const listTopY = height - marginTop;
+    const optionLineSpacing = 20;
 
-    const rawSecrets = Array.isArray(data.secret_levels) ? data.secret_levels : [];
-    const activeSecrets = rawSecrets.filter(v => v !== '無');
-    
-    if (activeSecrets.length > 0) {
-      const secretText = `機密等級：${activeSecrets.join('、')}`;
-      currentPage.drawText(secretText, {
-        x: marginX + printableWidth - measureTextWidth(secretText, 10),
-        y: currentY,
-        size: 10,
-        font: kaiFont
-      });
-    }
-
-    currentY -= 12;
-
-    const leftTitle = '經 濟 部';
-    const rightTitle = '速 報 單';
-    const titleSize = 22;
-    const headerIndent2Chars = 2 * titleSize; // 2 個字元之精準寬度 (44 pt)
-
-    const categories = Array.isArray(data.categories) ? data.categories : [];
-    const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
-    const catFontSize = 14;
-    const catLineSpacing = 19;
-
-    let maxCatWidth = 0;
-    categoryOptions.forEach(cat => {
-      const str = formatOptionText(cat, true);
-      const w = measureTextWidth(str, catFontSize);
-      if (w > maxCatWidth) maxCatWidth = w;
-    });
-
-    const midX = marginX + (printableWidth - maxCatWidth) / 2;
-    const headerTopY = currentY;
-
-    categoryOptions.forEach((cat, idx) => {
-      const isChecked = categories.includes(cat);
-      const str = formatOptionText(cat, isChecked);
-      currentPage.drawText(str, {
-        x: midX,
-        y: headerTopY - (idx * catLineSpacing),
-        size: catFontSize,
-        font: kaiFont
-      });
-    });
-
-    const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
-
-    // 「經 濟 部」：靠右（向內）縮排 2 個字元
-    drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
-
-    // 「速 報 單」：靠左（向內）縮排 2 個字元
-    const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
-
-    currentY = headerTopY - (3.5 * catLineSpacing) - 25;
-
-    const infoFontSize = 16;
-    currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
-    currentPage.drawText(`交辦日期：${formatADDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
-    
-    currentY -= 22;
-    currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
-    currentPage.drawText(`陳報日期：${formatADDate(data.report_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
-
-    currentY -= 16;
-
-    let tableBoxStartY = currentY;
-    const textPaddingX = 8;
-    const maxTextW = printableWidth - (textPaddingX * 2);
-    const tableFontSize = 16;
-    const fontLeading = 22;
-
-    const sections = [
-      processSection('案由：', data.section_subject, tableFontSize, maxTextW),
-      processSection('出席人員：', data.section_attendees, tableFontSize, maxTextW),
-      processSection('會議結論及指示事項：', data.section_conclusions, tableFontSize, maxTextW),
-      processSection('擬處意見或建議事項：', data.section_suggestions, tableFontSize, maxTextW)
+    const types = [
+      '部次長交辦事項',
+      '重要業務',
+      '重要會議結論',
+      '首長訪視行程',
+      '媒體受訪',
+      '其他'
     ];
 
-    const allLineItems = [];
-    sections.forEach(secItems => {
-      secItems.forEach(item => allLineItems.push(item));
+    const middleX = marginX + 175;
+    types.forEach((t, idx) => {
+      const isChecked = (data.meeting_type === t);
+      const str = formatOptionText(t, isChecked);
+      currentPage.drawText(str, {
+        x: middleX,
+        y: listTopY - (idx * optionLineSpacing),
+        size: 14,
+        font: kaiFont
+      });
     });
 
-    const footerNeededHeight = 115;
-    let renderY = tableBoxStartY - 22;
+    const leftTitle = '經  濟  部';
+    const rightTitle = '辦理現況速報單';
+    const titleSize = 20;
+    const headerIndent2Chars = 2 * titleSize; // 精準縮排 2 個字元 (40 pt)
 
-    for (let i = 0; i < allLineItems.length; i++) {
-      const item = allLineItems[i];
-      const remainingItemsCount = allLineItems.length - i;
-      const heightForRemaining = (remainingItemsCount * fontLeading) + footerNeededHeight;
+    // 「經 濟 部」：向內縮排 2 個字元
+    drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
 
-      const canFitEverythingOnCurrentPage = (renderY - pageBottomMargin) >= heightForRemaining;
+    // 「辦理現況速報單」：向內縮排 2 個字元
+    const rightTitleW = measureTextWidth(rightTitle, titleSize);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
 
-      if (!canFitEverythingOnCurrentPage && (renderY - fontLeading < pageBottomMargin)) {
-        const currentBoxH = tableBoxStartY - (renderY + 4);
-        currentPage.drawRectangle({
-          x: marginX, y: renderY + 4,
-          width: printableWidth, height: currentBoxH,
-          borderColor: rgb(0, 0, 0), borderWidth: 1
-        });
+    const basicInfoStartY = listTopY - (6 * optionLineSpacing) - 12;
 
-        currentPage = pdfDoc.addPage([595.28, 841.89]);
-        tableBoxStartY = height - marginTop - 10;
-        renderY = tableBoxStartY - 22;
-      }
+    currentPage.drawText(`交辦長官：${data.assigner || ''}`, {
+      x: marginX,
+      y: basicInfoStartY,
+      size: 15,
+      font: kaiFont
+    });
+    currentPage.drawText(`交辦日期：${formatADDate(data.assigned_date)}`, {
+      x: marginX + 325,
+      y: basicInfoStartY,
+      size: 15,
+      font: kaiFont
+    });
 
-      if (item.isTitle) {
-        drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, tableFontSize, 2.0);
-      } else {
-        currentPage.drawText(item.text, {
-          x: marginX + textPaddingX + item.indent, y: renderY,
-          size: tableFontSize, font: kaiFont
-        });
-      }
+    currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, {
+      x: marginX,
+      y: basicInfoStartY - 22,
+      size: 15,
+      font: kaiFont
+    });
+    currentPage.drawText(`陳報日期：${formatADDate(data.report_date)}`, {
+      x: marginX + 325,
+      y: basicInfoStartY - 22,
+      size: 15,
+      font: kaiFont
+    });
 
-      renderY -= fontLeading;
+    let currentPageBoxStartY = basicInfoStartY - 22 - 14;
 
-      if (i < allLineItems.length - 1 && allLineItems[i + 1].isTitle) {
-        renderY -= 4;
-      }
-    }
+    const textPaddingX = 10;
+    const maxTextW = printableWidth - (textPaddingX * 2);
+    const fontSize = 16;
+    const fontLeading = 22;
 
-    const finalBoxEndY = renderY + 4;
-    const finalBoxH = tableBoxStartY - finalBoxEndY;
+    const allSections = [
+      processSection('壹、案由：', data.section_1, fontSize, maxTextW),
+      processSection('貳、重點說明暨續辦摘要：', data.section_2, fontSize, maxTextW),
+      processSection('參、擬處理意見或建議事項：', data.section_3, fontSize, maxTextW)
+    ];
+
+    let renderY = currentPageBoxStartY - 24;
+
+    allSections.forEach(sectionItems => {
+      sectionItems.forEach(item => {
+        if (renderY - fontLeading < pageBottomMargin) {
+          const currentBoxH = currentPageBoxStartY - (renderY + 6);
+          currentPage.drawRectangle({
+            x: marginX,
+            y: renderY + 6,
+            width: printableWidth,
+            height: currentBoxH,
+            borderColor: rgb(0, 0, 0),
+            borderWidth: 1
+          });
+
+          currentPage = pdfDoc.addPage([595.28, 841.89]);
+          currentPageBoxStartY = height - marginTop - 10;
+          renderY = currentPageBoxStartY - 24;
+        }
+
+        if (item.isTitle) {
+          drawBoldText(currentPage, item.text, marginX + textPaddingX + item.indent, renderY, fontSize, 2.0);
+        } else {
+          currentPage.drawText(item.text, {
+            x: marginX + textPaddingX + item.indent,
+            y: renderY,
+            size: fontSize,
+            font: kaiFont
+          });
+        }
+        renderY -= fontLeading;
+      });
+      renderY -= 6;
+    });
+
+    const finalBoxEndY = renderY + 6;
+    const finalBoxH = currentPageBoxStartY - finalBoxEndY;
     currentPage.drawRectangle({
-      x: marginX, y: finalBoxEndY,
-      width: printableWidth, height: finalBoxH,
-      borderColor: rgb(0, 0, 0), borderWidth: 1
+      x: marginX,
+      y: finalBoxEndY,
+      width: printableWidth,
+      height: finalBoxH,
+      borderColor: rgb(0, 0, 0),
+      borderWidth: 1
     });
 
-    currentY = finalBoxEndY - 18;
+    let currentY = finalBoxEndY - 20;
 
-    if (currentY - footerNeededHeight < pageBottomMargin) {
+    if (currentY - 110 < pageBottomMargin) {
       currentPage = pdfDoc.addPage([595.28, 841.89]);
       currentY = height - marginTop - 20;
     }
 
-    const footerFontSize = 12;
     const dispatchUnits = Array.isArray(data.dispatch_units) ? data.dispatch_units : [];
-    
-    currentPage.drawText('本件分送（勾選）', { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    const colX1 = marginX + 100;
+    currentPage.drawText('本件分送（勾選）', {
+      x: marginX,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
+
+    const colX1 = marginX + 105;
     const colX2 = marginX + 225;
-    const colX3 = marginX + 355;
+    const colX3 = marginX + 345;
 
-    const row1List = [{ name: '部長室', x: colX1 }, { name: '何政務次長室', x: colX2 }, { name: '江政務次長室', x: colX3 }];
+    const row1List = [
+      { name: '部長辦公室', x: colX1 },
+      { name: '次長辦公室', x: colX2 },
+      { name: '主任秘書室', x: colX3 }
+    ];
     row1List.forEach(item => {
       const isChecked = dispatchUnits.includes(item.name);
-      currentPage.drawText(formatOptionText(item.name, isChecked), { x: item.x, y: currentY, size: footerFontSize, font: kaiFont });
-    });
-
-    currentY -= 19;
-
-    const row2List = [{ name: '賴次長室', x: colX1 }, { name: '莊主任秘書室', x: colX2 }, { name: '本部綜規司', x: colX3 }];
-    row2List.forEach(item => {
-      const isChecked = dispatchUnits.includes(item.name);
-      currentPage.drawText(formatOptionText(item.name, isChecked), { x: item.x, y: currentY, size: footerFontSize, font: kaiFont });
-    });
-
-    currentY -= 19;
-
-    const hasGov = dispatchUnits.includes('本部國會聯絡組');
-    currentPage.drawText(formatOptionText('本部國會聯絡組', hasGov), { x: colX1, y: currentY, size: footerFontSize, font: kaiFont });
-
-    const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
-    const otherBoxStr = formatOptionText('其他單位：', hasOther);
-    currentPage.drawText(otherBoxStr, { x: colX2, y: currentY, size: footerFontSize, font: kaiFont });
-
-    if (data.other_unit_text) {
-      currentPage.drawText(data.other_unit_text, {
-        x: colX2 + measureTextWidth(otherBoxStr, footerFontSize) + 2,
-        y: currentY, size: footerFontSize, font: kaiFont
+      const str = formatOptionText(item.name, isChecked);
+      currentPage.drawText(str, {
+        x: item.x,
+        y: currentY,
+        size: 12,
+        font: kaiFont
       });
-    }
+    });
 
     currentY -= 20;
 
-    currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
+    const row2List = [
+      { name: '參事室', x: colX1 }
+    ];
+    row2List.forEach(item => {
+      const isChecked = dispatchUnits.includes(item.name);
+      const str = formatOptionText(item.name, isChecked);
+      currentPage.drawText(str, {
+        x: item.x,
+        y: currentY,
+        size: 12,
+        font: kaiFont
+      });
+    });
 
-    currentY -= 17;
-    currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
+    const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
+    const otherBoxStr = formatOptionText('其他單位：', hasOther);
+    currentPage.drawText(otherBoxStr, {
+      x: colX2,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
 
-    currentY -= 22;
-    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
-
-    if (currentSignatureBase64) {
-      try {
-        const sigImage = await pdfDoc.embedPng(currentSignatureBase64);
-        currentPage.drawImage(sigImage, {
-          x: marginX + 160,
-          y: currentY - 8,
-          width: 120,
-          height: 36
-        });
-      } catch (e) {
-        console.warn('繪製簽名圖檔失敗:', e);
-      }
+    if (data.other_unit_text) {
+      const prefixW = measureTextWidth(otherBoxStr, 12);
+      currentPage.drawText(data.other_unit_text, {
+        x: colX2 + prefixW + 2,
+        y: currentY,
+        size: 12,
+        font: kaiFont
+      });
     }
+
+    currentY -= 24;
+
+    currentPage.drawText(`本案聯絡人：${data.contact_person || ''}`, {
+      x: marginX,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
+
+    currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, {
+      x: marginX + 260,
+      y: currentY,
+      size: 12,
+      font: kaiFont
+    });
 
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
   }
+
+  // 匯出 Word (.docx) 檔
+  document.getElementById('btnExportDocx').addEventListener('click', async () => {
+    try {
+      await handleExportDocx();
+    } catch (err) {
+      showStatus(`匯出失敗: ${err.message}`, 'error');
+      alert(`匯出失敗: ${err.message}`);
+    }
+  });
+
+  // 匯出 PDF 檔
+  document.getElementById('btnExportPDF').addEventListener('click', async () => {
+    try {
+      showStatus('正在生成 PDF...', 'info');
+      const data = getFormData();
+      const pdfBlob = await generatePDFBlob(data);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
+      link.click();
+      showStatus('PDF 匯出成功！', 'success');
+    } catch (err) {
+      showStatus(`匯出失敗: ${err.message}`, 'error');
+    }
+  });
 </script>
 </body>
 </html>
