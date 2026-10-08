@@ -760,7 +760,7 @@
     return dateStr;
   }
 
-  // 5. 匯出 Word (.docx) 文件（完美邊界、無框線、西元年格式 2026年10月5日 與精準凸排）
+  // 5. 匯出 Word (.docx) 文件
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -1111,7 +1111,7 @@
     }
   }
 
-  // 7. 匯出 PDF 文件
+  // 7. 匯出 PDF 文件（頂部標題縮排與格式精確對齊）
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
       throw new Error('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -1121,7 +1121,7 @@
     const data = getFormData();
     const pdfBlob = await generatePDFBlob(data);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(pdfBlob);
+    link.href = URL.createObjectURL(blob = pdfBlob);
     link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
     link.click();
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
@@ -1450,6 +1450,7 @@
     const leftTitle = '經 濟 部';
     const rightTitle = '速 報 單';
     const titleSize = 22;
+    const headerIndent2Chars = 2 * titleSize; // 2 個字元之精準寬度 (44 pt)
 
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
@@ -1478,10 +1479,13 @@
     });
 
     const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
-    drawBoldText(currentPage, leftTitle, marginX, titleCenterY, titleSize, 2.2);
 
+    // 「經 濟 部」：靠右（向內）縮排 2 個字元
+    drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
+
+    // 「速 報 單」：靠左（向內）縮排 2 個字元
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW, titleCenterY, titleSize, 2.2);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
