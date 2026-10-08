@@ -552,7 +552,7 @@
       <button type="button" id="btnExportJson" class="btn btn-json">📥<span>匯出 JSON</span></button>
       <button type="button" id="btnImportJson" class="btn btn-json">📂<span>讀入 JSON</span></button>
     </div>
-    <!-- 下層：文件產出與簽核核心功能 -->
+    <!-- 下層：核心輸出按鈕 -->
     <div class="actions-row">
       <button type="button" id="btnExportDocx" class="btn btn-docx">📝<span>產出 Word</span></button>
       <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
@@ -744,10 +744,13 @@
     }
   }
 
-  // 日期格式化為西元年：2026年10月5日
+  // 強制日期格式化為西元年：2026年10月5日
   function formatADDate(dateStr) {
     if (!dateStr) return '';
-    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})\$/);
+    if (dateStr.includes('年') && dateStr.includes('月') && dateStr.includes('日')) {
+      return dateStr;
+    }
+    const match = dateStr.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
     if (match) {
       const year = match[1];
       const month = parseInt(match[2], 10);
@@ -757,7 +760,7 @@
     return dateStr;
   }
 
-  // 5. 匯出 Word (.docx) 文件（完美邊界、無框線、西元年日期與段落凸排 2 字元）
+  // 5. 匯出 Word (.docx) 文件（完美邊界、無框線、西元年格式 2026年10月5日 與精準凸排）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -840,7 +843,7 @@
       ]
     });
 
-    // 2. 交辦與陳報基本資訊欄位（西元年格式 + 全部無框線，日期靠右對齊）
+    // 2. 交辦與陳報基本資訊欄位（確實顯示西元年：2026年10月5日）
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -876,7 +879,7 @@
       ]
     });
 
-    // 3. 內文段落處理（縮排 + 段落凸排 2 字元 [hanging: 640] + 前後距0行 + 單行間距）
+    // 3. 內文段落處理（縮排 + 「一、」「(一)」設定凸排2字元，[1.]「(1)」設定凸排1字元）
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
@@ -895,11 +898,11 @@
           let indentObj = { left: 320 }; // 預設 1 字元縮排
 
           if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
-            // (1) 階層：縮排 4 字元、換行凸排 2 字元 (left: 1920, hanging: 640)
-            indentObj = { left: 1920, hanging: 640 };
+            // (1) 階層：縮排 4 字元、換行凸排 1 字元 (left: 1600, hanging: 320)
+            indentObj = { left: 1600, hanging: 320 };
           } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
-            // 1. 階層：縮排 3 字元、換行凸排 2 字元 (left: 1600, hanging: 640)
-            indentObj = { left: 1600, hanging: 640 };
+            // 1. 階層：縮排 3 字元、換行凸排 1 字元 (left: 1280, hanging: 320)
+            indentObj = { left: 1280, hanging: 320 };
           } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
             // (一) 階層：縮排 2 字元、換行凸排 2 字元 (left: 1280, hanging: 640)
             indentObj = { left: 1280, hanging: 640 };
@@ -1016,7 +1019,7 @@
       }
     }
 
-    // 6. 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
+    // 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
     const doc = new Document({
       sections: [{
         properties: {
