@@ -7,9 +7,10 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#58b2dc">
   
-  <!-- CDN 套件：pdf-lib, fontkit -->
+  <!-- CDN 套件：pdf-lib, fontkit, docx.js -->
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 
   <style>
     :root {
@@ -37,7 +38,7 @@
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding: 12px 12px 120px 12px;
+      padding: 12px 12px 140px 12px;
       line-height: 1.5;
     }
 
@@ -235,7 +236,7 @@
       margin-top: 10px;
     }
 
-    /* 底部固定操作列 (依功能分類設計 3 種相異色彩) */
+    /* 底部固定操作列 (優化雙層排列) */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -254,21 +255,28 @@
       max-width: 600px;
       margin: 0 auto;
       display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .actions-row {
+      display: flex;
       gap: 6px;
+      width: 100%;
     }
 
     .btn {
       padding: 10px 4px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       border: none;
       border-radius: 10px;
       cursor: pointer;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 2px;
+      gap: 4px;
       transition: all 0.18s ease;
       flex: 1;
       white-space: nowrap;
@@ -298,9 +306,19 @@
       background-color: #bae6fd;
     }
 
-    /* 分類 3：最終產出區塊 (品牌尊榮漸層) */
+    /* 分類 3：Word 匯出 (紫藍專屬色彩) */
+    .btn-docx {
+      background-color: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+    }
+    .btn-docx:active {
+      background-color: #c7d2fe;
+    }
+
+    /* 分類 4：PDF 匯出 (品牌尊榮漸層) */
     .btn-hero {
-      flex: 1.3;
+      flex: 1.2;
       background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 100%);
       color: #ffffff;
       box-shadow: 0 4px 12px rgba(88, 178, 220, 0.35);
@@ -432,19 +450,21 @@
   </form>
 </div>
 
-<!-- 底部固定操作列 (依功能區分為 3 種色彩) -->
+<!-- 雙層優化固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <!-- 分類 1：本地快取 (灰) -->
-    <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
-    <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
-
-    <!-- 分類 2：跨裝置同步 (天藍) -->
-    <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
-    <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入檔</span></button>
-
-    <!-- 分類 3：最終產出 (品牌尊榮漸層) -->
-    <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span>產出 PDF</span></button>
+    <!-- 上層：草稿與 JSON 備份功能 -->
+    <div class="actions-row">
+      <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
+      <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
+      <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
+      <button type="button" id="btnImportJson" class="btn btn-sync">📂<span>讀入檔</span></button>
+    </div>
+    <!-- 下層：核心 Word / PDF 產出功能 -->
+    <div class="actions-row">
+      <button type="button" id="btnExportDocx" class="btn btn-docx">📝<span>產出 Word</span></button>
+      <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span>產出 PDF</span></button>
+    </div>
   </div>
 </div>
 
@@ -452,11 +472,11 @@
 <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
 
 <script>
-  // PWA Service Worker 註冊 (v6.5)
+  // PWA Service Worker 註冊 (v6.6)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.5')
-        .then(reg => console.log('Service Worker v6.5 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.6')
+        .then(reg => console.log('Service Worker v6.6 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -484,7 +504,8 @@
 
   function formatROCDate(dateStr) {
     if (!dateStr) return '';
-    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (dateStr.includes('年') && dateStr.includes('月') && dateStr.includes('日')) return dateStr;
+    const match = dateStr.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
     if (match) {
       const rocYear = parseInt(match[1], 10) - 1911;
       const month = parseInt(match[2], 10);
@@ -582,7 +603,270 @@
     reader.readAsText(file);
   });
 
-  // 3. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
+  // 3. 匯出 Word (.docx) 文件（完美邊界、無框線、民國年格式與精準段落凸排）
+  async function handleExportDocx() {
+    if (typeof docx === 'undefined') {
+      throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
+    }
+
+    showStatus('正在生成水利署速報單 Word (.docx) 文件...', 'info');
+    const data = getFormData();
+
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, VerticalAlign } = docx;
+
+    const checkSym = (isChecked) => isChecked ? '■ ' : '□ ';
+
+    const noBorder = { style: BorderStyle.NONE, size: 0, color: "auto" };
+    const noBorders = {
+      top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
+      insideHorizontal: noBorder, insideVertical: noBorder
+    };
+
+    // 1. 頂部標題表格（選項置中，左右標題對齊）
+    const types = ['部次長交辦事項', '重要業務', '重要會議結論', '首長訪視行程', '媒體受訪', '其他'];
+    const typeParas = types.map(t => {
+      const isChecked = (data.meeting_type === t);
+      return new Paragraph({
+        spacing: { before: 0, after: 0, line: 240 },
+        children: [new TextRun({ text: checkSym(isChecked) + t, font: "標楷體", size: 26 })]
+      });
+    });
+
+    const headerTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: noBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              verticalAlign: VerticalAlign.CENTER,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.LEFT,
+                  indent: { left: 480 }, // 縮排 2 字元 (480 twips)
+                  spacing: { before: 0, after: 0, line: 240 },
+                  children: [new TextRun({ text: "經 濟 部 水 利 署", bold: true, size: 40, font: "標楷體" })]
+                })
+              ]
+            }),
+            new TableCell({
+              width: { size: 40, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              verticalAlign: VerticalAlign.CENTER,
+              children: typeParas
+            }),
+            new TableCell({
+              width: { size: 30, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              verticalAlign: VerticalAlign.CENTER,
+              children: [
+                new Paragraph({
+                  alignment: AlignmentType.RIGHT,
+                  indent: { right: 480 }, // 縮排 2 字元
+                  spacing: { before: 0, after: 0, line: 240 },
+                  children: [new TextRun({ text: "辦 理 現 況 速 報 單", bold: true, size: 40, font: "標楷體" })]
+                })
+              ]
+            })
+          ]
+        })
+      ]
+    });
+
+    // 2. 交辦與陳報基本資訊欄位（民國年格式 + 無框線）
+    const infoTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: noBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 55, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦長官：${data.assigner || ''}`, font: "標楷體", size: 30 })] })]
+            }),
+            new TableCell({
+              width: { size: 45, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatROCDate(data.assigned_date)}`, font: "標楷體", size: 30 })] })]
+            })
+          ]
+        }),
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 55, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報單位：${data.reporting_unit || ''}`, font: "標楷體", size: 30 })] })]
+            }),
+            new TableCell({
+              width: { size: 45, type: WidthType.PERCENTAGE },
+              borders: noBorders,
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatROCDate(data.report_date)}`, font: "標楷體", size: 30 })] })]
+            })
+          ]
+        })
+      ]
+    });
+
+    // 3. 內文段落處理（「一、」「(一)」設定凸排2字元，[1.]「(1)」設定凸排1字元）
+    function processDocxSection(title, contentText) {
+      const paras = [];
+      if (title) {
+        paras.push(new Paragraph({
+          spacing: { before: 120, after: 0, line: 240 },
+          children: [new TextRun({ text: title, bold: true, size: 32, font: "標楷體" })]
+        }));
+      }
+
+      if (contentText) {
+        const lines = contentText.split('\n');
+        lines.forEach(line => {
+          const trimmed = line.trim();
+          if (!trimmed) return;
+
+          let indentObj = { left: 320 }; // 預設 1 字元縮排
+
+          if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
+            // (1) 階層：縮排 5 字元、換行凸排 1 字元 (left: 1600, hanging: 320)
+            indentObj = { left: 1600, hanging: 320 };
+          } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
+            // 1. 階層：縮排 4 字元、換行凸排 1 字元 (left: 1280, hanging: 320)
+            indentObj = { left: 1280, hanging: 320 };
+          } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
+            // (一) 階層：縮排 4 字元、換行凸排 2 字元 (left: 1280, hanging: 640)
+            indentObj = { left: 1280, hanging: 640 };
+          } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
+            // 一、 階層：縮排 3 字元、換行凸排 2 字元 (left: 960, hanging: 640)
+            indentObj = { left: 960, hanging: 640 };
+          }
+
+          paras.push(new Paragraph({
+            indent: indentObj,
+            spacing: { before: 0, after: 0, line: 240 },
+            children: [new TextRun({ text: trimmed, size: 32, font: "標楷體" })]
+          }));
+        });
+      }
+      return paras;
+    }
+
+    const allMainParas = [
+      ...processDocxSection('壹、案由：', data.section_1),
+      ...processDocxSection('貳、重點說明暨續辦摘要：', data.section_2),
+      ...processDocxSection('參、擬處理意見或建議事項：', data.section_3)
+    ];
+
+    const singleBorder = { style: BorderStyle.SINGLE, size: 8, color: "000000" };
+    const outerBoxBorders = {
+      top: singleBorder, bottom: singleBorder, left: singleBorder, right: singleBorder,
+      insideHorizontal: noBorder, insideVertical: noBorder
+    };
+
+    const mainContentTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: outerBoxBorders,
+      rows: [
+        new TableRow({
+          children: [
+            new TableCell({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              borders: outerBoxBorders,
+              margins: { top: 140, bottom: 180, left: 160, right: 160 },
+              children: allMainParas
+            })
+          ]
+        })
+      ]
+    });
+
+    // 4. 本件分送單位欄位（全部無框線）
+    const dispatchUnits = data.dispatch_units || [];
+    const isDis = (name) => dispatchUnits.includes(name);
+    const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
+
+    const createCellTxt = (text) => new TableCell({
+      borders: noBorders,
+      children: [new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: text, font: "標楷體", size: 24 })] })]
+    });
+
+    const dispatchTable = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      borders: noBorders,
+      rows: [
+        new TableRow({
+          children: [
+            createCellTxt("本件分送（勾選）"),
+            createCellTxt(checkSym(isDis('署長辦公室')) + "署長辦公室"),
+            createCellTxt(checkSym(isDis('王副署長辦公室')) + "王副署長辦公室"),
+            createCellTxt(checkSym(isDis('黃副署長辦公室')) + "黃副署長辦公室")
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCellTxt(""),
+            createCellTxt(checkSym(isDis('陳副署長辦公室')) + "陳副署長辦公室"),
+            createCellTxt(checkSym(isDis('總工程司室')) + "總工程司室"),
+            createCellTxt(checkSym(isDis('主任秘書室')) + "主任秘書室")
+          ]
+        }),
+        new TableRow({
+          children: [
+            createCellTxt(""),
+            createCellTxt(checkSym(hasOther) + "其他單位：" + (data.other_unit_text || '')),
+            createCellTxt(""),
+            createCellTxt("")
+          ]
+        })
+      ]
+    });
+
+    // 5. 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            margin: {
+              top: 567,    // 上 1.0 公分
+              bottom: 680, // 下 1.2 公分
+              left: 737,   // 左 1.3 公分
+              right: 737   // 右 1.3 公分
+            }
+          }
+        },
+        children: [
+          headerTable,
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
+          infoTable,
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
+          mainContentTable,
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
+          dispatchTable,
+          new Paragraph({ spacing: { before: 0, after: 0, line: 240 }, text: '' }),
+          new Paragraph({
+            spacing: { before: 0, after: 0, line: 240 },
+            children: [new TextRun({ text: `本案聯絡人：${data.contact_person || ''}`, font: "標楷體", size: 24 })]
+          }),
+          new Paragraph({
+            spacing: { before: 0, after: 0, line: 240 },
+            children: [new TextRun({ text: `聯絡電話：${data.contact_phone || ''}`, font: "標楷體", size: 24 })]
+          })
+        ]
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `速報單_${data.report_date || ''}.docx`;
+    link.click();
+
+    showStatus('水利署速報單 Word (.docx) 匯出成功！格式與 PDF 完全一致。', 'success');
+  }
+
+  // 4. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -887,6 +1171,16 @@
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
   }
+
+  // 匯出 Word (.docx) 檔
+  document.getElementById('btnExportDocx').addEventListener('click', async () => {
+    try {
+      await handleExportDocx();
+    } catch (err) {
+      showStatus(`匯出失敗: ${err.message}`, 'error');
+      alert(`匯出失敗: ${err.message}`);
+    }
+  });
 
   // 匯出 PDF 檔
   document.getElementById('btnExportPDF').addEventListener('click', async () => {
