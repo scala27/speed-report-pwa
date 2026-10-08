@@ -744,7 +744,20 @@
     }
   }
 
-  // 5. 匯出 Word (.docx) 文件（完美邊界與無框線排版）
+  // 日期格式化為西元年：2026年10月5日
+  function formatADDate(dateStr) {
+    if (!dateStr) return '';
+    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})\$/);
+    if (match) {
+      const year = match[1];
+      const month = parseInt(match[2], 10);
+      const day = parseInt(match[3], 10);
+      return `${year}年${month}月${day}日`;
+    }
+    return dateStr;
+  }
+
+  // 5. 匯出 Word (.docx) 文件（完美邊界、無框線、西元年日期與段落凸排 2 字元）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -827,7 +840,7 @@
       ]
     });
 
-    // 2. 交辦與陳報基本資訊欄位（全部無框線，日期靠右對齊）
+    // 2. 交辦與陳報基本資訊欄位（西元年格式 + 全部無框線，日期靠右對齊）
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -842,7 +855,7 @@
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatROCDate(data.assigned_date)}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `交辦日期：${formatADDate(data.assigned_date)}`, font: "標楷體", size: 32 })] })]
             })
           ]
         }),
@@ -856,14 +869,14 @@
             new TableCell({
               width: { size: 45, type: WidthType.PERCENTAGE },
               borders: noBorders,
-              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatROCDate(data.report_date)}`, font: "標楷體", size: 32 })] })]
+              children: [new Paragraph({ alignment: AlignmentType.RIGHT, spacing: { before: 0, after: 0, line: 240 }, children: [new TextRun({ text: `陳報日期：${formatADDate(data.report_date)}`, font: "標楷體", size: 32 })] })]
             })
           ]
         })
       ]
     });
 
-    // 3. 內文段落處理（縮排優化 + 前後距0行 + 單行間距）
+    // 3. 內文段落處理（縮排 + 段落凸排 2 字元 [hanging: 640] + 前後距0行 + 單行間距）
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
@@ -879,20 +892,24 @@
           const trimmed = line.trim();
           if (!trimmed) return;
 
-          let indentTwips = 320; // 預設 1 字元縮排
+          let indentObj = { left: 320 }; // 預設 1 字元縮排
 
           if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
-            indentTwips = 1280; // (1) 階層：縮排 4 字元
+            // (1) 階層：縮排 4 字元、換行凸排 2 字元 (left: 1920, hanging: 640)
+            indentObj = { left: 1920, hanging: 640 };
           } else if (/^\d+[\.\、]|^[１２３４５６７８９０]+[\.\、]/.test(trimmed)) {
-            indentTwips = 960;  // 1. 階層：縮排 3 字元
+            // 1. 階層：縮排 3 字元、換行凸排 2 字元 (left: 1600, hanging: 640)
+            indentObj = { left: 1600, hanging: 640 };
           } else if (/^[\(\（][一二三四五六七八九十]+[\)\）]/.test(trimmed)) {
-            indentTwips = 640;  // (一) 階層：縮排 2 字元
+            // (一) 階層：縮排 2 字元、換行凸排 2 字元 (left: 1280, hanging: 640)
+            indentObj = { left: 1280, hanging: 640 };
           } else if (/^[一二三四五六七八九十]+\s*[\u3001\uFF0C\.\s]/.test(trimmed)) {
-            indentTwips = 320;  // 一、 階層：縮排 1 字元
+            // 一、 階層：縮排 1 字元、換行凸排 2 字元 (left: 960, hanging: 640)
+            indentObj = { left: 960, hanging: 640 };
           }
 
           paras.push(new Paragraph({
-            indent: { left: indentTwips },
+            indent: indentObj,
             spacing: { before: 0, after: 0, line: 240 },
             children: [new TextRun({ text: trimmed, size: 32, font: "標楷體" })]
           }));
@@ -908,7 +925,7 @@
       ...processDocxSection('擬處意見或建議事項：', data.section_suggestions)
     ];
 
-    // 5. 整合於單一標準外框（內部無分隔橫線）
+    // 整合於單一標準外框（內部無分隔橫線）
     const singleBorder = { style: BorderStyle.SINGLE, size: 8, color: "000000" };
     const outerBoxBorders = {
       top: singleBorder,
@@ -1078,7 +1095,7 @@
       }
 
       const cleanSubject = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
-      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatROCDate(data.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
+      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
 
       await copyToClipboard(shareText);
 
@@ -1187,18 +1204,6 @@
       msgEl.innerText = text;
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
-  }
-
-  function formatROCDate(dateStr) {
-    if (!dateStr) return '';
-    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})\$/);
-    if (match) {
-      const rocYear = parseInt(match[1], 10) - 1911;
-      const month = parseInt(match[2], 10);
-      const day = parseInt(match[3], 10);
-      return `${rocYear}年${month}月${day}日`;
-    }
-    return dateStr;
   }
 
   function getFormData() {
@@ -1479,11 +1484,11 @@
 
     const infoFontSize = 16;
     currentPage.drawText(`交辦長官：${data.assigner || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
-    currentPage.drawText(`交辦日期：${formatROCDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
+    currentPage.drawText(`交辦日期：${formatADDate(data.assigned_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
     
     currentY -= 22;
     currentPage.drawText(`陳報單位：${data.reporting_unit || ''}`, { x: marginX, y: currentY, size: infoFontSize, font: kaiFont });
-    currentPage.drawText(`陳報日期：${formatROCDate(data.report_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
+    currentPage.drawText(`陳報日期：${formatADDate(data.report_date)}`, { x: marginX + 310, y: currentY, size: infoFontSize, font: kaiFont });
 
     currentY -= 16;
 
