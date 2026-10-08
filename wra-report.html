@@ -603,7 +603,7 @@
     reader.readAsText(file);
   });
 
-  // 3. 匯出 Word (.docx) 文件（完美邊界、無框線、民國年格式與縮排1字元）
+  // 3. 匯出 Word (.docx) 文件（調整欄寬比例：32%-32%-36%，確保「辦理現況速報單」不換行）
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -622,7 +622,7 @@
       insideHorizontal: noBorder, insideVertical: noBorder
     };
 
-    // 1. 頂部標題表格（標題無空白、向內縮排1字元 [240 twips]）
+    // 1. 頂部標題表格（調整比例：左 32%、中 32%、右 36% 確保右標題完美一行容納）
     const types = ['部次長交辦事項', '重要業務', '重要會議結論', '首長訪視行程', '媒體受訪', '其他'];
     const typeParas = types.map(t => {
       const isChecked = (data.meeting_type === t);
@@ -639,32 +639,32 @@
         new TableRow({
           children: [
             new TableCell({
-              width: { size: 30, type: WidthType.PERCENTAGE },
+              width: { size: 32, type: WidthType.PERCENTAGE },
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: [
                 new Paragraph({
                   alignment: AlignmentType.LEFT,
-                  indent: { left: 240 }, // 縮排 1 字元 (240 twips)
+                  indent: { left: 240 }, // 縮排 1 字元
                   spacing: { before: 0, after: 0, line: 240 },
                   children: [new TextRun({ text: "經濟部水利署", bold: true, size: 40, font: "標楷體" })]
                 })
               ]
             }),
             new TableCell({
-              width: { size: 40, type: WidthType.PERCENTAGE },
+              width: { size: 32, type: WidthType.PERCENTAGE }, // 縮小案件性質欄寬
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: typeParas
             }),
             new TableCell({
-              width: { size: 30, type: WidthType.PERCENTAGE },
+              width: { size: 36, type: WidthType.PERCENTAGE }, // 放大右側標題欄寬
               borders: noBorders,
               verticalAlign: VerticalAlign.CENTER,
               children: [
                 new Paragraph({
                   alignment: AlignmentType.RIGHT,
-                  indent: { right: 240 }, // 縮排 1 字元 (240 twips)
+                  indent: { right: 240 }, // 縮排 1 字元
                   spacing: { before: 0, after: 0, line: 240 },
                   children: [new TextRun({ text: "辦理現況速報單", bold: true, size: 40, font: "標楷體" })]
                 })
@@ -866,7 +866,7 @@
     showStatus('水利署速報單 Word (.docx) 匯出成功！格式與 PDF 完全一致。', 'success');
   }
 
-  // 4. 純前端開源楷體 TTF PDF 引擎 (讀取本地 ./kaiu.ttf)
+  // 4. 純前端開源楷體 TTF PDF 引擎 (頂部標題調整為自左右邊界向內精準縮排 2 個字元 [40pt])
   async function generatePDFBlob(data) {
     const { PDFDocument, rgb } = PDFLib;
     const pdfDoc = await PDFDocument.create();
@@ -987,14 +987,14 @@
     const leftTitle = '經濟部水利署';
     const rightTitle = '辦理現況速報單';
     const titleSize = 20;
-    const headerIndent1Char = titleSize; // 1 個字元縮排 (20 pt)
+    const headerIndent2Chars = 2 * titleSize; // 精準縮排 2 個字元 (40 pt)
 
-    // 「經濟部水利署」：向內縮排 1 個字元
-    drawBoldText(currentPage, leftTitle, marginX + headerIndent1Char, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
+    // 「經濟部水利署」：向內縮排 2 個字元
+    drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
 
-    // 「辦理現況速報單」：向內縮排 1 個字元
+    // 「辦理現況速報單」：向內縮排 2 個字元
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent1Char, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, listTopY - (2 * optionLineSpacing), titleSize, 2.0);
 
     const basicInfoStartY = listTopY - (6 * optionLineSpacing) - 12;
 
