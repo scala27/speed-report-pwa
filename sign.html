@@ -2,159 +2,303 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>陳報單位首長/主管簽核 - 經濟部速報單</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-
   <style>
     :root {
-      --moea-blue: #003a6c;
+      --primary-color: #0d6efd;
+      --bg-color: #f4f6f9;
       --card-bg: #ffffff;
-      --primary-green: #059669;
+      --border-color: #e2e8f0;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --font-size-base: 16px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--moea-blue);
-      color: #1e293b;
-      padding: 12px 10px 40px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 12px;
+      font-size: var(--font-size-base);
+      line-height: 1.6;
     }
 
-    .card {
-      background: var(--card-bg);
-      width: 100%;
-      max-width: 520px;
-      border-radius: 16px;
-      padding: 20px 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
     }
 
-    h3 {
-      color: var(--moea-blue);
-      text-align: center;
-      font-size: 20px;
-      font-weight: 800;
-      border-bottom: 2px solid var(--moea-blue);
-      padding-bottom: 8px;
+    /* 字體大小調整控制區 */
+    .font-control-card {
+      background: #004d61;
+      color: white;
+      border-radius: 12px;
+      padding: 10px 14px;
       margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    .zoom-control {
-      display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 12px; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
+    .font-btn-group {
+      display: flex;
+      gap: 6px;
     }
-    .zoom-label { font-size: 13px; color: #475569; font-weight: bold; }
-    .zoom-btn {
-      background: var(--moea-blue); color: white; border: none; border-radius: 6px; padding: 4px 10px; font-weight: bold; font-size: 13px; cursor: pointer;
+
+    .font-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
     }
-    .zoom-btn.active { background: var(--primary-green); }
 
-    .summary-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; margin-bottom: 14px; line-height: 1.6; }
-    .summary-item { margin-bottom: 12px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 10px; }
-    .summary-item:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
-    .summary-label { font-weight: bold; color: var(--moea-blue); display: block; margin-bottom: 4px; }
-    .summary-content { color: #1e293b; white-space: pre-wrap; word-break: break-word; }
-
-    .font-normal { font-size: 14px; }
-    .font-large { font-size: 17px; }
-    .font-xlarge { font-size: 20px; }
-
-    .canvas-container {
-      width: 100%; height: 200px; border: 2px dashed var(--moea-blue); border-radius: 10px; background: #ffffff; margin-bottom: 12px; touch-action: none;
+    .font-btn.active {
+      background: #00b4d8;
+      border-color: #ffffff;
     }
-    canvas { width: 100%; height: 100%; border-radius: 8px; }
 
-    .btn-group { display: flex; flex-direction: column; gap: 8px; }
-    .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; text-align: center; }
-    .btn-submit { background: var(--primary-green); color: white; transition: all 0.2s ease; }
-    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
-    .btn-clear { background: #cbd5e1; color: #334155; }
+    /* 內文卡片 */
+    .detail-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
 
-    .success-box { display: none; text-align: center; padding: 30px 10px; }
-    .success-title { font-size: 22px; font-weight: bold; color: var(--primary-green); margin-bottom: 10px; }
+    .section-item {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .section-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-weight: bold;
+      color: #0f4c81;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.05em;
+      margin-bottom: 6px;
+    }
+
+    .section-content {
+      color: var(--text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding-left: 4px;
+    }
+
+    /* 簽名區塊 */
+    .signature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    canvas {
+      width: 100%;
+      height: 180px;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      background: #ffffff;
+      touch-action: none;
+      margin-top: 8px;
+      display: block;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-clear { background: #e2e8f0; color: #475569; }
+    .btn-submit { background: #059669; color: white; }
+
+    #loadingStatus {
+      text-align: center;
+      padding: 20px;
+      color: #0284c7;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
 
-<div class="card" id="mainCard">
-  <h3>經濟部速報單 - 主管簽核</h3>
+<div class="container">
 
-  <div class="zoom-control">
-    <span class="zoom-label">🔍 字體大小：</span>
-    <button type="button" class="zoom-btn active" id="btnNormal" onclick="setFontSize('normal')">A 標準</button>
-    <button type="button" class="zoom-btn" id="btnLarge" onclick="setFontSize('large')">A+ 大字</button>
-    <button type="button" class="zoom-btn" id="btnXLarge" onclick="setFontSize('xlarge')">A++ 特大</button>
-  </div>
-
-  <div class="summary-box font-normal" id="summaryBox">
-    <div class="summary-item">
-      <span class="summary-label">🏢 陳報單位</span>
-      <div class="summary-content" id="disp_unit">載入中...</div>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">📋 案由</span>
-      <div class="summary-content" id="disp_subject">載入中...</div>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">👥 出席人員</span>
-      <div class="summary-content" id="disp_attendees">載入中...</div>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">📝 會議結論及指示事項</span>
-      <div class="summary-content" id="disp_conclusions">載入中...</div>
-    </div>
-    <div class="summary-item">
-      <span class="summary-label">💡 擬處理意見或建議事項</span>
-      <div class="summary-content" id="disp_suggestions">載入中...</div>
+  <!-- 字體調整列 -->
+  <div class="font-control-card">
+    <span>🔍 字體大小：</span>
+    <div class="font-btn-group">
+      <button class="font-btn active" onclick="setFontSize(16, this)">A 標準</button>
+      <button class="font-btn" onclick="setFontSize(19, this)">A+ 大字</button>
+      <button class="font-btn" onclick="setFontSize(22, this)">A++ 特大</button>
     </div>
   </div>
 
-  <div style="font-weight: bold; color: var(--moea-blue); margin-bottom: 6px; font-size: 15px;">✍️ 請於下方方框內親筆簽名：</div>
-  <div class="canvas-container" id="canvasBox">
+  <!-- 草稿內容卡片 -->
+  <div class="detail-card">
+    <div id="loadingStatus">⏳ 正在連線伺服器載入速報單資料...<br><small style="color:#64748b; font-weight:normal;">(若伺服器休眠中約需 15~25 秒，請稍候)</small></div>
+
+    <div id="contentBody" style="display: none;">
+      <div class="section-item">
+        <div class="section-title">🏢 陳報單位</div>
+        <div class="section-content" id="dUnit"></div>
+      </div>
+
+      <div class="section-item">
+        <div class="section-title">📋 案由</div>
+        <div class="section-content" id="dSubject"></div>
+      </div>
+
+      <div class="section-item">
+        <div class="section-title">👥 出席人員</div>
+        <div class="section-content" id="dAttendees"></div>
+      </div>
+
+      <div class="section-item">
+        <div class="section-title">📝 會議結論及指示事項</div>
+        <div class="section-content" id="dConclusions"></div>
+      </div>
+
+      <div class="section-item">
+        <div class="section-title">💡 擬處理意見或建議事項</div>
+        <div class="section-content" id="dSuggestions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 手寫簽名板 -->
+  <div class="signature-card" id="signCard" style="display: none;">
+    <div class="section-title">✍️ 請於下方方框內親筆簽名：</div>
     <canvas id="sigCanvas"></canvas>
+
+    <div class="btn-group">
+      <button class="btn btn-clear" onclick="clearCanvas()">清除重簽</button>
+      <button class="btn btn-submit" id="submitBtn" onclick="submitSignature()">確認簽署並送出</button>
+    </div>
   </div>
 
-  <div class="btn-group">
-    <button type="button" class="btn btn-clear" id="btnClear" onclick="clearCanvas()">🧹 清除重簽</button>
-    <button type="button" class="btn btn-submit" id="btnSubmit" onclick="submitSignature()">✅ 完成簽名並傳回 LINE</button>
-  </div>
-</div>
-
-<div class="card success-box" id="successBox">
-  <div class="success-title">🎉 簽名完成！</div>
-  <div style="font-size: 15px; color: #475569; line-height: 1.5;">正在為您開啟 LINE 傳送連結予承辦人...<br><br><span style="font-size:12px; color:#94a3b8;">（傳送後此視窗即可關閉）</span></div>
 </div>
 
 <script>
-  let canvas, ctx, isDrawing = false, hasSigned = false;
-  let reportData = null;
+  const API_BASE_URL = 'https://speed-report-api.onrender.com';
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('t');
+  const compressedData = urlParams.get('d');
 
-  function setFontSize(size) {
-    const box = document.getElementById('summaryBox');
-    box.className = 'summary-box font-' + size;
-    document.querySelectorAll('.zoom-btn').forEach(btn => btn.classList.remove('active'));
-    if (size === 'large') document.getElementById('btnLarge').classList.add('active');
-    else if (size === 'xlarge') document.getElementById('btnXLarge').classList.add('active');
-    else document.getElementById('btnNormal').classList.add('active');
+  const canvas = document.getElementById('sigCanvas');
+  const ctx = canvas.getContext('2d');
+  let isDrawing = false;
+  let hasSigned = false;
+
+  function setFontSize(size, btn) {
+    document.documentElement.style.setProperty('--font-size-base', size + 'px');
+    document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    resizeCanvas();
   }
 
-  function initCanvas() {
-    canvas = document.getElementById('sigCanvas');
-    const box = document.getElementById('canvasBox');
-    canvas.width = box.clientWidth * 2;
-    canvas.height = box.clientHeight * 2;
-    ctx = canvas.getContext('2d');
-    ctx.scale(2, 2);
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "#000000";
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#000000';
   }
 
+  async function loadDraftData() {
+    if (token) {
+      // 1. Render FastAPI 後端 API 模式
+      try {
+        const res = await fetch(`${API_BASE_URL}/draft/${token}`);
+        if (!res.ok) throw new Error('簽核連結已失效或不存在');
+        const data = await res.json();
+        
+        const fullData = data.full_data || {};
+        renderFields({
+          unit: fullData.reporting_unit || data.unit || '（無）',
+          subject: fullData.section_subject || data.content || '（無）',
+          attendees: fullData.section_attendees || '（無）',
+          conclusions: fullData.section_conclusions || '（無）',
+          suggestions: fullData.section_suggestions || '（無）'
+        });
+      } catch (err) {
+        document.getElementById('loadingStatus').innerHTML = '❌ 載入失敗：' + err.message;
+      }
+    } else if (compressedData) {
+      // 2. 舊版 LZString URL 解壓備援模式
+      try {
+        const jsonStr = LZString.decompressFromEncodedURIComponent(compressedData);
+        if (!jsonStr) throw new Error('網址資料損毀');
+        const data = JSON.parse(jsonStr);
+        renderFields({
+          unit: data.reporting_unit || '（無）',
+          subject: data.section_subject || '（無）',
+          attendees: data.section_attendees || '（無）',
+          conclusions: data.section_conclusions || '（無）',
+          suggestions: data.section_suggestions || '（無）'
+        });
+      } catch (err) {
+        document.getElementById('loadingStatus').innerHTML = '❌ 解碼失敗：' + err.message;
+      }
+    } else {
+      document.getElementById('loadingStatus').innerHTML = '❌ 缺少有效的簽核 Token 連結！';
+    }
+  }
+
+  function renderFields(data) {
+    document.getElementById('dUnit').innerText = data.unit;
+    document.getElementById('dSubject').innerText = data.subject;
+    document.getElementById('dAttendees').innerText = data.attendees;
+    document.getElementById('dConclusions').innerText = data.conclusions;
+    document.getElementById('dSuggestions').innerText = data.suggestions;
+
+    document.getElementById('loadingStatus').style.display = 'none';
+    document.getElementById('contentBody').style.display = 'block';
+    document.getElementById('signCard').style.display = 'block';
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+  }
+
+  // 繪圖事件處理
   function getPos(e) {
     const rect = canvas.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -162,138 +306,72 @@
     return { x: clientX - rect.left, y: clientY - rect.top };
   }
 
-  function startDrawing(e) { e.preventDefault(); isDrawing = true; const pos = getPos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); }
-  function draw(e) { if (!isDrawing) return; e.preventDefault(); const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); hasSigned = true; }
-  function stopDrawing() { isDrawing = false; }
-  function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); hasSigned = false; }
-
-  // 自動裁切 Canvas 簽名空白區域（精減容量）
-  function getCroppedCanvas(sourceCanvas) {
-    const context = sourceCanvas.getContext('2d');
-    const w = sourceCanvas.width;
-    const h = sourceCanvas.height;
-    const imgData = context.getImageData(0, 0, w, h);
-    let minX = w, minY = h, maxX = 0, maxY = 0;
-
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const alpha = imgData.data[(y * w + x) * 4 + 3];
-        if (alpha > 0) {
-          if (x < minX) minX = x;
-          if (x > maxX) maxX = x;
-          if (y < minY) minY = y;
-          if (y > maxY) maxY = y;
-        }
-      }
-    }
-
-    if (maxX < minX || maxY < minY) return null;
-
-    const cropW = maxX - minX + 1;
-    const cropH = maxY - minY + 1;
-    const cut = document.createElement('canvas');
-    cut.width = cropW;
-    cut.height = cropH;
-    cut.getContext('2d').putImageData(context.getImageData(minX, minY, cropW, cropH), 0, 0);
-    return cut;
+  function startDrawing(e) {
+    isDrawing = true;
+    hasSigned = true;
+    const pos = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(pos.x, pos.y);
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    initCanvas();
-    canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('touchstart', startDrawing, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDrawing, { passive: false });
+  function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const dParam = urlParams.get('d');
-    if (dParam) {
-      try {
-        const jsonStr = LZString.decompressFromEncodedURIComponent(dParam);
-        reportData = JSON.parse(jsonStr);
-        document.getElementById('disp_unit').innerText = reportData.reporting_unit || reportData.u || '未填寫';
-        document.getElementById('disp_subject').innerText = reportData.section_subject || reportData.s || '未填寫';
-        document.getElementById('disp_attendees').innerText = reportData.section_attendees || reportData.at || '無';
-        document.getElementById('disp_conclusions').innerText = reportData.section_conclusions || reportData.c || '無';
-        document.getElementById('disp_suggestions').innerText = reportData.section_suggestions || reportData.su || '無';
-      } catch (err) {
-        alert('草稿資料讀取失敗');
-      }
-    }
-  });
+  function stopDrawing() { isDrawing = false; }
 
-  // 使用 is.gd JSONP 縮網址
-  function getShortUrl(longUrl) {
-    return new Promise((resolve, reject) => {
-      const cbName = 'isgd_cb_' + Math.floor(Math.random() * 1000000);
-      const script = document.createElement('script');
-      
-      window[cbName] = function(res) {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-        if (res && res.shorturl) resolve(res.shorturl);
-        else reject(new Error(res ? res.errormessage : '縮網址失敗'));
-      };
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('touchstart', startDrawing);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('touchend', stopDrawing);
 
-      script.src = `https://is.gd/create.php?format=jsonp&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
-      script.onerror = () => {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-        reject(new Error('縮網址網路連線失敗'));
-      };
-
-      document.body.appendChild(script);
-    });
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    hasSigned = false;
   }
 
   async function submitSignature() {
-    if (!hasSigned) { alert('請先於方框內親筆簽名！'); return; }
-    if (!reportData) { alert('草稿資料讀取異常，無法進行簽核'); return; }
+    if (!hasSigned) {
+      alert('請先在方框內完成親筆簽名！');
+      return;
+    }
 
-    const submitBtn = document.getElementById('btnSubmit');
-    submitBtn.innerText = '⏳ 處理中...';
+    const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
+    submitBtn.innerText = '傳送中...';
 
-    try {
-      const croppedCanvas = getCroppedCanvas(canvas);
-      const sigData = croppedCanvas ? croppedCanvas.toDataURL('image/png') : canvas.toDataURL('image/png');
+    const sigData = canvas.toDataURL('image/png');
 
-      // 將簽名檔壓入完整草稿資料
-      reportData.signature = sigData;
-
-      const jsonStr = JSON.stringify(reportData);
-      const compressed = LZString.compressToEncodedURIComponent(jsonStr);
-
-      const reportBaseUrl = window.location.origin + window.location.pathname.replace('sign.html', 'moea-report.html');
-      const longReturnUrl = `${reportBaseUrl}?s=${compressed}`;
-
-      let shortReturnUrl = longReturnUrl;
+    if (token) {
+      // 傳送簽名至 Render API
       try {
-        shortReturnUrl = await Promise.race([
-          getShortUrl(longReturnUrl),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('縮網址逾時')), 3000))
-        ]);
+        const res = await fetch(`${API_BASE_URL}/sign/${token}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signature: sigData })
+        });
+
+        if (!res.ok) throw new Error('傳送失敗');
+
+        alert('✅ 已完成簽署！系統已將簽名同步傳回給承辦人。');
+        document.getElementById('signCard').innerHTML = '<h3 style="color:#059669; text-align:center; padding: 20px;">✅ 您已成功完成本次速報單簽署</h3>';
+
       } catch (err) {
-        console.warn('縮網址逾時，使用原網址:', err);
+        alert('傳送簽名失敗：' + err.message);
+        submitBtn.disabled = false;
+        submitBtn.innerText = '確認簽署並送出';
       }
-
-      const lineMsg = `長官已完成速報單簽核，請點擊開啟速報單並產出 PDF：\n\n${shortReturnUrl}`;
-      const lineShareUrl = `https://line.me/R/share?text=${encodeURIComponent(lineMsg)}`;
-
-      // 喚起 LINE 直接傳回給承辦人
-      window.location.href = lineShareUrl;
-
-      setTimeout(() => {
-        document.getElementById('mainCard').style.display = 'none';
-        document.getElementById('successBox').style.display = 'block';
-      }, 600);
-
-    } catch (err) {
-      alert('處理簽名失敗: ' + err.message);
-      submitBtn.innerText = '✅ 完成簽名並傳回 LINE';
-      submitBtn.disabled = false;
     }
   }
+
+  window.onload = loadDraftData;
 </script>
+
 </body>
 </html>
