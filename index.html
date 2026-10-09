@@ -44,7 +44,7 @@
       margin: 0 auto;
     }
 
-    /* 頂部 Header 卡片 */
+    /* 頂部 Header 卡片 (已精簡) */
     .hero-card {
       background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
       border-radius: var(--radius-card);
@@ -52,10 +52,8 @@
       color: #ffffff;
       display: flex;
       align-items: center;
-      justify-content: space-between;
       box-shadow: 0 10px 20px -5px rgba(102, 186, 183, 0.4);
       margin-bottom: 20px;
-      position: relative;
     }
 
     .hero-left {
@@ -81,25 +79,6 @@
       font-size: 1.8rem;
       font-weight: 800;
       letter-spacing: 0.02em;
-    }
-
-    .btn-lock {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.4);
-      color: white;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-    }
-
-    .btn-lock:active {
-      background: rgba(0, 0, 0, 0.2);
     }
 
     /* 選單列表卡片 */
@@ -263,7 +242,6 @@
       min-height: 20px;
     }
 
-    /* 震動效果 */
     .shake {
       animation: shake 0.35s ease-in-out;
     }
@@ -296,7 +274,6 @@
       <div class="hero-icon">👤</div>
       <div class="hero-title">打工雲</div>
     </div>
-    <button type="button" class="btn-lock" onclick="lockSystem()" title="重新鎖定系統">🔒 鎖定</button>
   </div>
 
   <!-- 選單列表 -->
@@ -347,29 +324,24 @@
     ];
   }
 
-  // 取得今天的日期字串 (YYYY-MM-DD) 作為 session 鎖定依據
   function getTodayString() {
     const now = new Date();
     return `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
   }
 
-  // 檢查當天是否已完成驗證
   function isAlreadyAuthenticated() {
     const savedAuthDate = sessionStorage.getItem('dagong_auth_date');
     return savedAuthDate === getTodayString();
   }
 
-  // 點擊工作區卡片入口觸發
   function openWorkspace(url, title) {
     targetWorkspaceUrl = url;
 
-    // 若今日已通過驗證，直接進入工作區
     if (isAlreadyAuthenticated()) {
       window.location.href = targetWorkspaceUrl;
       return;
     }
 
-    // 否則跳出密碼驗證視窗
     document.getElementById('authTargetTitle').innerText = title;
     document.getElementById('authErrorMsg').innerText = '';
     const passInput = document.getElementById('authPasswordInput');
@@ -380,7 +352,6 @@
     setTimeout(() => passInput.focus(), 200);
   }
 
-  // 驗證密碼邏輯
   function verifyAndNavigate() {
     const passInput = document.getElementById('authPasswordInput');
     const errorMsg = document.getElementById('authErrorMsg');
@@ -390,11 +361,9 @@
     const validPasses = getValidPasswords().map(p => p.toLowerCase());
 
     if (validPasses.includes(inputVal)) {
-      // 標記今日已成功驗證
       sessionStorage.setItem('dagong_auth_date', getTodayString());
       errorMsg.innerText = '';
       
-      // 順暢進入目標工作區
       if (targetWorkspaceUrl) {
         window.location.href = targetWorkspaceUrl;
       } else {
@@ -405,24 +374,16 @@
       passInput.value = '';
       passInput.focus();
       
-      // 觸發震動提醒
       authCard.classList.remove('shake');
-      void authCard.offsetWidth; // 強制重繪
+      void authCard.offsetWidth;
       authCard.classList.add('shake');
     }
   }
 
-  // 支援 Enter 鍵快捷送出
   function handleKeyUp(event) {
     if (event.key === 'Enter') {
       verifyAndNavigate();
     }
-  }
-
-  // 手動重新鎖定系統
-  function lockSystem() {
-    sessionStorage.removeItem('dagong_auth_date');
-    alert('🔒 已成功重新鎖定系統！進入工作區需再次輸入密碼。');
   }
 </script>
 
