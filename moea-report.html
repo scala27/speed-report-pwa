@@ -1012,7 +1012,7 @@
         }
         sigChildren.push(new ImageRun({
           data: bytes,
-          transformation: { width: 120, height: 36 }
+          transformation: { width: 110, height: 32 }
         }));
       } catch(e) {
         console.warn("Word 簽名檔內嵌失敗:", e);
@@ -1539,7 +1539,7 @@
       secItems.forEach(item => allLineItems.push(item));
     });
 
-    const footerNeededHeight = 115;
+    const footerNeededHeight = 125;
     let renderY = tableBoxStartY - 22;
 
     for (let i = 0; i < allLineItems.length; i++) {
@@ -1639,17 +1639,22 @@
     currentY -= 17;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    currentY -= 22;
-    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
+    // 擴大與上方聯絡電話之行距，確保簽名檔頂端絕對不撞擊電話號碼
+    currentY -= 32;
+    const sigLabelText = `陳報單位首長/主管簽核：`;
+    currentPage.drawText(sigLabelText, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
     if (currentSignatureBase64) {
       try {
         const sigImage = await pdfDoc.embedPng(currentSignatureBase64);
+        const labelWidth = measureTextWidth(sigLabelText, footerFontSize);
+        
+        // 將簽名檔緊貼於「陳報單位首長/主管簽核：」文字右側，並下移垂直對齊文字中線
         currentPage.drawImage(sigImage, {
-          x: marginX + 160,
-          y: currentY - 8,
-          width: 120,
-          height: 36
+          x: marginX + labelWidth + 6, // 文字右側空開 6pt
+          y: currentY - 10,           // 垂直向調降，防止頂部重疊至電話文字
+          width: 110,                 // 控制寬度
+          height: 32                  // 控制高度
         });
       } catch (e) {
         console.warn('繪製簽名圖檔失敗:', e);
