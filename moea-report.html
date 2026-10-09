@@ -581,6 +581,16 @@
     });
   }
 
+  // 取得 Base64 圖片原始比例尺寸
+  function getImageDimensions(base64) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth || 150, height: img.naturalHeight || 50 });
+      img.onerror = () => resolve({ width: 150, height: 50 });
+      img.src = base64;
+    });
+  }
+
   // 頁面加載完成主初始化流程
   document.addEventListener('DOMContentLoaded', () => {
     try {
@@ -997,13 +1007,23 @@
       ]
     });
 
-    // 簽名檔自動內嵌處理
+    // 簽名檔自動等比例縮放內嵌處理
     const sigChildren = [
       new TextRun({ text: `陳報單位首長/主管簽核：`, font: "標楷體", size: 24 })
     ];
 
     if (currentSignatureBase64) {
       try {
+        const dims = await getImageDimensions(currentSignatureBase64);
+        const maxH = 30;
+        const maxW = 120;
+        let targetW = maxH * (dims.width / dims.height);
+        let targetH = maxH;
+        if (targetW > maxW) {
+          targetW = maxW;
+          targetH = maxW * (dims.height / dims.width);
+        }
+
         const base64Data = currentSignatureBase64.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
         const binaryStr = atob(base64Data);
         const bytes = new Uint8Array(binaryStr.length);
@@ -1012,7 +1032,7 @@
         }
         sigChildren.push(new ImageRun({
           data: bytes,
-          transformation: { width: 110, height: 32 }
+          transformation: { width: Math.round(targetW), height: Math.round(targetH) }
         }));
       } catch(e) {
         console.warn("Word 簽名檔內嵌失敗:", e);
@@ -1639,7 +1659,7 @@
     currentY -= 17;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    // 擴大與上方聯絡電話之行距，確保簽名檔頂端絕對不撞擊電話號碼
+    // 預留行距與計算文字寬度
     currentY -= 32;
     const sigLabelText = `陳報單位首長/主管簽核：`;
     currentPage.drawText(sigLabelText, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
@@ -1648,13 +1668,27 @@
       try {
         const sigImage = await pdfDoc.embedPng(currentSignatureBase64);
         const labelWidth = measureTextWidth(sigLabelText, footerFontSize);
-        
-        // 將簽名檔緊貼於「陳報單位首長/主管簽核：」文字右側，並下移垂直對齊文字中線
+
+        // 動態計算等比例縮放 (Maintain Aspect Ratio)
+        const origW = sigImage.width;
+        const origH = sigImage.height;
+        const maxH = 30;  // 限定最高 30pt
+        const maxW = 120; // 限定最寬 120pt
+
+        let targetW = maxH * (origW / origH);
+        let targetH = maxH;
+
+        if (targetW > maxW) {
+          targetW = maxW;
+          targetH = maxW * (origH / origW);
+        }
+
+        // 緊貼文字右側並對齊文字中心
         currentPage.drawImage(sigImage, {
-          x: marginX + labelWidth + 6, // 文字右側空開 6pt
-          y: currentY - 10,           // 垂直向調降，防止頂部重疊至電話文字
-          width: 110,                 // 控制寬度
-          height: 32                  // 控制高度
+          x: marginX + labelWidth + 6,
+          y: currentY - (targetH / 2) + 3,
+          width: targetW,
+          height: targetH
         });
       } catch (e) {
         console.warn('繪製簽名圖檔失敗:', e);
