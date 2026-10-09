@@ -566,7 +566,11 @@
 <input type="file" id="sigFileInput" accept="image/*" style="display: none;">
 
 <script>
+  // 後端 API 設定與簽核輪詢變數
+  const API_BASE_URL = 'https://speed-report-api.onrender.com';
   let currentSignatureBase64 = null;
+  let currentSignToken = null;
+  let signPollInterval = null;
 
   // PWA Service Worker 註冊 v6.6
   if ('serviceWorker' in navigator) {
@@ -669,7 +673,7 @@
     bindButton('btnShareReview', handleShareReview);
     bindButton('btnExportPDF', handleExportPDF);
 
-    // 檢查簽名帶回與開啟自動定時暫存
+    // 檢查舊版相容性簽名帶回與開啟自動定時暫存
     checkUrlForSignedData();
     startAutoSave();
   }
@@ -843,7 +847,7 @@
       ]
     });
 
-    // 2. 交辦與陳報基本資訊欄位（確實顯示西元年：2026年10月5日）
+    // 2. 交辦與陳報基本資訊欄位
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -879,7 +883,7 @@
       ]
     });
 
-    // 3. 內文段落處理（縮排 + 「一、」「(一)」設定凸排2字元，[1.]「(1)」設定凸排1字元）
+    // 3. 內文段落處理
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
@@ -924,7 +928,7 @@
       ...processDocxSection('擬處意見或建議事項：', data.section_suggestions)
     ];
 
-    // 整合於單一標準外框（內部無分隔橫線）
+    // 整合於單一標準外框
     const singleBorder = { style: BorderStyle.SINGLE, size: 8, color: "000000" };
     const outerBoxBorders = {
       top: singleBorder,
@@ -952,7 +956,7 @@
       ]
     });
 
-    // 4. 本件分送單位欄位（全部無框線）
+    // 4. 本件分送單位欄位
     const dispatchUnits = data.dispatch_units || [];
     const isDis = (name) => dispatchUnits.includes(name);
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
@@ -1015,7 +1019,6 @@
       }
     }
 
-    // 整個 Word 檔的版面設定邊界：上 1.0cm (567), 下 1.2cm (680), 左 1.3cm (737), 右 1.3cm (737)
     const doc = new Document({
       sections: [{
         properties: {
@@ -1061,7 +1064,7 @@
     showStatus('經濟部速報單 Word (.docx) 匯出成功！格式已精準對應 PDF 排版。', 'success');
   }
 
-  // 6. 長官簽名連線
+  // 6. 長官簽名連線（串接 Render FastAPI 後端與輪詢）
   async function handleShareReview() {
     const shareBtn = document.getElementById('btnShareReview');
     const shareBtnText = document.getElementById('shareBtnText');
@@ -1076,38 +1079,84 @@
       if (shareBtnText) shareBtnText.innerText = '⏳ 處理中...';
       if (shareBtn) shareBtn.disabled = true;
 
-      const jsonStr = JSON.stringify(data);
-      const compressed = LZString.compressToEncodedURIComponent(jsonStr);
-      const signBaseUrl = window.location.origin + window.location.pathname.replace(/moea-report(_2)?\.html/, 'sign.html');
-      const longUrl = `${signBaseUrl}?d=${compressed}`;
+      showStatus('正在向伺服器建立長官簽名連結...', 'info');
 
-      showStatus('正在生成長官專用簽名連結...', 'info');
+      // 提取乾淨標題給簽核頁面標題列
+      const cleanSubjectTitle = data.section_subject.split('\n')[0].replace(/^案由[：:]\s*/, '').trim() || '公務速報單';
 
-      let targetUrl = longUrl;
-      try {
-        targetUrl = await Promise.race([
-          getShortUrl(longUrl),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('縮網址連線逾時')), 3000))
-        ]);
-      } catch (err) {
-        console.warn('縮網址服務無法連線，使用備用連結:', err);
+      const payload = {
+        title: cleanSubjectTitle,
+        unit: data.reporting_unit,
+        report_date: formatADDate(data.report_date),
+        contact: `${data.contact_person || ''} ${data.contact_phone || ''}`.trim(),
+        content: `【案由】\n${data.section_subject || ''}\n\n【出席人員】\n${data.section_attendees || '無'}\n\n【會議結論及指示事項】\n${data.section_conclusions || ''}\n\n【擬處意見或建議事項】\n${data.section_suggestions || ''}`,
+        full_data: data
+      };
+
+      const response = await fetch(`${API_BASE_URL}/draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`伺服器連線異常 (${response.status})`);
       }
 
-      const cleanSubject = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
-      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
+      const resData = await response.json();
+      currentSignToken = resData.token;
+
+      const signBaseUrl = window.location.origin + window.location.pathname.replace(/moea-report(_2)?\.html/, 'sign.html');
+      const targetUrl = `${signBaseUrl}?t=${currentSignToken}`;
+
+      const cleanSubjectShort = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
+      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubjectShort}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
 
       await copyToClipboard(shareText);
 
-      showStatus('簽名連結已成功複製！請貼上至 LINE 發送給長官。', 'success');
-      alert('🔗 長官簽名連結與訊息已成功複製！請貼上至 LINE 發送給長官。\n\n💡 長官簽名後會透過 LINE 將「完成簽名連結」傳回給您，點擊即可帶入簽名並產出 PDF！');
+      showStatus('簽名連結已成功複製！系統正開啟自動連線感應...', 'success');
+      alert('🔗 長官簽名連結與訊息已成功複製！請貼上至 LINE 發送給長官。\n\n💡 長官在手機完成簽名後，本頁面會自動感應帶入長官親筆簽名！');
 
+      // 啟動背景自動輪詢感應長官簽核
+      startPollingSignStatus(currentSignToken);
+
+    } catch (err) {
+      console.error('建立遠端簽核失敗:', err);
+      showStatus(`建立簽核連結失敗: ${err.message}`, 'error');
+      alert(`建立簽核連結失敗: ${err.message}`);
     } finally {
       if (shareBtnText) shareBtnText.innerText = '長官簽名';
       if (shareBtn) shareBtn.disabled = false;
     }
   }
 
-  // 7. 匯出 PDF 文件（頂部標題縮排與格式精確對齊）
+  // 自動感應輪詢與簽名帶回
+  function startPollingSignStatus(token) {
+    if (signPollInterval) clearInterval(signPollInterval);
+    signPollInterval = setInterval(() => {
+      checkSignStatus(token);
+    }, 4000);
+  }
+
+  async function checkSignStatus(token) {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/status/${token}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.is_signed && data.signature) {
+        if (signPollInterval) clearInterval(signPollInterval);
+        updateSignatureUI(data.signature, '✅ 長官已完成親筆簽名！');
+        showStatus('🎉 感應成功！長官已完成親筆簽名，請點擊「產出 PDF」或「產出 Word」。', 'success');
+        const pdfBtn = document.getElementById('btnExportPDF');
+        if (pdfBtn) pdfBtn.classList.add('pulse-ready');
+      }
+    } catch (e) {
+      console.warn('輪詢簽核狀態連線中...', e);
+    }
+  }
+
+  // 7. 匯出 PDF 文件
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
       throw new Error('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -1117,7 +1166,7 @@
     const data = getFormData();
     const pdfBlob = await generatePDFBlob(data);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob = pdfBlob);
+    link.href = URL.createObjectURL(pdfBlob);
     link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
     link.click();
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
@@ -1288,29 +1337,6 @@
     }
   }
 
-  function getShortUrl(longUrl) {
-    return new Promise((resolve, reject) => {
-      const cbName = 'isgd_cb_' + Math.floor(Math.random() * 1000000);
-      const script = document.createElement('script');
-      
-      window[cbName] = function(res) {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-        if (res && res.shorturl) resolve(res.shorturl);
-        else reject(new Error(res ? res.errormessage : '縮網址失敗'));
-      };
-
-      script.src = `https://is.gd/create.php?format=jsonp&callback=${cbName}&url=${encodeURIComponent(longUrl)}`;
-      script.onerror = () => {
-        delete window[cbName];
-        if (script.parentNode) script.parentNode.removeChild(script);
-        reject(new Error('縮網址網路連線失敗'));
-      };
-
-      document.body.appendChild(script);
-    });
-  }
-
   async function copyToClipboard(text) {
     if (navigator.clipboard && window.isSecureContext) {
       try {
@@ -1446,7 +1472,7 @@
     const leftTitle = '經 濟 部';
     const rightTitle = '速 報 單';
     const titleSize = 22;
-    const headerIndent2Chars = 2 * titleSize; // 2 個字元之精準寬度 (44 pt)
+    const headerIndent2Chars = 2 * titleSize;
 
     const categories = Array.isArray(data.categories) ? data.categories : [];
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
