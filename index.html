@@ -43,7 +43,7 @@
       margin: 0 auto;
     }
 
-    /* 頂部 Header 卡片 (完全還原截圖樣式) */
+    /* 頂部 Header 卡片 */
     .hero-card {
       background: linear-gradient(135deg, #4aa6a1 0%, #68c1bc 100%);
       border-radius: var(--radius-card);
@@ -56,7 +56,6 @@
       margin-bottom: 20px;
     }
 
-    /* 圖示外框 (白色半透明軟圓角) */
     .hero-avatar-box {
       width: 56px;
       height: 56px;
@@ -69,7 +68,6 @@
       flex-shrink: 0;
     }
 
-    /* 白色線條人像向量圖示 (精準對齊截圖) */
     .hero-avatar-box svg {
       width: 28px;
       height: 28px;
@@ -87,7 +85,7 @@
       color: #ffffff;
     }
 
-    /* 選單列表卡片 (完全還原截圖樣式) */
+    /* 選單列表卡片 */
     .menu-list {
       display: flex;
       flex-direction: column;
@@ -120,7 +118,7 @@
       letter-spacing: -0.01em;
     }
 
-    /* 右側綠底箭頭按鈕 (SVG 向量箭頭，各手機系統皆 100% 一致) */
+    /* 右側登入/進入符號區塊 */
     .menu-item-arrow {
       width: 46px;
       height: 46px;
@@ -133,13 +131,8 @@
     }
 
     .menu-item-arrow svg {
-      width: 22px;
-      height: 22px;
-      stroke: #2a837f;
-      stroke-width: 2.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      fill: none;
+      width: 24px;
+      height: 24px;
     }
 
     /* 頁尾文字 */
@@ -152,7 +145,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* 🔐 密碼驗證遮罩 Modal (防漏提示與全向量圖示) */
+    /* 🔐 密碼驗證遮罩 Modal */
     .auth-overlay {
       position: fixed;
       top: 0;
@@ -280,7 +273,7 @@
 </div>
 
 <div class="container">
-  <!-- 頂部 Header 卡片 (採用 SVG 向量圖示，確保手機與電腦 100% 相同) -->
+  <!-- 頂部 Header 卡片 -->
   <div class="hero-card">
     <div class="hero-avatar-box">
       <svg viewBox="0 0 24 24">
@@ -291,26 +284,35 @@
     <div class="hero-title">打工雲</div>
   </div>
 
-  <!-- 選單列表 (採用 SVG 向量箭頭，確保手機與電腦 100% 相同) -->
+  <!-- 選單列表 (精準對齊截圖的「登入/進入」SVG 圖示) -->
   <div class="menu-list">
     <div class="menu-item" onclick="openWorkspace('./wra-report.html', '水利署速報單')">
       <span class="menu-item-title">水利署速報單</span>
       <div class="menu-item-arrow">
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M15 4h4.5a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H15" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M3 12h12M11 7l5 5-5 5" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
       </div>
     </div>
 
     <div class="menu-item" onclick="openWorkspace('./moea-report.html', '經濟部速報單')">
       <span class="menu-item-title">經濟部速報單</span>
       <div class="menu-item-arrow">
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M15 4h4.5a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H15" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M3 12h12M11 7l5 5-5 5" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
       </div>
     </div>
 
     <div class="menu-item" onclick="openWorkspace('./budget.html', '計畫年度預算')">
       <span class="menu-item-title">計畫年度預算</span>
       <div class="menu-item-arrow">
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <svg viewBox="0 0 24 24">
+          <path d="M15 4h4.5a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H15" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M3 12h12M11 7l5 5-5 5" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
       </div>
     </div>
   </div>
@@ -324,11 +326,11 @@
 <script>
   let targetWorkspaceUrl = '';
 
-  // 強制更新 Service Worker 快取版本至 v6.8
+  // 註冊 Service Worker 並更新快取版本至 v6.9
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.8')
-        .then(reg => console.log('Portal Service Worker v6.8 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.9')
+        .then(reg => console.log('Portal Service Worker v6.9 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
