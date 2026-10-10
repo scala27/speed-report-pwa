@@ -200,6 +200,11 @@
         <div class="section-title">💡 擬處理意見或建議事項</div>
         <div class="section-content" id="dSuggestions"></div>
       </div>
+
+      <div class="section-item">
+        <div class="section-title">📤 本件分送單位</div>
+        <div class="section-content" id="dDispatch"></div>
+      </div>
     </div>
   </div>
 
@@ -243,6 +248,21 @@
     ctx.strokeStyle = '#000000';
   }
 
+  function formatDispatchText(fullData) {
+    let units = [];
+    if (Array.isArray(fullData.dispatch_units)) {
+      units = fullData.dispatch_units;
+    } else if (typeof fullData.dispatch_units === 'string' && fullData.dispatch_units) {
+      units = [fullData.dispatch_units];
+    }
+
+    let result = units.length > 0 ? units.join('、') : '（無）';
+    if (fullData.other_unit_text && fullData.other_unit_text.trim()) {
+      result += (result !== '（無）' ? '；其他單位：' : '其他單位：') + fullData.other_unit_text.trim();
+    }
+    return result;
+  }
+
   async function loadDraftData() {
     if (token) {
       // 1. Render FastAPI 後端 API 模式
@@ -257,7 +277,8 @@
           subject: fullData.section_subject || fullData.subject || data.content || '（無）',
           attendees: fullData.section_attendees || fullData.attendees || '（無）',
           conclusions: fullData.section_conclusions || fullData.conclusions || fullData.content || '（無）',
-          suggestions: fullData.section_suggestions || fullData.suggestions || '（無）'
+          suggestions: fullData.section_suggestions || fullData.suggestions || '（無）',
+          dispatch: formatDispatchText(fullData)
         });
       } catch (err) {
         document.getElementById('loadingStatus').innerHTML = '❌ 載入失敗：' + err.message;
@@ -274,7 +295,8 @@
           subject: fullData.section_subject || fullData.subject || '（無）',
           attendees: fullData.section_attendees || fullData.attendees || '（無）',
           conclusions: fullData.section_conclusions || fullData.conclusions || '（無）',
-          suggestions: fullData.section_suggestions || fullData.suggestions || '（無）'
+          suggestions: fullData.section_suggestions || fullData.suggestions || '（無）',
+          dispatch: formatDispatchText(fullData)
         });
       } catch (err) {
         document.getElementById('loadingStatus').innerHTML = '❌ 解碼失敗：' + err.message;
@@ -290,6 +312,7 @@
     document.getElementById('dAttendees').innerText = data.attendees;
     document.getElementById('dConclusions').innerText = data.conclusions;
     document.getElementById('dSuggestions').innerText = data.suggestions;
+    document.getElementById('dDispatch').innerText = data.dispatch;
 
     document.getElementById('loadingStatus').style.display = 'none';
     document.getElementById('contentBody').style.display = 'block';
