@@ -251,32 +251,30 @@
         if (!res.ok) throw new Error('簽核連結已失效或不存在');
         const data = await res.json();
         
-        // 智慧整合：全方位支援 data.full_data, data.draft_data 或 data 根物件
-        const src = data.full_data || data.draft_data || data;
-        
+        const fullData = data.full_data || data.draft_data || data;
         renderFields({
-          unit: src.reporting_unit || src.report_unit || src.unit || data.reporting_unit || data.report_unit || data.unit || '（無）',
-          subject: src.section_subject || src.subject || data.section_subject || data.subject || '（無）',
-          attendees: src.section_attendees || src.attendees || data.section_attendees || data.attendees || '（無）',
-          conclusions: src.section_conclusions || src.conclusions || src.content || data.section_conclusions || data.content || '（無）',
-          suggestions: src.section_suggestions || src.suggestions || src.suggestion || data.section_suggestions || data.suggestion || '（無）'
+          unit: fullData.reporting_unit || fullData.unit || data.unit || '（無）',
+          subject: fullData.section_subject || fullData.subject || data.content || '（無）',
+          attendees: fullData.section_attendees || fullData.attendees || '（無）',
+          conclusions: fullData.section_conclusions || fullData.conclusions || fullData.content || '（無）',
+          suggestions: fullData.section_suggestions || fullData.suggestions || '（無）'
         });
       } catch (err) {
         document.getElementById('loadingStatus').innerHTML = '❌ 載入失敗：' + err.message;
       }
     } else if (compressedData) {
-      // 2. LZString URL 解壓備援模式
+      // 2. 舊版 LZString URL 解壓備援模式
       try {
         const jsonStr = LZString.decompressFromEncodedURIComponent(compressedData);
         if (!jsonStr) throw new Error('網址資料損毀');
         const data = JSON.parse(jsonStr);
-        const src = data.full_data || data.draft_data || data;
+        const fullData = data.full_data || data.draft_data || data;
         renderFields({
-          unit: src.reporting_unit || src.report_unit || src.unit || '（無）',
-          subject: src.section_subject || src.subject || '（無）',
-          attendees: src.section_attendees || src.attendees || '（無）',
-          conclusions: src.section_conclusions || src.conclusions || src.content || '（無）',
-          suggestions: src.section_suggestions || src.suggestions || src.suggestion || '（無）'
+          unit: fullData.reporting_unit || fullData.unit || '（無）',
+          subject: fullData.section_subject || fullData.subject || '（無）',
+          attendees: fullData.section_attendees || fullData.attendees || '（無）',
+          conclusions: fullData.section_conclusions || fullData.conclusions || '（無）',
+          suggestions: fullData.section_suggestions || fullData.suggestions || '（無）'
         });
       } catch (err) {
         document.getElementById('loadingStatus').innerHTML = '❌ 解碼失敗：' + err.message;
@@ -369,6 +367,18 @@
         alert('傳送簽名失敗：' + err.message);
         submitBtn.disabled = false;
         submitBtn.innerText = '確認簽署並送出';
+      }
+    } else if (compressedData) {
+      try {
+        const jsonStr = LZString.decompressFromEncodedURIComponent(compressedData);
+        const data = JSON.parse(jsonStr);
+        data.signature = sigData;
+        const updatedCompressed = LZString.compressToEncodedURIComponent(JSON.stringify(data));
+        const returnUrl = `${window.location.origin}${window.location.pathname.replace('sign.html', 'moea-report.html')}?s=${updatedCompressed}`;
+        
+        window.location.href = returnUrl;
+      } catch (err) {
+        alert('簽名完成，但跳轉失敗：' + err.message);
       }
     }
   }
