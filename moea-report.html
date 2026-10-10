@@ -387,16 +387,17 @@
 
     #status-msg {
       margin-top: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 0.85rem;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 0.88rem;
       display: none;
       text-align: center;
       font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .status-info { background: #e0f2fe; color: #0369a1; }
-    .status-success { background: #dcfce7; color: #15803d; }
-    .status-error { background: #fee2e2; color: #b91c1c; }
+    .status-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .status-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .status-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
   </style>
 </head>
 <body>
@@ -586,8 +587,8 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.4')
-        .then(reg => console.log('MOEA Service Worker v7.4 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.5')
+        .then(reg => console.log('MOEA Service Worker v7.5 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -654,15 +655,22 @@
       });
     }
 
+    // 檢查是否有舊的 Token 啟動背景監聽
+    const savedToken = localStorage.getItem('moea_report_cloud_token');
+    if (savedToken) {
+      currentSignToken = savedToken;
+      startPollingSignature();
+    }
+
     checkUrlForSignedData();
   }
 
   // 1. 💾 多重 Key 本機 + 雲端同步草稿儲存
   async function saveDraft() {
-    const formData = getFormData();
+    const rawData = getRawFormData();
     
     // 強制寫入多重本機 LocalStorage Key
-    const jsonStr = JSON.stringify(formData);
+    const jsonStr = JSON.stringify(rawData);
     LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
 
     try {
@@ -670,7 +678,7 @@
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ draft_data: rawData, full_data: rawData, ...rawData })
       });
 
       if (response.ok) {
@@ -678,6 +686,7 @@
         if (resData.token) {
           localStorage.setItem('moea_report_cloud_token', resData.token);
           currentSignToken = resData.token;
+          startPollingSignature(); // 啟動全時背景監聽
         }
         showStatus('✅ 草稿已成功暫存！（已同步至雲端伺服器）', 'success');
         alert('✅ 草稿已成功暫存！（已同步至雲端伺服器）');
@@ -692,24 +701,27 @@
     }
   }
 
-  // 2. 📂 雙軌智慧載入草稿
+  // 2. 📂 雙軌智慧載入草稿（優先試探雲端，失敗/空資料自動無縫讀取本機草稿）
   async function loadDraft() {
     const cloudToken = localStorage.getItem('moea_report_cloud_token');
     let loadedData = null;
 
     if (cloudToken) {
       try {
-        showStatus('正在從雲端取得最新草稿...', 'info');
+        showStatus('正在從雲端讀取最新草稿...', 'info');
         const response = await fetch(`${API_BASE}/draft/${cloudToken}`);
         if (response.ok) {
           const resData = await response.json();
-          if (resData) {
-            loadedData = resData.full_data || resData.draft_data || resData;
+          const candidate = resData ? (resData.full_data || resData.draft_data || resData) : null;
+          // 驗證雲端回傳資料是否包含真實表單欄位
+          if (candidate && (candidate.reporting_unit || candidate.report_unit || candidate.section_subject || candidate.subject)) {
+            loadedData = candidate;
             currentSignToken = cloudToken;
+            startPollingSignature();
           }
         }
       } catch (err) {
-        console.warn('雲端載入連線異常，切換為本機雙重備份:', err);
+        console.warn('雲端讀取失敗，降級讀取本機草稿:', err);
       }
     }
 
@@ -719,7 +731,7 @@
         if (localStr) {
           try {
             const parsed = JSON.parse(localStr);
-            if (parsed && typeof parsed === 'object') {
+            if (parsed && typeof parsed === 'object' && (parsed.reporting_unit || parsed.report_unit || parsed.section_subject || parsed.subject)) {
               loadedData = parsed;
               break;
             }
@@ -730,8 +742,8 @@
 
     if (loadedData) {
       applyFormData(loadedData);
-      showStatus('✅ 已成功載入最新草稿！', 'success');
-      alert('✅ 已成功載入最新草稿！');
+      showStatus('✅ 已成功載入最新草稿內容！', 'success');
+      alert('✅ 已成功載入最新草稿內容！');
     } else {
       showStatus('ℹ️ 目前尚無儲存的草稿紀錄。', 'info');
       alert('ℹ️ 目前尚無儲存的草稿紀錄。');
@@ -754,8 +766,8 @@
 
   // 3. ✍️ 開啟長官簽名 Modal
   async function openSignatureModal() {
-    const formData = getFormData();
-    if (!formData.reporting_unit || !formData.section_subject) { 
+    const rawData = getRawFormData();
+    if (!rawData.reporting_unit || !rawData.section_subject) { 
       alert('請先填寫「陳報單位」與「案由」'); 
       return; 
     }
@@ -768,15 +780,16 @@
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ draft_data: rawData, full_data: rawData, ...rawData })
       });
       const resData = await response.json();
       currentSignToken = resData.token;
+      localStorage.setItem('moea_report_cloud_token', currentSignToken);
       
       fullSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
     } catch (err) {
       console.warn('後端伺服器連線延遲，啟用 is.gd 離線短網址機制');
-      const jsonStr = JSON.stringify(formData);
+      const jsonStr = JSON.stringify(rawData);
       const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
       const rawLongUrl = `${window.location.origin}/speed-report-pwa/sign.html?s=${compressedData}`;
       fullSignUrl = await shortenUrlWithIsGd(rawLongUrl);
@@ -790,7 +803,7 @@
     const modal = document.getElementById('signModal');
     modal.style.display = 'flex';
 
-    showStatus('✅ 已成功生成長官簽核短網址，等待長官簽名中...', 'success');
+    showStatus('✅ 已成功生成長官簽核短網址，背景監聽簽核中...', 'success');
     setTimeout(() => {
       const msgEl = document.getElementById('status-msg');
       if (msgEl) msgEl.style.display = 'none';
@@ -801,22 +814,24 @@
 
   function closeSignModal() {
     document.getElementById('signModal').style.display = 'none';
-    if (pollInterval) clearInterval(pollInterval);
+    // 關閉視窗不中斷輪詢，讓背景繼續監聽長官簽名！
   }
 
   function copySignLink() {
     if (!currentShortSignUrl) return;
-    const formData = getFormData();
-    const cleanSubject = (formData.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
-    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${formData.reporting_unit}\n📅 陳報日期：${formatADDate(formData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${currentShortSignUrl}`;
+    const rawData = getRawFormData();
+    const cleanSubject = (rawData.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
+    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${rawData.reporting_unit}\n📅 陳報日期：${formatADDate(rawData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${currentShortSignUrl}`;
 
     copyToClipboard(shareText);
     alert('📋 簽名短連結與訊息已複製！請貼上至 LINE 發送給長官。');
   }
 
-  // 輪詢簽核狀態
+  // 4. 🔄 全時背景輪詢簽核狀態 (簽署完成時自動彈窗提醒 + 更新 preview)
   function startPollingSignature() {
     if (pollInterval) clearInterval(pollInterval);
+    if (!currentSignToken) return;
+
     pollInterval = setInterval(async () => {
       if (!currentSignToken) return;
       try {
@@ -824,14 +839,31 @@
         if (res.ok) {
           const data = await res.json();
           if (data.status === 'signed' && data.signature) {
+            // 長官已簽名：停止輪詢
+            clearInterval(pollInterval);
+            pollInterval = null;
+
             currentSignatureBase64 = data.signature;
             updateSignatureUI(currentSignatureBase64, '✅ 長官已完成親筆簽名！');
-            closeSignModal();
-            alert('✅ 長官已完成簽核，謝謝長官 🙏');
+
+            // 自動將帶有簽名檔的最新表單同步至本機草稿
+            const rawData = getRawFormData();
+            const jsonStr = JSON.stringify(rawData);
+            LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
+
+            // 若 Modal 開著則關閉
+            const modal = document.getElementById('signModal');
+            if (modal && modal.style.display === 'flex') {
+              modal.style.display = 'none';
+            }
+
+            // 顯眼提示通知承辦人
+            showStatus('🎉 長官已完成線上簽核！親筆簽名檔已自動帶入草稿，您現在可直接點選【產出 Word】或【產出 PDF】！', 'success');
+            alert('🎉 長官已完成線上簽核！親筆簽名檔已自動帶入速報單草稿，您現在可以直接點選【產出 Word】或【產出 PDF】！');
           }
         }
       } catch (e) {
-        console.log('輪詢簽核中...');
+        console.log('背景輪詢簽核狀態中...');
       }
     }, 3000);
   }
@@ -852,7 +884,7 @@
     return dateStr;
   }
 
-  // 4. 📝 產出高規格 Word (.docx) 文件
+  // 5. 📝 產出高規格 Word (.docx) 文件
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       alert('Word 生成套件 (docx.js) 尚未載入完成，請確認網路連線。');
@@ -1136,7 +1168,7 @@
     showStatus('經濟部速報單 Word (.docx) 匯出成功！', 'success');
   }
 
-  // 5. 📄 產出高規格 PDF 文件
+  // 6. 📄 產出高規格 PDF 文件
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
       alert('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成，請確認網路連線。');
@@ -1494,8 +1526,8 @@
     }
   }
 
-  // 收集表單資料（附帶雙向與 full_data 全包覆）
-  function getFormData() {
+  // 收集純粹表單資料結構
+  function getRawFormData() {
     const reportingUnit = document.getElementById('reporting_unit')?.value || '';
     const assigner = document.getElementById('assigner')?.value || '';
     const assignedDate = document.getElementById('assigned_date')?.value || '';
@@ -1526,7 +1558,7 @@
       if (val) dispatch.push(val);
     });
 
-    const rawData = {
+    return {
       reporting_unit: reportingUnit,
       assigner: assigner,
       assigned_date: assignedDate,
@@ -1543,6 +1575,7 @@
       dispatch_units: dispatch,
       signature: currentSignatureBase64,
 
+      // 相容 Key
       report_unit: reportingUnit,
       assign_boss: assigner,
       assign_date: assignedDate,
@@ -1552,7 +1585,10 @@
       suggestion: suggestions,
       confidentiality: secrets.join('、') || '無'
     };
+  }
 
+  function getFormData() {
+    const rawData = getRawFormData();
     return {
       draft_data: rawData,
       full_data: rawData,
