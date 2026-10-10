@@ -220,7 +220,7 @@
   const API_BASE_URL = 'https://speed-report-api.onrender.com';
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('t');
-  const compressedData = urlParams.get('d');
+  const compressedData = urlParams.get('d') || urlParams.get('s');
 
   const canvas = document.getElementById('sigCanvas');
   const ctx = canvas.getContext('2d');
@@ -251,29 +251,32 @@
         if (!res.ok) throw new Error('簽核連結已失效或不存在');
         const data = await res.json();
         
-        const fullData = data.full_data || {};
+        // 智慧整合：全方位支援 data.full_data, data.draft_data 或 data 根物件
+        const src = data.full_data || data.draft_data || data;
+        
         renderFields({
-          unit: fullData.reporting_unit || data.unit || '（無）',
-          subject: fullData.section_subject || data.content || '（無）',
-          attendees: fullData.section_attendees || '（無）',
-          conclusions: fullData.section_conclusions || '（無）',
-          suggestions: fullData.section_suggestions || '（無）'
+          unit: src.reporting_unit || src.report_unit || src.unit || data.reporting_unit || data.report_unit || data.unit || '（無）',
+          subject: src.section_subject || src.subject || data.section_subject || data.subject || '（無）',
+          attendees: src.section_attendees || src.attendees || data.section_attendees || data.attendees || '（無）',
+          conclusions: src.section_conclusions || src.conclusions || src.content || data.section_conclusions || data.content || '（無）',
+          suggestions: src.section_suggestions || src.suggestions || src.suggestion || data.section_suggestions || data.suggestion || '（無）'
         });
       } catch (err) {
         document.getElementById('loadingStatus').innerHTML = '❌ 載入失敗：' + err.message;
       }
     } else if (compressedData) {
-      // 2. 舊版 LZString URL 解壓備援模式
+      // 2. LZString URL 解壓備援模式
       try {
         const jsonStr = LZString.decompressFromEncodedURIComponent(compressedData);
         if (!jsonStr) throw new Error('網址資料損毀');
         const data = JSON.parse(jsonStr);
+        const src = data.full_data || data.draft_data || data;
         renderFields({
-          unit: data.reporting_unit || '（無）',
-          subject: data.section_subject || '（無）',
-          attendees: data.section_attendees || '（無）',
-          conclusions: data.section_conclusions || '（無）',
-          suggestions: data.section_suggestions || '（無）'
+          unit: src.reporting_unit || src.report_unit || src.unit || '（無）',
+          subject: src.section_subject || src.subject || '（無）',
+          attendees: src.section_attendees || src.attendees || '（無）',
+          conclusions: src.section_conclusions || src.conclusions || src.content || '（無）',
+          suggestions: src.section_suggestions || src.suggestions || src.suggestion || '（無）'
         });
       } catch (err) {
         document.getElementById('loadingStatus').innerHTML = '❌ 解碼失敗：' + err.message;
