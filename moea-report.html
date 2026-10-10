@@ -697,7 +697,7 @@
             clearSignatureOnly();
 
             applyFormData(importedData);
-            showStatus('已成功讀入速報單草稿！（已為您自動過濾舊簽名檔）', 'success');
+            showStatus('已成功讀入速報單草稿！', 'success');
           } catch (err) {
             showStatus('讀取失敗：檔案格式不相符或檔案毀損', 'error');
             alert('讀取失敗：檔案格式不相符或檔案毀損');
@@ -807,7 +807,7 @@
     localStorage.removeItem('moea_report_autosave_v1');
     localStorage.removeItem('moea_report_sign_token');
 
-    showStatus('已成功重置為全新速報單，本機暫存已清空！', 'success');
+    showStatus('本機暫存已清空！', 'success');
   }
 
   // 1. 本地手動暫存
@@ -1158,7 +1158,7 @@
     link.download = `經濟部速報單_${data.report_date || ''}.docx`;
     link.click();
 
-    showStatus('經濟部速報單 Word (.docx) 匯出成功！（已不含簽名檔）', 'success');
+    showStatus('經濟部速報單 Word 匯出成功！', 'success');
   }
 
   // 6. 長官簽名連線（串接 Render FastAPI 後端與持久化輪詢）
