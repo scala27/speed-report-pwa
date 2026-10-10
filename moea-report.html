@@ -554,7 +554,7 @@
   </div>
 </div>
 
-<!-- ✍️ 長官簽名 Modal (含 QR Code 與複製連結) -->
+<!-- ✍️ 長官簽名 Modal (含短網址 QR Code 與複製連結) -->
 <div id="signModal" class="modal-overlay">
   <div class="modal-card">
     <h3 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">遠端電子簽名</h3>
@@ -565,7 +565,7 @@
     </div>
 
     <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-      <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="copySignLink()">📋 複製簽名連結 (發送至 LINE)</button>
+      <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="copySignLink()">📋 複製簽名短連結 (發送至 LINE)</button>
       <button type="button" class="btn btn-secondary" style="width: 100%; background: #f1f5f9;" onclick="closeSignModal()">關閉視窗</button>
     </div>
   </div>
@@ -576,16 +576,18 @@
 
 <script>
   const API_BASE = 'https://speed-report-api.onrender.com';
+  const LOCAL_KEYS = ['moea_report_local_draft', 'moea_report_draft_v1', 'moea_report_draft'];
+  
   let currentSignatureBase64 = null;
   let currentSignToken = '';
-  let currentSignUrl = '';
+  let currentShortSignUrl = '';
   let pollInterval = null;
 
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.2')
-        .then(reg => console.log('MOEA Service Worker v7.2 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.3')
+        .then(reg => console.log('MOEA Service Worker v7.3 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -655,12 +657,13 @@
     checkUrlForSignedData();
   }
 
-  // 1. 💾 雲端 + 本機暫存草稿
+  // 1. 💾 多重 Key 本機 + 雲端同步草稿儲存
   async function saveDraft() {
     const formData = getFormData();
     
-    // 本機快速備份
-    localStorage.setItem('moea_report_local_draft', JSON.stringify(formData));
+    // 強制寫入多重本機 LocalStorage Key，確保跨版本與離線載入 100% 成功
+    const jsonStr = JSON.stringify(formData);
+    LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
 
     // 同步 POST 到 Render 後端 API
     try {
@@ -680,21 +683,22 @@
         showStatus('✅ 草稿已成功暫存！（已同步至雲端伺服器）', 'success');
         alert('✅ 草稿已成功暫存！（已同步至雲端伺服器）');
       } else {
-        showStatus('✅ 已完成本機暫存！', 'success');
-        alert('✅ 已完成本機暫存！（雲端連線失敗，仍於手機妥善保存）');
+        showStatus('✅ 已完成本機妥善暫存！', 'success');
+        alert('✅ 已完成本機妥善暫存！（雲端連線忙碌，仍於手機妥善保存）');
       }
     } catch (err) {
-      console.warn('雲端暫存連線失敗:', err);
-      showStatus('✅ 已完成本機暫存！', 'success');
-      alert('✅ 已完成本機暫存！');
+      console.warn('雲端暫存連線失敗，以本機為準:', err);
+      showStatus('✅ 已完成本機妥善暫存！', 'success');
+      alert('✅ 已完成本機妥善暫存！');
     }
   }
 
-  // 2. 📂 載入最新草稿
+  // 2. 📂 雙軌智慧載入草稿（優先試探雲端，失敗自動完美滑落本機）
   async function loadDraft() {
     const cloudToken = localStorage.getItem('moea_report_cloud_token');
     let loadedData = null;
 
+    // 階段 A：嘗試從 Render 雲端抓取
     if (cloudToken) {
       try {
         showStatus('正在從雲端取得最新草稿...', 'info');
@@ -707,14 +711,23 @@
           }
         }
       } catch (err) {
-        console.warn('雲端載入失敗，切換為本機快取:', err);
+        console.warn('雲端載入連線異常，切換為本機雙重備份:', err);
       }
     }
 
+    // 階段 B：若雲端過期/休眠，自動無縫搜尋本機所有 LocalStorage Key
     if (!loadedData) {
-      const localStr = localStorage.getItem('moea_report_local_draft');
-      if (localStr) {
-        try { loadedData = JSON.parse(localStr); } catch(e){}
+      for (const key of LOCAL_KEYS) {
+        const localStr = localStorage.getItem(key);
+        if (localStr) {
+          try {
+            const parsed = JSON.parse(localStr);
+            if (parsed && typeof parsed === 'object') {
+              loadedData = parsed;
+              break;
+            }
+          } catch(e){}
+        }
       }
     }
 
@@ -728,7 +741,21 @@
     }
   }
 
-  // 3. ✍️ 開啟長官簽名 Modal (含「雙軌離線備援 + 自動隱藏底部狀態」)
+  // 短網址輔助工具 (呼叫 is.gd API 產生極簡短網址)
+  async function shortenUrlWithIsGd(longUrl) {
+    try {
+      const apiRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+      if (apiRes.ok) {
+        const resData = await apiRes.json();
+        if (resData.shorturl) return resData.shorturl;
+      }
+    } catch (err) {
+      console.warn('is.gd 縮網址 API 暫時不可用，採用精簡原生 Token 網址', err);
+    }
+    return longUrl;
+  }
+
+  // 3. ✍️ 開啟長官簽名 Modal (產生精簡短網址 + 自動清理狀態)
   async function openSignatureModal() {
     const formData = getFormData();
     if (!formData.reporting_unit || !formData.section_subject) { 
@@ -736,14 +763,12 @@
       return; 
     }
 
-    showStatus('正在生成最新的長官簽核連結...', 'info');
+    showStatus('正在生成長官極簡簽核短網址...', 'info');
 
-    // 生成 LZString 離線備援壓縮碼 (確保即使 Render API 延遲，長官端開點也 100% 能看到資料)
-    const jsonStr = JSON.stringify(formData);
-    const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
+    let fullSignUrl = '';
 
     try {
-      // 每次開啟皆強制將最新表單 POST 傳給伺服器
+      // 1. POST 資料給 Render API 生成 ~50 字元精簡 Token 網址
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -752,26 +777,31 @@
       const resData = await response.json();
       currentSignToken = resData.token;
       
-      // 建立同時帶有 Token 與 離線壓縮數據的雙軌連結
-      currentSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}&d=${compressedData}`;
+      fullSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
     } catch (err) {
-      console.warn('伺服器連線延遲，啟用完全離線雙軌連結模式');
-      currentSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?d=${compressedData}`;
+      // 2. 備援離線模式：壓縮資料並透過 is.gd 生成精簡短網址
+      console.warn('後端伺服器連線延遲，啟用 is.gd 離線短網址機制');
+      const jsonStr = JSON.stringify(formData);
+      const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
+      const rawLongUrl = `${window.location.origin}/speed-report-pwa/sign.html?s=${compressedData}`;
+      fullSignUrl = await shortenUrlWithIsGd(rawLongUrl);
     }
 
+    currentShortSignUrl = fullSignUrl;
+
     // 渲染 QR Code 並顯示 Modal 視窗
-    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentSignUrl)}`;
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentShortSignUrl)}`;
     document.getElementById('qrCodeImg').src = qrApi;
 
     const modal = document.getElementById('signModal');
     modal.style.display = 'flex';
 
-    // 成功彈窗後自動清除下方提示
-    showStatus('✅ 已成功生成長官簽核連結，等待長官簽名中...', 'success');
+    // 成功開啟 Modal 後，自動清理頁面下方狀態列
+    showStatus('✅ 已成功生成長官簽核短網址，等待長官簽名中...', 'success');
     setTimeout(() => {
       const msgEl = document.getElementById('status-msg');
       if (msgEl) msgEl.style.display = 'none';
-    }, 2500);
+    }, 2000);
 
     startPollingSignature();
   }
@@ -782,13 +812,13 @@
   }
 
   function copySignLink() {
-    if (!currentSignUrl) return;
+    if (!currentShortSignUrl) return;
     const formData = getFormData();
     const cleanSubject = (formData.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
-    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${formData.reporting_unit}\n📅 陳報日期：${formatADDate(formData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${currentSignUrl}`;
+    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${formData.reporting_unit}\n📅 陳報日期：${formatADDate(formData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${currentShortSignUrl}`;
 
     copyToClipboard(shareText);
-    alert('📋 簽名連結與訊息已複製！請貼上至 LINE 發送給長官。');
+    alert('📋 簽名短連結與訊息已複製！請貼上至 LINE 發送給長官。');
   }
 
   // 輪詢簽核狀態
