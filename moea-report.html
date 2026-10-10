@@ -528,7 +528,7 @@
           <div id="sigPreviewContainer" style="display: none; text-align: center;">
             <img id="sigPreviewImg" class="sig-preview-img" alt="簽名檔">
           </div>
-          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請點擊「長官簽名」發送傳播連結）</div>
+          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請點擊「長官簽名」發送簽核連結）</div>
         </div>
       </div>
     </div>
@@ -583,8 +583,8 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.0')
-        .then(reg => console.log('MOEA Service Worker v7.0 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.1')
+        .then(reg => console.log('MOEA Service Worker v7.1 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -727,7 +727,7 @@
     }
   }
 
-  // 3. ✍️ 開啟長官簽名 Modal 並開啟輪詢
+  // 3. ✍️ 開啟長官簽名 Modal 並強制將最新表單 POST 同步至後端
   async function openSignatureModal() {
     const formData = getFormData();
     if (!formData.reporting_unit || !formData.section_subject) { 
@@ -738,27 +738,25 @@
     const modal = document.getElementById('signModal');
     modal.style.display = 'flex';
 
-    if (!currentSignToken) {
-      try {
-        showStatus('正在建立簽核連線...', 'info');
-        const response = await fetch(`${API_BASE}/draft`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ draft_data: formData })
-        });
-        const resData = await response.json();
-        currentSignToken = resData.token;
-      } catch (err) {
-        alert('無法連線簽核伺服器，請檢查網路連線。');
-        return;
-      }
+    try {
+      showStatus('正在生成最新的長官簽核連結...', 'info');
+      // 每次開啟皆強制將「最新表單內容」POST 給 Render API，確保簽核頁面 sign.html 能拿到完整數據
+      const response = await fetch(`${API_BASE}/draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draft_data: formData })
+      });
+      const resData = await response.json();
+      currentSignToken = resData.token;
+
+      const signUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
+      const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(signUrl)}`;
+      document.getElementById('qrCodeImg').src = qrApi;
+
+      startPollingSignature();
+    } catch (err) {
+      alert('無法連線簽核伺服器，請檢查網路連線。');
     }
-
-    const signUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
-    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(signUrl)}`;
-    document.getElementById('qrCodeImg').src = qrApi;
-
-    startPollingSignature();
   }
 
   function closeSignModal() {
@@ -768,10 +766,10 @@
 
   function copySignLink() {
     if (!currentSignToken) return;
+    const formData = getFormData();
     const signUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
-    const data = getFormData();
-    const cleanSubject = (data.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
-    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${signUrl}`;
+    const cleanSubject = (formData.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
+    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${formData.reporting_unit}\n📅 陳報日期：${formatADDate(formData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${signUrl}`;
 
     copyToClipboard(shareText);
     alert('📋 簽名連結與訊息已複製！請貼上至 LINE 發送給長官。');
@@ -815,7 +813,7 @@
     return dateStr;
   }
 
-  // 4. 📝 產出高規格 Word (.docx) 文件 (完整呈現邊界、縮排與線條)
+  // 4. 📝 產出高規格 Word (.docx) 文件
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       alert('Word 生成套件 (docx.js) 尚未載入完成，請確認網路連線。');
@@ -844,7 +842,6 @@
         })
       : new Paragraph({ text: '' });
 
-    // 標題表格
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
     const catParas = categoryOptions.map(cat => {
       const isChecked = (data.categories || []).includes(cat);
@@ -897,7 +894,6 @@
       ]
     });
 
-    // 基本資訊欄位
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -933,7 +929,6 @@
       ]
     });
 
-    // 內文段落與縮排處理
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
@@ -1001,7 +996,6 @@
       ]
     });
 
-    // 分送單位表格
     const dispatchUnits = data.dispatch_units || [];
     const isDis = (name) => dispatchUnits.includes(name);
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
@@ -1067,7 +1061,7 @@
       sections: [{
         properties: {
           page: {
-            margin: { top: 567, bottom: 680, left: 737, right: 737 } // 上1.0, 下1.2, 左1.3, 右1.3cm
+            margin: { top: 567, bottom: 680, left: 737, right: 737 }
           }
         },
         children: [
@@ -1103,7 +1097,7 @@
     showStatus('經濟部速報單 Word (.docx) 匯出成功！', 'success');
   }
 
-  // 5. 📄 產出高規格 PDF 文件 (純前端楷體 + 外框 + 跨頁分頁)
+  // 5. 📄 產出高規格 PDF 文件
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
       alert('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成，請確認網路連線。');
@@ -1461,61 +1455,125 @@
     }
   }
 
+  // 收集表單資料（附帶雙向雙重 Key 別名，確保相容 sign.html 各種讀取機制）
   function getFormData() {
-    const data = {
-      assigner: document.getElementById('assigner')?.value || '',
-      assigned_date: document.getElementById('assigned_date')?.value || '',
-      reporting_unit: document.getElementById('reporting_unit')?.value || '',
-      report_date: document.getElementById('report_date')?.value || '',
-      section_subject: document.getElementById('section_subject')?.value || '',
-      section_attendees: document.getElementById('section_attendees')?.value || '',
-      section_conclusions: document.getElementById('section_conclusions')?.value || '',
-      section_suggestions: document.getElementById('section_suggestions')?.value || '',
-      other_unit_text: document.getElementById('other_unit_text')?.value || '',
-      contact_person: document.getElementById('contact_person')?.value || '',
-      contact_phone: document.getElementById('contact_phone')?.value || '',
-      signature: currentSignatureBase64
-    };
+    const reportingUnit = document.getElementById('reporting_unit')?.value || '';
+    const assigner = document.getElementById('assigner')?.value || '';
+    const assignedDate = document.getElementById('assigned_date')?.value || '';
+    const reportDate = document.getElementById('report_date')?.value || '';
+    const subject = document.getElementById('section_subject')?.value || '';
+    const attendees = document.getElementById('section_attendees')?.value || '';
+    const conclusions = document.getElementById('section_conclusions')?.value || '';
+    const suggestions = document.getElementById('section_suggestions')?.value || '';
+    const otherUnitText = document.getElementById('other_unit_text')?.value || '';
+    const contactPerson = document.getElementById('contact_person')?.value || '';
+    const contactPhone = document.getElementById('contact_phone')?.value || '';
 
     const secrets = [];
     document.querySelectorAll('#secretChips .chip-item.active').forEach(c => {
       const val = c.getAttribute('data-value');
       if (val) secrets.push(val);
     });
-    data['secret_levels'] = secrets;
 
     const categories = [];
     document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => {
       const val = c.getAttribute('data-value');
       if (val) categories.push(val);
     });
-    data['categories'] = categories;
 
     const dispatch = [];
     document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => {
       const val = c.getAttribute('data-value');
       if (val) dispatch.push(val);
     });
-    data['dispatch_units'] = dispatch;
 
-    return data;
+    return {
+      // 1009 完整 Key 名稱
+      reporting_unit: reportingUnit,
+      assigner: assigner,
+      assigned_date: assignedDate,
+      report_date: reportDate,
+      section_subject: subject,
+      section_attendees: attendees,
+      section_conclusions: conclusions,
+      section_suggestions: suggestions,
+      other_unit_text: otherUnitText,
+      contact_person: contactPerson,
+      contact_phone: contactPhone,
+      secret_levels: secrets,
+      categories: categories,
+      dispatch_units: dispatch,
+      signature: currentSignatureBase64,
+
+      // 雙向相容 Key 名稱 (確保 sign.html 能 100% 正確解析不顯示 "無")
+      report_unit: reportingUnit,
+      assign_boss: assigner,
+      assign_date: assignedDate,
+      subject: subject,
+      attendees: attendees,
+      content: conclusions,
+      suggestion: suggestions,
+      confidentiality: secrets.join('、') || '無'
+    };
   }
 
   function applyFormData(data) {
     if (!data || typeof data !== 'object') return;
 
-    const textFields = [
-      'assigner', 'assigned_date', 'reporting_unit', 'report_date',
-      'section_subject', 'section_attendees', 'section_conclusions',
-      'section_suggestions', 'other_unit_text', 'contact_person', 'contact_phone'
-    ];
+    const reportingUnitVal = data.reporting_unit || data.report_unit;
+    if (reportingUnitVal !== undefined && document.getElementById('reporting_unit')) {
+      document.getElementById('reporting_unit').value = reportingUnitVal;
+    }
 
-    textFields.forEach(fieldId => {
-      const el = document.getElementById(fieldId);
-      if (el && data[fieldId] !== undefined) {
-        el.value = data[fieldId];
-      }
-    });
+    const assignerVal = data.assigner || data.assign_boss;
+    if (assignerVal !== undefined && document.getElementById('assigner')) {
+      document.getElementById('assigner').value = assignerVal;
+    }
+
+    const assignedDateVal = data.assigned_date || data.assign_date;
+    if (assignedDateVal !== undefined && document.getElementById('assigned_date')) {
+      document.getElementById('assigned_date').value = assignedDateVal;
+    }
+
+    const reportDateVal = data.report_date;
+    if (reportDateVal !== undefined && document.getElementById('report_date')) {
+      document.getElementById('report_date').value = reportDateVal;
+    }
+
+    const subjectVal = data.section_subject || data.subject;
+    if (subjectVal !== undefined && document.getElementById('section_subject')) {
+      document.getElementById('section_subject').value = subjectVal;
+    }
+
+    const attendeesVal = data.section_attendees || data.attendees;
+    if (attendeesVal !== undefined && document.getElementById('section_attendees')) {
+      document.getElementById('section_attendees').value = attendeesVal;
+    }
+
+    const conclusionsVal = data.section_conclusions || data.content;
+    if (conclusionsVal !== undefined && document.getElementById('section_conclusions')) {
+      document.getElementById('section_conclusions').value = conclusionsVal;
+    }
+
+    const suggestionsVal = data.section_suggestions || data.suggestion;
+    if (suggestionsVal !== undefined && document.getElementById('section_suggestions')) {
+      document.getElementById('section_suggestions').value = suggestionsVal;
+    }
+
+    const otherUnitVal = data.other_unit_text;
+    if (otherUnitVal !== undefined && document.getElementById('other_unit_text')) {
+      document.getElementById('other_unit_text').value = otherUnitVal;
+    }
+
+    const contactPersonVal = data.contact_person;
+    if (contactPersonVal !== undefined && document.getElementById('contact_person')) {
+      document.getElementById('contact_person').value = contactPersonVal;
+    }
+
+    const contactPhoneVal = data.contact_phone;
+    if (contactPhoneVal !== undefined && document.getElementById('contact_phone')) {
+      document.getElementById('contact_phone').value = contactPhoneVal;
+    }
 
     if (Array.isArray(data.secret_levels)) {
       document.querySelectorAll('#secretChips .chip-item').forEach(c => {
