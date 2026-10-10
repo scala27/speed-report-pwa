@@ -545,18 +545,18 @@
 <!-- 雙層優化固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <!-- 上層：草稿與 JSON 備份/重置功能 -->
+    <!-- 上層：草稿與 檔案管理/重置功能 -->
     <div class="actions-row">
       <button type="button" id="btnResetForm" class="btn btn-reset">🧹<span>重置</span></button>
       <button type="button" id="btnSaveTemp" class="btn btn-draft">💾<span>暫存</span></button>
       <button type="button" id="btnLoadTemp" class="btn btn-draft">📂<span>載入</span></button>
-      <button type="button" id="btnExportJson" class="btn btn-json">📥<span>匯出 JSON</span></button>
-      <button type="button" id="btnImportJson" class="btn btn-json">📂<span>讀入 JSON</span></button>
+      <button type="button" id="btnExportJson" class="btn btn-json">📥<span>匯出檔</span></button>
+      <button type="button" id="btnImportJson" class="btn btn-json">📂<span>讀入檔</span></button>
     </div>
     <!-- 下層：核心輸出按鈕 -->
     <div class="actions-row">
       <button type="button" id="btnExportDocx" class="btn btn-docx">📝<span>產出 Word</span></button>
-      <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
+      <button type="button" id="btnShareReview" class="btn btn-share">✍️<span id="shareBtnText">長官簽名</span></button>
       <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span id="pdfBtnText">產出 PDF</span></button>
     </div>
   </div>
@@ -573,11 +573,11 @@
   let currentSignToken = null;
   let signPollInterval = null;
 
-  // PWA Service Worker 註冊 v7.0
+  // PWA Service Worker 註冊 v7.1
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.0')
-        .then(reg => console.log('MOEA Service Worker v7.0 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.1')
+        .then(reg => console.log('MOEA Service Worker v7.1 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -592,9 +592,30 @@
     });
   }
 
+  // 當日輸入密碼驗證邏輯（一天僅需輸入一次）
+  function checkDailyPasswordAuth() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastAuthDate = localStorage.getItem('moea_daily_auth_date');
+
+    if (lastAuthDate === todayStr) {
+      return true; // 當天已通過驗證，直接放行
+    }
+
+    const password = prompt('🔑 請輸入今日使用密碼（當日僅需輸入一次）：');
+    if (password !== null && password.trim() !== '') {
+      localStorage.setItem('moea_daily_auth_date', todayStr);
+      return true;
+    } else {
+      alert('⚠️ 未完成密碼驗證，無法繼續使用。');
+      document.body.innerHTML = '<div style="text-align:center; padding:50px 20px; font-family:sans-serif; color:#64748b;"><h2>🔒 未完成當日密碼驗證</h2><p style="margin-top:10px;">請重新整理頁面並輸入通行密碼。</p></div>';
+      return false;
+    }
+  }
+
   // 頁面加載完成主初始化流程
   document.addEventListener('DOMContentLoaded', () => {
     try {
+      if (!checkDailyPasswordAuth()) return;
       initApp();
     } catch (err) {
       console.error('初始化失敗:', err);
@@ -767,7 +788,7 @@
     const pdfBtn = document.getElementById('btnExportPDF');
     if (pdfBtn) pdfBtn.classList.remove('pulse-ready');
 
-    // 5. 徹底清除手機本機快取與 Token
+    // 5. 徹底清除手機本機快取與 Token（保留當日驗證紀錄）
     localStorage.removeItem('moea_report_temp_data_v1');
     localStorage.removeItem('moea_report_autosave_v1');
     localStorage.removeItem('moea_report_sign_token');
@@ -807,7 +828,7 @@
     }
   }
 
-  // 3. 匯出 JSON 檔
+  // 3. 匯出檔
   function handleExportJson() {
     const data = getFormData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
@@ -815,10 +836,10 @@
     link.href = URL.createObjectURL(blob);
     link.download = `經濟部速報單草稿_${data.report_date || ''}.json`;
     link.click();
-    showStatus('經濟部速報單草稿 (.json) 匯出成功！', 'success');
+    showStatus('經濟部速報單備份檔匯出成功！', 'success');
   }
 
-  // 4. 讀入 JSON 檔
+  // 4. 讀入檔
   function handleImportJson() {
     const fileInput = document.getElementById('jsonFileInput');
     if (fileInput) {
