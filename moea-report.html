@@ -829,7 +829,6 @@
 
     if (!saved) {
       showStatus('未找到暫存資料！', 'error');
-      alert('未找到暫存資料！');
       return;
     }
 
@@ -1605,7 +1604,7 @@
     drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleSize, 2.2);
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
