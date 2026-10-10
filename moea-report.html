@@ -586,8 +586,8 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.3')
-        .then(reg => console.log('MOEA Service Worker v7.3 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.4')
+        .then(reg => console.log('MOEA Service Worker v7.4 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -661,17 +661,16 @@
   async function saveDraft() {
     const formData = getFormData();
     
-    // 強制寫入多重本機 LocalStorage Key，確保跨版本與離線載入 100% 成功
+    // 強制寫入多重本機 LocalStorage Key
     const jsonStr = JSON.stringify(formData);
     LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
 
-    // 同步 POST 到 Render 後端 API
     try {
       showStatus('正在暫存草稿至雲端...', 'info');
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft_data: formData, ...formData })
+        body: JSON.stringify(formData)
       });
 
       if (response.ok) {
@@ -693,20 +692,19 @@
     }
   }
 
-  // 2. 📂 雙軌智慧載入草稿（優先試探雲端，失敗自動完美滑落本機）
+  // 2. 📂 雙軌智慧載入草稿
   async function loadDraft() {
     const cloudToken = localStorage.getItem('moea_report_cloud_token');
     let loadedData = null;
 
-    // 階段 A：嘗試從 Render 雲端抓取
     if (cloudToken) {
       try {
         showStatus('正在從雲端取得最新草稿...', 'info');
         const response = await fetch(`${API_BASE}/draft/${cloudToken}`);
         if (response.ok) {
           const resData = await response.json();
-          if (resData && (resData.draft_data || resData.reporting_unit || resData.report_unit)) {
-            loadedData = resData.draft_data || resData;
+          if (resData) {
+            loadedData = resData.full_data || resData.draft_data || resData;
             currentSignToken = cloudToken;
           }
         }
@@ -715,7 +713,6 @@
       }
     }
 
-    // 階段 B：若雲端過期/休眠，自動無縫搜尋本機所有 LocalStorage Key
     if (!loadedData) {
       for (const key of LOCAL_KEYS) {
         const localStr = localStorage.getItem(key);
@@ -741,7 +738,7 @@
     }
   }
 
-  // 短網址輔助工具 (呼叫 is.gd API 產生極簡短網址)
+  // 短網址輔助工具
   async function shortenUrlWithIsGd(longUrl) {
     try {
       const apiRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
@@ -750,12 +747,12 @@
         if (resData.shorturl) return resData.shorturl;
       }
     } catch (err) {
-      console.warn('is.gd 縮網址 API 暫時不可用，採用精簡原生 Token 網址', err);
+      console.warn('is.gd API 連線受阻，採用原網址', err);
     }
     return longUrl;
   }
 
-  // 3. ✍️ 開啟長官簽名 Modal (產生精簡短網址 + 自動清理狀態)
+  // 3. ✍️ 開啟長官簽名 Modal
   async function openSignatureModal() {
     const formData = getFormData();
     if (!formData.reporting_unit || !formData.section_subject) { 
@@ -768,18 +765,16 @@
     let fullSignUrl = '';
 
     try {
-      // 1. POST 資料給 Render API 生成 ~50 字元精簡 Token 網址
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft_data: formData, ...formData })
+        body: JSON.stringify(formData)
       });
       const resData = await response.json();
       currentSignToken = resData.token;
       
       fullSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
     } catch (err) {
-      // 2. 備援離線模式：壓縮資料並透過 is.gd 生成精簡短網址
       console.warn('後端伺服器連線延遲，啟用 is.gd 離線短網址機制');
       const jsonStr = JSON.stringify(formData);
       const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
@@ -789,14 +784,12 @@
 
     currentShortSignUrl = fullSignUrl;
 
-    // 渲染 QR Code 並顯示 Modal 視窗
     const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentShortSignUrl)}`;
     document.getElementById('qrCodeImg').src = qrApi;
 
     const modal = document.getElementById('signModal');
     modal.style.display = 'flex';
 
-    // 成功開啟 Modal 後，自動清理頁面下方狀態列
     showStatus('✅ 已成功生成長官簽核短網址，等待長官簽名中...', 'success');
     setTimeout(() => {
       const msgEl = document.getElementById('status-msg');
@@ -1501,7 +1494,7 @@
     }
   }
 
-  // 收集表單資料（附帶雙向雙重 Key 別名，確保相容 sign.html 各種讀取機制）
+  // 收集表單資料（附帶雙向與 full_data 全包覆）
   function getFormData() {
     const reportingUnit = document.getElementById('reporting_unit')?.value || '';
     const assigner = document.getElementById('assigner')?.value || '';
@@ -1533,8 +1526,7 @@
       if (val) dispatch.push(val);
     });
 
-    return {
-      // 1009 完整 Key 名稱
+    const rawData = {
       reporting_unit: reportingUnit,
       assigner: assigner,
       assigned_date: assignedDate,
@@ -1551,7 +1543,6 @@
       dispatch_units: dispatch,
       signature: currentSignatureBase64,
 
-      // 雙向相容 Key 名稱 (確保 sign.html 能 100% 正確解析不顯示 "無")
       report_unit: reportingUnit,
       assign_boss: assigner,
       assign_date: assignedDate,
@@ -1561,90 +1552,97 @@
       suggestion: suggestions,
       confidentiality: secrets.join('、') || '無'
     };
+
+    return {
+      draft_data: rawData,
+      full_data: rawData,
+      ...rawData
+    };
   }
 
   function applyFormData(data) {
     if (!data || typeof data !== 'object') return;
+    const src = data.full_data || data.draft_data || data;
 
-    const reportingUnitVal = data.reporting_unit || data.report_unit;
+    const reportingUnitVal = src.reporting_unit || src.report_unit;
     if (reportingUnitVal !== undefined && document.getElementById('reporting_unit')) {
       document.getElementById('reporting_unit').value = reportingUnitVal;
     }
 
-    const assignerVal = data.assigner || data.assign_boss;
+    const assignerVal = src.assigner || src.assign_boss;
     if (assignerVal !== undefined && document.getElementById('assigner')) {
       document.getElementById('assigner').value = assignerVal;
     }
 
-    const assignedDateVal = data.assigned_date || data.assign_date;
+    const assignedDateVal = src.assigned_date || src.assign_date;
     if (assignedDateVal !== undefined && document.getElementById('assigned_date')) {
       document.getElementById('assigned_date').value = assignedDateVal;
     }
 
-    const reportDateVal = data.report_date;
+    const reportDateVal = src.report_date;
     if (reportDateVal !== undefined && document.getElementById('report_date')) {
       document.getElementById('report_date').value = reportDateVal;
     }
 
-    const subjectVal = data.section_subject || data.subject;
+    const subjectVal = src.section_subject || src.subject;
     if (subjectVal !== undefined && document.getElementById('section_subject')) {
       document.getElementById('section_subject').value = subjectVal;
     }
 
-    const attendeesVal = data.section_attendees || data.attendees;
+    const attendeesVal = src.section_attendees || src.attendees;
     if (attendeesVal !== undefined && document.getElementById('section_attendees')) {
       document.getElementById('section_attendees').value = attendeesVal;
     }
 
-    const conclusionsVal = data.section_conclusions || data.content;
+    const conclusionsVal = src.section_conclusions || src.content;
     if (conclusionsVal !== undefined && document.getElementById('section_conclusions')) {
       document.getElementById('section_conclusions').value = conclusionsVal;
     }
 
-    const suggestionsVal = data.section_suggestions || data.suggestion;
+    const suggestionsVal = src.section_suggestions || src.suggestion;
     if (suggestionsVal !== undefined && document.getElementById('section_suggestions')) {
       document.getElementById('section_suggestions').value = suggestionsVal;
     }
 
-    const otherUnitVal = data.other_unit_text;
+    const otherUnitVal = src.other_unit_text;
     if (otherUnitVal !== undefined && document.getElementById('other_unit_text')) {
       document.getElementById('other_unit_text').value = otherUnitVal;
     }
 
-    const contactPersonVal = data.contact_person;
+    const contactPersonVal = src.contact_person;
     if (contactPersonVal !== undefined && document.getElementById('contact_person')) {
       document.getElementById('contact_person').value = contactPersonVal;
     }
 
-    const contactPhoneVal = data.contact_phone;
+    const contactPhoneVal = src.contact_phone;
     if (contactPhoneVal !== undefined && document.getElementById('contact_phone')) {
       document.getElementById('contact_phone').value = contactPhoneVal;
     }
 
-    if (Array.isArray(data.secret_levels)) {
+    if (Array.isArray(src.secret_levels)) {
       document.querySelectorAll('#secretChips .chip-item').forEach(c => {
         const val = c.getAttribute('data-value');
-        c.classList.toggle('active', data.secret_levels.includes(val));
+        c.classList.toggle('active', src.secret_levels.includes(val));
       });
       checkSecretWarning();
     }
 
-    if (Array.isArray(data.categories)) {
+    if (Array.isArray(src.categories)) {
       document.querySelectorAll('#categoryChips .chip-item').forEach(c => {
         const val = c.getAttribute('data-value');
-        c.classList.toggle('active', data.categories.includes(val));
+        c.classList.toggle('active', src.categories.includes(val));
       });
     }
 
-    if (Array.isArray(data.dispatch_units)) {
+    if (Array.isArray(src.dispatch_units)) {
       document.querySelectorAll('#dispatchChipsGroup .chip-item').forEach(c => {
         const val = c.getAttribute('data-value');
-        c.classList.toggle('active', data.dispatch_units.includes(val));
+        c.classList.toggle('active', src.dispatch_units.includes(val));
       });
     }
 
-    if (data.signature) {
-      updateSignatureUI(data.signature, '✅ 已載入長官親筆簽名檔');
+    if (src.signature) {
+      updateSignatureUI(src.signature, '✅ 已載入長官親筆簽名檔');
     }
   }
 
