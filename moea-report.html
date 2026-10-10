@@ -275,7 +275,6 @@
       flex-direction: column;
       align-items: center;
       gap: 8px;
-      cursor: pointer;
     }
     .sig-preview-img {
       max-height: 55px;
@@ -285,6 +284,25 @@
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       padding: 4px;
+    }
+
+    .sig-btn-row {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+      justify-content: center;
+      margin-top: 4px;
+    }
+
+    .btn-small-check {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     /* 雙層固定操作列 */
@@ -525,11 +543,16 @@
 
       <div class="form-group" style="margin-top: 14px;">
         <label>陳報單位首長/主管簽核</label>
-        <div class="signature-area-box" id="sigAreaBox" title="點擊可手動上傳簽名圖檔">
+        <div class="signature-area-box" id="sigAreaBox">
           <div id="sigPreviewContainer" style="display: none; text-align: center;">
             <img id="sigPreviewImg" class="sig-preview-img" alt="簽名檔">
           </div>
           <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請點擊「長官簽名」發送簽核連結）</div>
+          
+          <div class="sig-btn-row">
+            <button type="button" class="btn-small-check" onclick="checkSignatureStatus(true)">🔄 手動刷新簽核狀態</button>
+            <button type="button" class="btn-small-check" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1;" onclick="document.getElementById('sigFileInput').click()">📁 手動上傳圖檔</button>
+          </div>
         </div>
       </div>
     </div>
@@ -587,8 +610,8 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.5')
-        .then(reg => console.log('MOEA Service Worker v7.5 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.6')
+        .then(reg => console.log('MOEA Service Worker v7.6 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -610,6 +633,13 @@
     if (assignDateEl && !assignDateEl.value) assignDateEl.value = today;
     if (reportDateEl && !reportDateEl.value) reportDateEl.value = today;
 
+    // 監聽全表單任何輸入，即時自動備份至本機
+    const form = document.getElementById('moeaReportForm');
+    if (form) {
+      form.addEventListener('input', autoSaveToLocal);
+      form.addEventListener('change', autoSaveToLocal);
+    }
+
     // 機密等級切換
     document.querySelectorAll('#secretChips .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -628,6 +658,7 @@
           }
         }
         checkSecretWarning();
+        autoSaveToLocal();
       });
     });
 
@@ -635,27 +666,30 @@
     document.querySelectorAll('#categoryChips .chip-item, #dispatchChipsGroup .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
         chip.classList.toggle('active');
+        autoSaveToLocal();
       });
     });
 
     // 手動備援上傳簽名
-    const sigBox = document.getElementById('sigAreaBox');
     const sigInput = document.getElementById('sigFileInput');
-    if (sigBox && sigInput) {
-      sigBox.addEventListener('click', () => sigInput.click());
+    if (sigInput) {
       sigInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
           updateSignatureUI(event.target.result, '✅ 已載入長官親筆簽名檔');
+          autoSaveToLocal();
           showStatus('已手動載入簽名圖檔！', 'success');
         };
         reader.readAsDataURL(file);
       });
     }
 
-    // 檢查是否有舊的 Token 啟動背景監聽
+    // 網頁開啟時，自動還原上次儲存的本機草稿紀錄
+    loadDraftFromLocal(false);
+
+    // 檢查是否有舊 Token，開啟全時監聽
     const savedToken = localStorage.getItem('moea_report_cloud_token');
     if (savedToken) {
       currentSignToken = savedToken;
@@ -665,13 +699,49 @@
     checkUrlForSignedData();
   }
 
-  // 1. 💾 多重 Key 本機 + 雲端同步草稿儲存
-  async function saveDraft() {
+  // 自動寫入 LocalStorage
+  function autoSaveToLocal() {
     const rawData = getRawFormData();
-    
-    // 強制寫入多重本機 LocalStorage Key
     const jsonStr = JSON.stringify(rawData);
     LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
+  }
+
+  // 從本機強健還原草稿
+  function loadDraftFromLocal(showNotice = false) {
+    let loadedData = null;
+    for (const key of LOCAL_KEYS) {
+      const localStr = localStorage.getItem(key);
+      if (localStr) {
+        try {
+          const parsed = JSON.parse(localStr);
+          if (parsed && typeof parsed === 'object') {
+            loadedData = parsed;
+            break;
+          }
+        } catch(e){}
+      }
+    }
+
+    if (loadedData) {
+      applyFormData(loadedData);
+      if (showNotice) {
+        showStatus('✅ 已成功還原最新草稿資料！', 'success');
+        alert('✅ 已成功還原最新草稿資料！');
+      }
+      return true;
+    } else {
+      if (showNotice) {
+        showStatus('ℹ️ 目前尚無儲存的草稿紀錄。', 'info');
+        alert('ℹ️ 目前尚無儲存的草稿紀錄。');
+      }
+      return false;
+    }
+  }
+
+  // 1. 💾 多重 Key 本機 + 雲端同步草稿儲存
+  async function saveDraft() {
+    autoSaveToLocal();
+    const rawData = getRawFormData();
 
     try {
       showStatus('正在暫存草稿至雲端...', 'info');
@@ -686,7 +756,7 @@
         if (resData.token) {
           localStorage.setItem('moea_report_cloud_token', resData.token);
           currentSignToken = resData.token;
-          startPollingSignature(); // 啟動全時背景監聽
+          startPollingSignature();
         }
         showStatus('✅ 草稿已成功暫存！（已同步至雲端伺服器）', 'success');
         alert('✅ 草稿已成功暫存！（已同步至雲端伺服器）');
@@ -701,49 +771,31 @@
     }
   }
 
-  // 2. 📂 雙軌智慧載入草稿（優先試探雲端，失敗/空資料自動無縫讀取本機草稿）
+  // 2. 📂 載入草稿（優先還原本機，再嘗試同步雲端）
   async function loadDraft() {
+    const hasLocal = loadDraftFromLocal(false);
     const cloudToken = localStorage.getItem('moea_report_cloud_token');
-    let loadedData = null;
 
     if (cloudToken) {
       try {
-        showStatus('正在從雲端讀取最新草稿...', 'info');
+        showStatus('正在向雲端同步最新草稿...', 'info');
         const response = await fetch(`${API_BASE}/draft/${cloudToken}`);
         if (response.ok) {
           const resData = await response.json();
           const candidate = resData ? (resData.full_data || resData.draft_data || resData) : null;
-          // 驗證雲端回傳資料是否包含真實表單欄位
-          if (candidate && (candidate.reporting_unit || candidate.report_unit || candidate.section_subject || candidate.subject)) {
-            loadedData = candidate;
-            currentSignToken = cloudToken;
-            startPollingSignature();
+          if (candidate && (candidate.reporting_unit || candidate.section_subject || candidate.subject)) {
+            applyFormData(candidate);
+            autoSaveToLocal();
           }
         }
       } catch (err) {
-        console.warn('雲端讀取失敗，降級讀取本機草稿:', err);
+        console.warn('雲端讀取延遲:', err);
       }
     }
 
-    if (!loadedData) {
-      for (const key of LOCAL_KEYS) {
-        const localStr = localStorage.getItem(key);
-        if (localStr) {
-          try {
-            const parsed = JSON.parse(localStr);
-            if (parsed && typeof parsed === 'object' && (parsed.reporting_unit || parsed.report_unit || parsed.section_subject || parsed.subject)) {
-              loadedData = parsed;
-              break;
-            }
-          } catch(e){}
-        }
-      }
-    }
-
-    if (loadedData) {
-      applyFormData(loadedData);
-      showStatus('✅ 已成功載入最新草稿內容！', 'success');
-      alert('✅ 已成功載入最新草稿內容！');
+    if (hasLocal) {
+      showStatus('✅ 已成功載入最新草稿欄位！', 'success');
+      alert('✅ 已成功載入最新草稿欄位！');
     } else {
       showStatus('ℹ️ 目前尚無儲存的草稿紀錄。', 'info');
       alert('ℹ️ 目前尚無儲存的草稿紀錄。');
@@ -772,7 +824,7 @@
       return; 
     }
 
-    showStatus('正在生成長官極簡簽核短網址...', 'info');
+    showStatus('正在連線伺服器生成簽核短連結...', 'info');
 
     let fullSignUrl = '';
 
@@ -788,7 +840,7 @@
       
       fullSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
     } catch (err) {
-      console.warn('後端伺服器連線延遲，啟用 is.gd 離線短網址機制');
+      console.warn('後端伺服器連線延遲，啟用離線短網址機制');
       const jsonStr = JSON.stringify(rawData);
       const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
       const rawLongUrl = `${window.location.origin}/speed-report-pwa/sign.html?s=${compressedData}`;
@@ -803,7 +855,9 @@
     const modal = document.getElementById('signModal');
     modal.style.display = 'flex';
 
-    showStatus('✅ 已成功生成長官簽核短網址，背景監聽簽核中...', 'success');
+    updateSignatureStatusText('⏳ 正在即時監聽長官簽核中... (已發送簽核連結)');
+
+    showStatus('✅ 已成功生成長官簽核短網址，背景即時監聽簽核中...', 'success');
     setTimeout(() => {
       const msgEl = document.getElementById('status-msg');
       if (msgEl) msgEl.style.display = 'none';
@@ -814,7 +868,6 @@
 
   function closeSignModal() {
     document.getElementById('signModal').style.display = 'none';
-    // 關閉視窗不中斷輪詢，讓背景繼續監聽長官簽名！
   }
 
   function copySignLink() {
@@ -827,44 +880,63 @@
     alert('📋 簽名短連結與訊息已複製！請貼上至 LINE 發送給長官。');
   }
 
-  // 4. 🔄 全時背景輪詢簽核狀態 (簽署完成時自動彈窗提醒 + 更新 preview)
+  function updateSignatureStatusText(text) {
+    const statusEl = document.getElementById('sigStatusText');
+    if (statusEl) {
+      statusEl.innerText = text;
+      statusEl.style.color = text.includes('✅') ? '#059669' : '#0369a1';
+    }
+  }
+
+  // 4. 🔄 手動刷新與背景全時輪詢簽核狀態
+  async function checkSignatureStatus(isManual = false) {
+    if (!currentSignToken) {
+      currentSignToken = localStorage.getItem('moea_report_cloud_token');
+    }
+    if (!currentSignToken) {
+      if (isManual) alert('目前尚未發送長官簽名連結，請先點擊【長官簽名】按鈕。');
+      return;
+    }
+
+    if (isManual) showStatus('正在刷新長官簽核狀態...', 'info');
+
+    try {
+      const res = await fetch(`${API_BASE}/status/${currentSignToken}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'signed' && data.signature) {
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+
+          currentSignatureBase64 = data.signature;
+          updateSignatureUI(currentSignatureBase64, '✅ 長官已完成親筆簽名！');
+          autoSaveToLocal();
+
+          const modal = document.getElementById('signModal');
+          if (modal && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+          }
+
+          const msg = '🎉 長官已完成線上簽核！親筆簽名檔已成功帶入，您現在可以點擊【產出 PDF】或【產出 Word】！';
+          showStatus(msg, 'success');
+          alert(msg);
+        } else {
+          if (isManual) alert('長官尚未完成簽署，請稍候。');
+        }
+      }
+    } catch (e) {
+      if (isManual) alert('伺服器連線忙碌中，請稍後再試。');
+    }
+  }
+
   function startPollingSignature() {
     if (pollInterval) clearInterval(pollInterval);
     if (!currentSignToken) return;
 
-    pollInterval = setInterval(async () => {
-      if (!currentSignToken) return;
-      try {
-        const res = await fetch(`${API_BASE}/status/${currentSignToken}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.status === 'signed' && data.signature) {
-            // 長官已簽名：停止輪詢
-            clearInterval(pollInterval);
-            pollInterval = null;
-
-            currentSignatureBase64 = data.signature;
-            updateSignatureUI(currentSignatureBase64, '✅ 長官已完成親筆簽名！');
-
-            // 自動將帶有簽名檔的最新表單同步至本機草稿
-            const rawData = getRawFormData();
-            const jsonStr = JSON.stringify(rawData);
-            LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
-
-            // 若 Modal 開著則關閉
-            const modal = document.getElementById('signModal');
-            if (modal && modal.style.display === 'flex') {
-              modal.style.display = 'none';
-            }
-
-            // 顯眼提示通知承辦人
-            showStatus('🎉 長官已完成線上簽核！親筆簽名檔已自動帶入草稿，您現在可直接點選【產出 Word】或【產出 PDF】！', 'success');
-            alert('🎉 長官已完成線上簽核！親筆簽名檔已自動帶入速報單草稿，您現在可以直接點選【產出 Word】或【產出 PDF】！');
-          }
-        }
-      } catch (e) {
-        console.log('背景輪詢簽核狀態中...');
-      }
+    pollInterval = setInterval(() => {
+      checkSignatureStatus(false);
     }, 3000);
   }
 
@@ -884,7 +956,7 @@
     return dateStr;
   }
 
-  // 5. 📝 產出高規格 Word (.docx) 文件
+  // 5. 📝 產出 Word (.docx) 文件
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
       alert('Word 生成套件 (docx.js) 尚未載入完成，請確認網路連線。');
@@ -1168,7 +1240,7 @@
     showStatus('經濟部速報單 Word (.docx) 匯出成功！', 'success');
   }
 
-  // 6. 📄 產出高規格 PDF 文件
+  // 6. 📄 產出高規格 PDF 文件 (包含精確頭部抬頭定位與簽名檔)
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
       alert('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成，請確認網路連線。');
@@ -1321,10 +1393,12 @@
 
     const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
 
+    // 左標題：經 濟 部 (22pt)
     drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
+    // 右標題：速 報 單 (22pt，完美修復頂部對齊與字體大小)
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleSize, 2.2);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
@@ -1499,13 +1573,11 @@
     currentSignatureBase64 = base64Png;
     const imgEl = document.getElementById('sigPreviewImg');
     const containerEl = document.getElementById('sigPreviewContainer');
-    const statusEl = document.getElementById('sigStatusText');
-    if (imgEl && containerEl && statusEl) {
+    if (imgEl && containerEl) {
       imgEl.src = currentSignatureBase64;
       containerEl.style.display = 'block';
-      statusEl.innerText = statusMessage || '✅ 長官已完成親筆簽名！';
-      statusEl.style.color = '#059669';
     }
+    updateSignatureStatusText(statusMessage || '✅ 長官已完成親筆簽名！');
   }
 
   function checkSecretWarning() {
