@@ -7,7 +7,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#66bab7">
   
-  <!-- CDN 套件 (採用 cdnjs / jsDelivr 穩定鏈結) -->
+  <!-- CDN 套件 (採用 cdnjs / jsDelivr 穩定備援鏈結) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
@@ -114,6 +114,16 @@
       letter-spacing: -0.01em;
       line-height: 1.2;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .autosave-badge {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.88);
+      font-weight: 600;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     /* 現代卡片區塊 */
@@ -275,6 +285,7 @@
       flex-direction: column;
       align-items: center;
       gap: 8px;
+      cursor: pointer;
     }
     .sig-preview-img {
       max-height: 55px;
@@ -286,136 +297,110 @@
       padding: 4px;
     }
 
-    .sig-btn-row {
-      display: flex;
-      gap: 6px;
-      width: 100%;
-      justify-content: center;
-      margin-top: 4px;
-    }
-
-    .btn-small-check {
-      background: #e0f2fe;
-      color: #0369a1;
-      border: 1px solid #bae6fd;
-      padding: 4px 10px;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* 雙層固定操作列 */
-    .bottom-action-bar {
+    /* 整潔雙層固定操作列 */
+    .sticky-actions-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid var(--border-color);
       padding: 10px 12px;
       z-index: 1000;
       box-shadow: 0 -4px 22px rgba(15, 23, 42, 0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
 
-    .action-bar-inner {
-      width: 100%;
+    .actions-container {
       max-width: 600px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .btn-row {
+    .actions-row {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
     }
 
     .btn {
-      flex: 1;
-      padding: 11px 6px;
-      font-size: 0.88rem;
-      font-weight: 800;
+      padding: 10px 4px;
+      font-size: 0.82rem;
+      font-weight: 700;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
       display: flex;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 5px;
+      gap: 4px;
       transition: all 0.18s ease;
+      flex: 1;
       white-space: nowrap;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
 
     .btn:active {
-      transform: scale(0.97);
+      transform: scale(0.96);
     }
 
-    /* 按鈕主題色 */
-    .btn-secondary { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
-    .btn-word { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
-    .btn-sign { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .btn-pdf { background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%); color: #ffffff; box-shadow: 0 4px 12px rgba(102, 186, 183, 0.35); }
-
-    /* 長官簽名 Modal */
-    .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      padding: 20px;
+    /* 上層：草稿與檔案管理按鈕 */
+    .btn-draft {
+      background-color: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-json {
+      background-color: #f0f9ff;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
     }
 
-    .modal-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 24px 20px;
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    /* 下層：核心輸出按鈕 */
+    .btn-docx {
+      background-color: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
     }
 
-    .qr-container {
-      background: #ffffff;
-      padding: 12px;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      display: inline-block;
-      margin: 14px 0;
+    .btn-share {
+      background-color: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
     }
 
-    .qr-container img {
-      width: 180px;
-      height: 180px;
-      display: block;
+    .btn-hero {
+      flex: 1.2;
+      background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(102, 186, 183, 0.35);
+    }
+    .btn-hero.pulse-ready {
+      animation: pulse-ready 1.2s infinite;
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    }
+
+    @keyframes pulse-ready {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.03); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
     #status-msg {
       margin-top: 10px;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 0.88rem;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
       display: none;
       text-align: center;
       font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-    .status-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-    .status-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-    .status-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .status-info { background: #e0f2fe; color: #0369a1; }
+    .status-success { background: #dcfce7; color: #15803d; }
+    .status-error { background: #fee2e2; color: #b91c1c; }
   </style>
 </head>
 <body>
@@ -428,6 +413,7 @@
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
     <div class="hero-main-title">經濟部速報單</div>
+    <div class="autosave-badge" id="autosaveBadge">⏱ 自動暫存服務準備中...</div>
   </div>
 
   <form id="moeaReportForm">
@@ -543,16 +529,11 @@
 
       <div class="form-group" style="margin-top: 14px;">
         <label>陳報單位首長/主管簽核</label>
-        <div class="signature-area-box" id="sigAreaBox">
+        <div class="signature-area-box" id="sigAreaBox" title="點擊可手動更換簽名圖檔">
           <div id="sigPreviewContainer" style="display: none; text-align: center;">
             <img id="sigPreviewImg" class="sig-preview-img" alt="簽名檔">
           </div>
-          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請點擊「長官簽名」發送簽核連結）</div>
-          
-          <div class="sig-btn-row">
-            <button type="button" class="btn-small-check" onclick="checkSignatureStatus(true)">🔄 手動刷新簽核狀態</button>
-            <button type="button" class="btn-small-check" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1;" onclick="document.getElementById('sigFileInput').click()">📁 手動上傳圖檔</button>
-          </div>
+          <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請傳送連結給長官簽名）</div>
         </div>
       </div>
     </div>
@@ -561,62 +542,56 @@
   </form>
 </div>
 
-<!-- 固定操作按鈕列 (5 顆按鈕結構) -->
-<div class="bottom-action-bar">
-  <div class="action-bar-inner">
-    <!-- 上層：草稿儲存/載入 (2 顆按鈕) -->
-    <div class="btn-row">
-      <button type="button" class="btn btn-secondary" onclick="saveDraft()">💾 暫存草稿</button>
-      <button type="button" class="btn btn-secondary" onclick="loadDraft()">📂 載入草稿</button>
+<!-- 雙層優化固定操作列 -->
+<div class="sticky-actions-bar">
+  <div class="actions-container">
+    <!-- 上層：草稿與 JSON 備份功能 -->
+    <div class="actions-row">
+      <button type="button" id="btnSaveTemp" class="btn btn-draft">💾<span>暫存</span></button>
+      <button type="button" id="btnLoadTemp" class="btn btn-draft">📂<span>載入</span></button>
+      <button type="button" id="btnExportJson" class="btn btn-json">📥<span>匯出 JSON</span></button>
+      <button type="button" id="btnImportJson" class="btn btn-json">📂<span>讀入 JSON</span></button>
     </div>
-    <!-- 下層：輸出與簽核 (3 顆按鈕) -->
-    <div class="btn-row">
-      <button type="button" class="btn btn-word" onclick="handleExportDocx()">📝 產出 Word</button>
-      <button type="button" class="btn btn-sign" onclick="openSignatureModal()">✍️ 長官簽名</button>
-      <button type="button" class="btn btn-pdf" onclick="handleExportPDF()">📄 產出 PDF</button>
-    </div>
-  </div>
-</div>
-
-<!-- ✍️ 長官簽名 Modal (含短網址 QR Code 與複製連結) -->
-<div id="signModal" class="modal-overlay">
-  <div class="modal-card">
-    <h3 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 8px;">遠端電子簽名</h3>
-    <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 12px;">請長官使用手機掃描 QR Code 或用 LINE 開啟進行簽核</p>
-    
-    <div class="qr-container">
-      <img id="qrCodeImg" src="" alt="簽名 QR Code">
-    </div>
-
-    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-      <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="copySignLink()">📋 複製簽名短連結 (發送至 LINE)</button>
-      <button type="button" class="btn btn-secondary" style="width: 100%; background: #f1f5f9;" onclick="closeSignModal()">關閉視窗</button>
+    <!-- 下層：核心輸出按鈕 -->
+    <div class="actions-row">
+      <button type="button" id="btnExportDocx" class="btn btn-docx">📝<span>產出 Word</span></button>
+      <button type="button" id="btnShareReview" class="btn btn-share">📤<span id="shareBtnText">長官簽名</span></button>
+      <button type="button" id="btnExportPDF" class="btn btn-hero">📄<span id="pdfBtnText">產出 PDF</span></button>
     </div>
   </div>
 </div>
 
-<!-- 隱藏的簽名圖檔備援上傳元件 -->
+<!-- 隱藏的檔案選擇器 -->
+<input type="file" id="jsonFileInput" accept=".json,application/json,text/plain" style="display: none;">
 <input type="file" id="sigFileInput" accept="image/*" style="display: none;">
 
 <script>
-  const API_BASE = 'https://speed-report-api.onrender.com';
-  const LOCAL_KEYS = ['moea_report_local_draft', 'moea_report_draft_v1', 'moea_report_draft'];
-  
+  // 後端 API 設定與簽核輪詢變數
+  const API_BASE_URL = 'https://speed-report-api.onrender.com';
   let currentSignatureBase64 = null;
-  let currentSignToken = '';
-  let currentShortSignUrl = '';
-  let pollInterval = null;
+  let currentSignToken = null;
+  let signPollInterval = null;
 
-  // PWA Service Worker 註冊
+  // PWA Service Worker 註冊 v6.7
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.6')
-        .then(reg => console.log('MOEA Service Worker v7.6 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.7')
+        .then(reg => console.log('MOEA Service Worker v6.7 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 頁面加載初始化
+  // 取得 Base64 圖片原始比例尺寸
+  function getImageDimensions(base64) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth || 150, height: img.naturalHeight || 50 });
+      img.onerror = () => resolve({ width: 150, height: 50 });
+      img.src = base64;
+    });
+  }
+
+  // 頁面加載完成主初始化流程
   document.addEventListener('DOMContentLoaded', () => {
     try {
       initApp();
@@ -633,14 +608,7 @@
     if (assignDateEl && !assignDateEl.value) assignDateEl.value = today;
     if (reportDateEl && !reportDateEl.value) reportDateEl.value = today;
 
-    // 監聽全表單任何輸入，即時自動備份至本機
-    const form = document.getElementById('moeaReportForm');
-    if (form) {
-      form.addEventListener('input', autoSaveToLocal);
-      form.addEventListener('change', autoSaveToLocal);
-    }
-
-    // 機密等級切換
+    // 機密等級專屬切換邏輯
     document.querySelectorAll('#secretChips .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
         const val = chip.getAttribute('data-value');
@@ -658,289 +626,146 @@
           }
         }
         checkSecretWarning();
-        autoSaveToLocal();
       });
     });
 
-    // 案件分類與分送單位切換
+    // 案件分類與分送單位切換邏輯
     document.querySelectorAll('#categoryChips .chip-item, #dispatchChipsGroup .chip-item').forEach(chip => {
       chip.addEventListener('click', () => {
         chip.classList.toggle('active');
-        autoSaveToLocal();
       });
     });
 
-    // 手動備援上傳簽名
+    // 手動備援點擊上傳簽名圖檔
+    const sigBox = document.getElementById('sigAreaBox');
     const sigInput = document.getElementById('sigFileInput');
-    if (sigInput) {
+    if (sigBox && sigInput) {
+      sigBox.addEventListener('click', () => sigInput.click());
       sigInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
           updateSignatureUI(event.target.result, '✅ 已載入長官親筆簽名檔');
-          autoSaveToLocal();
           showStatus('已手動載入簽名圖檔！', 'success');
         };
         reader.readAsDataURL(file);
       });
     }
 
-    // 網頁開啟時，自動還原上次儲存的本機草稿紀錄
-    loadDraftFromLocal(false);
-
-    // 檢查是否有舊 Token，開啟全時監聽
-    const savedToken = localStorage.getItem('moea_report_cloud_token');
-    if (savedToken) {
-      currentSignToken = savedToken;
-      startPollingSignature();
+    // 讀入 JSON 檔案選擇事件綁定
+    const jsonInput = document.getElementById('jsonFileInput');
+    if (jsonInput) {
+      jsonInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const importedData = JSON.parse(event.target.result);
+            applyFormData(importedData);
+            showStatus('已成功讀入經濟部速報單草稿！', 'success');
+          } catch (err) {
+            showStatus('讀取失敗：檔案格式不相符或檔案毀損', 'error');
+            alert('讀取失敗：檔案格式不相符或檔案毀損');
+          }
+        };
+        reader.readAsText(file, 'UTF-8');
+      });
     }
 
+    // 安全防護：將所有底端操作功能按鈕全數綁定監聽器
+    bindButton('btnSaveTemp', handleSaveTemp);
+    bindButton('btnLoadTemp', handleLoadTemp);
+    bindButton('btnExportJson', handleExportJson);
+    bindButton('btnImportJson', handleImportJson);
+    bindButton('btnExportDocx', handleExportDocx);
+    bindButton('btnShareReview', handleShareReview);
+    bindButton('btnExportPDF', handleExportPDF);
+
+    // 檢查舊版相容性簽名帶回、自動恢復背景簽核輪詢與開啟自動定時暫存
     checkUrlForSignedData();
+    
+    const savedSignToken = localStorage.getItem('moea_report_sign_token');
+    if (savedSignToken) {
+      currentSignToken = savedSignToken;
+      startPollingSignStatus(savedSignToken);
+    }
+
+    startAutoSave();
   }
 
-  // 自動寫入 LocalStorage
-  function autoSaveToLocal() {
-    const rawData = getRawFormData();
-    const jsonStr = JSON.stringify(rawData);
-    LOCAL_KEYS.forEach(key => localStorage.setItem(key, jsonStr));
-  }
-
-  // 從本機強健還原草稿
-  function loadDraftFromLocal(showNotice = false) {
-    let loadedData = null;
-    for (const key of LOCAL_KEYS) {
-      const localStr = localStorage.getItem(key);
-      if (localStr) {
+  // 通用事件安全綁定器
+  function bindButton(btnId, handler) {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', async (e) => {
         try {
-          const parsed = JSON.parse(localStr);
-          if (parsed && typeof parsed === 'object') {
-            loadedData = parsed;
-            break;
-          }
-        } catch(e){}
-      }
-    }
-
-    if (loadedData) {
-      applyFormData(loadedData);
-      if (showNotice) {
-        showStatus('✅ 已成功還原最新草稿資料！', 'success');
-        alert('✅ 已成功還原最新草稿資料！');
-      }
-      return true;
-    } else {
-      if (showNotice) {
-        showStatus('ℹ️ 目前尚無儲存的草稿紀錄。', 'info');
-        alert('ℹ️ 目前尚無儲存的草稿紀錄。');
-      }
-      return false;
-    }
-  }
-
-  // 1. 💾 多重 Key 本機 + 雲端同步草稿儲存
-  async function saveDraft() {
-    autoSaveToLocal();
-    const rawData = getRawFormData();
-
-    try {
-      showStatus('正在暫存草稿至雲端...', 'info');
-      const response = await fetch(`${API_BASE}/draft`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft_data: rawData, full_data: rawData, ...rawData })
-      });
-
-      if (response.ok) {
-        const resData = await response.json();
-        if (resData.token) {
-          localStorage.setItem('moea_report_cloud_token', resData.token);
-          currentSignToken = resData.token;
-          startPollingSignature();
+          await handler(e);
+        } catch (err) {
+          console.error(`執行 ${btnId} 時發生錯誤:`, err);
+          showStatus(`操作失敗: ${err.message}`, 'error');
+          alert(`操作失敗: ${err.message}`);
         }
-        showStatus('✅ 草稿已成功暫存！（已同步至雲端伺服器）', 'success');
-        alert('✅ 草稿已成功暫存！（已同步至雲端伺服器）');
-      } else {
-        showStatus('✅ 已完成本機妥善暫存！', 'success');
-        alert('✅ 已完成本機妥善暫存！（雲端連線忙碌，仍於手機妥善保存）');
-      }
-    } catch (err) {
-      console.warn('雲端暫存連線失敗，以本機為準:', err);
-      showStatus('✅ 已完成本機妥善暫存！', 'success');
-      alert('✅ 已完成本機妥善暫存！');
-    }
-  }
-
-  // 2. 📂 載入草稿（優先還原本機，再嘗試同步雲端）
-  async function loadDraft() {
-    const hasLocal = loadDraftFromLocal(false);
-    const cloudToken = localStorage.getItem('moea_report_cloud_token');
-
-    if (cloudToken) {
-      try {
-        showStatus('正在向雲端同步最新草稿...', 'info');
-        const response = await fetch(`${API_BASE}/draft/${cloudToken}`);
-        if (response.ok) {
-          const resData = await response.json();
-          const candidate = resData ? (resData.full_data || resData.draft_data || resData) : null;
-          if (candidate && (candidate.reporting_unit || candidate.section_subject || candidate.subject)) {
-            applyFormData(candidate);
-            autoSaveToLocal();
-          }
-        }
-      } catch (err) {
-        console.warn('雲端讀取延遲:', err);
-      }
-    }
-
-    if (hasLocal) {
-      showStatus('✅ 已成功載入最新草稿欄位！', 'success');
-      alert('✅ 已成功載入最新草稿欄位！');
-    } else {
-      showStatus('ℹ️ 目前尚無儲存的草稿紀錄。', 'info');
-      alert('ℹ️ 目前尚無儲存的草稿紀錄。');
-    }
-  }
-
-  // 短網址輔助工具
-  async function shortenUrlWithIsGd(longUrl) {
-    try {
-      const apiRes = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
-      if (apiRes.ok) {
-        const resData = await apiRes.json();
-        if (resData.shorturl) return resData.shorturl;
-      }
-    } catch (err) {
-      console.warn('is.gd API 連線受阻，採用原網址', err);
-    }
-    return longUrl;
-  }
-
-  // 3. ✍️ 開啟長官簽名 Modal
-  async function openSignatureModal() {
-    const rawData = getRawFormData();
-    if (!rawData.reporting_unit || !rawData.section_subject) { 
-      alert('請先填寫「陳報單位」與「案由」'); 
-      return; 
-    }
-
-    showStatus('正在連線伺服器生成簽核短連結...', 'info');
-
-    let fullSignUrl = '';
-
-    try {
-      const response = await fetch(`${API_BASE}/draft`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft_data: rawData, full_data: rawData, ...rawData })
       });
-      const resData = await response.json();
-      currentSignToken = resData.token;
-      localStorage.setItem('moea_report_cloud_token', currentSignToken);
-      
-      fullSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
-    } catch (err) {
-      console.warn('後端伺服器連線延遲，啟用離線短網址機制');
-      const jsonStr = JSON.stringify(rawData);
-      const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
-      const rawLongUrl = `${window.location.origin}/speed-report-pwa/sign.html?s=${compressedData}`;
-      fullSignUrl = await shortenUrlWithIsGd(rawLongUrl);
-    }
-
-    currentShortSignUrl = fullSignUrl;
-
-    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentShortSignUrl)}`;
-    document.getElementById('qrCodeImg').src = qrApi;
-
-    const modal = document.getElementById('signModal');
-    modal.style.display = 'flex';
-
-    updateSignatureStatusText('⏳ 正在即時監聽長官簽核中... (已發送簽核連結)');
-
-    showStatus('✅ 已成功生成長官簽核短網址，背景即時監聽簽核中...', 'success');
-    setTimeout(() => {
-      const msgEl = document.getElementById('status-msg');
-      if (msgEl) msgEl.style.display = 'none';
-    }, 2000);
-
-    startPollingSignature();
-  }
-
-  function closeSignModal() {
-    document.getElementById('signModal').style.display = 'none';
-  }
-
-  function copySignLink() {
-    if (!currentShortSignUrl) return;
-    const rawData = getRawFormData();
-    const cleanSubject = (rawData.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
-    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${rawData.reporting_unit}\n📅 陳報日期：${formatADDate(rawData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${currentShortSignUrl}`;
-
-    copyToClipboard(shareText);
-    alert('📋 簽名短連結與訊息已複製！請貼上至 LINE 發送給長官。');
-  }
-
-  function updateSignatureStatusText(text) {
-    const statusEl = document.getElementById('sigStatusText');
-    if (statusEl) {
-      statusEl.innerText = text;
-      statusEl.style.color = text.includes('✅') ? '#059669' : '#0369a1';
+    } else {
+      console.warn(`警告：找不到按鈕元件 #${btnId}`);
     }
   }
 
-  // 4. 🔄 手動刷新與背景全時輪詢簽核狀態
-  async function checkSignatureStatus(isManual = false) {
-    if (!currentSignToken) {
-      currentSignToken = localStorage.getItem('moea_report_cloud_token');
+  // 1. 本地手動暫存
+  function handleSaveTemp() {
+    const data = getFormData();
+    localStorage.setItem('moea_report_temp_data_v1', JSON.stringify(data));
+    showStatus('經濟部速報單已成功手動儲存至本地！', 'success');
+  }
+
+  // 2. 本地草稿載入
+  function handleLoadTemp() {
+    let saved = localStorage.getItem('moea_report_temp_data_v1');
+    if (!saved) {
+      const autoSave = localStorage.getItem('moea_report_autosave_v1');
+      if (autoSave) {
+        try { saved = JSON.stringify(JSON.parse(autoSave).data); } catch(e){}
+      }
     }
-    if (!currentSignToken) {
-      if (isManual) alert('目前尚未發送長官簽名連結，請先點擊【長官簽名】按鈕。');
+
+    if (!saved) {
+      showStatus('未找到暫存資料！', 'error');
+      alert('未找到暫存資料！');
       return;
     }
 
-    if (isManual) showStatus('正在刷新長官簽核狀態...', 'info');
-
     try {
-      const res = await fetch(`${API_BASE}/status/${currentSignToken}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.status === 'signed' && data.signature) {
-          if (pollInterval) {
-            clearInterval(pollInterval);
-            pollInterval = null;
-          }
-
-          currentSignatureBase64 = data.signature;
-          updateSignatureUI(currentSignatureBase64, '✅ 長官已完成親筆簽名！');
-          autoSaveToLocal();
-
-          const modal = document.getElementById('signModal');
-          if (modal && modal.style.display === 'flex') {
-            modal.style.display = 'none';
-          }
-
-          const msg = '🎉 長官已完成線上簽核！親筆簽名檔已成功帶入，您現在可以點擊【產出 PDF】或【產出 Word】！';
-          showStatus(msg, 'success');
-          alert(msg);
-        } else {
-          if (isManual) alert('長官尚未完成簽署，請稍候。');
-        }
-      }
-    } catch (e) {
-      if (isManual) alert('伺服器連線忙碌中，請稍後再試。');
+      applyFormData(JSON.parse(saved));
+      showStatus('已成功載入經濟部速報單草稿！', 'success');
+    } catch (err) {
+      showStatus('暫存資料解析失敗', 'error');
+      alert('暫存資料解析失敗');
     }
   }
 
-  function startPollingSignature() {
-    if (pollInterval) clearInterval(pollInterval);
-    if (!currentSignToken) return;
-
-    pollInterval = setInterval(() => {
-      checkSignatureStatus(false);
-    }, 3000);
+  // 3. 匯出 JSON 檔
+  function handleExportJson() {
+    const data = getFormData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `經濟部速報單草稿_${data.report_date || ''}.json`;
+    link.click();
+    showStatus('經濟部速報單草稿 (.json) 匯出成功！', 'success');
   }
 
-  // 西元日期格式化：2026年10月09日
+  // 4. 讀入 JSON 檔
+  function handleImportJson() {
+    const fileInput = document.getElementById('jsonFileInput');
+    if (fileInput) {
+      fileInput.value = '';
+      fileInput.click();
+    }
+  }
+
+  // 強制日期格式化為西元年：2026年10月5日
   function formatADDate(dateStr) {
     if (!dateStr) return '';
     if (dateStr.includes('年') && dateStr.includes('月') && dateStr.includes('日')) {
@@ -956,26 +781,27 @@
     return dateStr;
   }
 
-  // 5. 📝 產出 Word (.docx) 文件
+  // 5. 匯出 Word (.docx) 文件
   async function handleExportDocx() {
     if (typeof docx === 'undefined') {
-      alert('Word 生成套件 (docx.js) 尚未載入完成，請確認網路連線。');
-      return;
+      throw new Error('Word 生成套件 (docx.js) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
     }
 
-    showStatus('正在生成高規格 Word (.docx) 文件...', 'info');
+    showStatus('正在生成完美排版之 Word (.docx) 文件...', 'info');
     const data = getFormData();
     
     const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, BorderStyle, ImageRun, VerticalAlign } = docx;
 
     const checkSym = (isChecked) => isChecked ? '■ ' : '□ ';
 
+    // 無框線物件定義
     const noBorder = { style: BorderStyle.NONE, size: 0, color: "auto" };
     const noBorders = {
       top: noBorder, bottom: noBorder, left: noBorder, right: noBorder,
       insideHorizontal: noBorder, insideVertical: noBorder
     };
 
+    // 機密等級標記
     const activeSecrets = (data.secret_levels || []).filter(v => v !== '無');
     const secretPara = activeSecrets.length > 0 
       ? new Paragraph({
@@ -985,6 +811,7 @@
         })
       : new Paragraph({ text: '' });
 
+    // 1. 頂部標題表格（全部無框線）
     const categoryOptions = ['府院部長官交辦案件', '重要會議結論', '立委監委關切事項', '其他'];
     const catParas = categoryOptions.map(cat => {
       const isChecked = (data.categories || []).includes(cat);
@@ -1037,6 +864,7 @@
       ]
     });
 
+    // 2. 交辦與陳報基本資訊欄位
     const infoTable = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       borders: noBorders,
@@ -1072,6 +900,7 @@
       ]
     });
 
+    // 3. 內文段落處理
     function processDocxSection(title, contentText) {
       const paras = [];
       if (title) {
@@ -1087,7 +916,7 @@
           const trimmed = line.trim();
           if (!trimmed) return;
 
-          let indentObj = { left: 320 };
+          let indentObj = { left: 320 }; // 預設 1 字元縮排
 
           if (/^[\(\（]\d+[\)\）]/.test(trimmed)) {
             indentObj = { left: 1600, hanging: 320 };
@@ -1116,10 +945,15 @@
       ...processDocxSection('擬處意見或建議事項：', data.section_suggestions)
     ];
 
+    // 整合於單一標準外框
     const singleBorder = { style: BorderStyle.SINGLE, size: 8, color: "000000" };
     const outerBoxBorders = {
-      top: singleBorder, bottom: singleBorder, left: singleBorder, right: singleBorder,
-      insideHorizontal: noBorder, insideVertical: noBorder
+      top: singleBorder,
+      bottom: singleBorder,
+      left: singleBorder,
+      right: singleBorder,
+      insideHorizontal: noBorder,
+      insideVertical: noBorder
     };
 
     const mainContentTable = new Table({
@@ -1139,6 +973,7 @@
       ]
     });
 
+    // 4. 本件分送單位欄位
     const dispatchUnits = data.dispatch_units || [];
     const isDis = (name) => dispatchUnits.includes(name);
     const hasOther = Boolean(data.other_unit_text && data.other_unit_text.trim());
@@ -1179,12 +1014,23 @@
       ]
     });
 
+    // 簽名檔自動等比例縮放內嵌處理
     const sigChildren = [
       new TextRun({ text: `陳報單位首長/主管簽核：`, font: "標楷體", size: 24 })
     ];
 
     if (currentSignatureBase64) {
       try {
+        const dims = await getImageDimensions(currentSignatureBase64);
+        const maxH = 30;
+        const maxW = 120;
+        let targetW = maxH * (dims.width / dims.height);
+        let targetH = maxH;
+        if (targetW > maxW) {
+          targetW = maxW;
+          targetH = maxW * (dims.height / dims.width);
+        }
+
         const base64Data = currentSignatureBase64.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
         const binaryStr = atob(base64Data);
         const bytes = new Uint8Array(binaryStr.length);
@@ -1193,7 +1039,7 @@
         }
         sigChildren.push(new ImageRun({
           data: bytes,
-          transformation: { width: 120, height: 36 }
+          transformation: { width: Math.round(targetW), height: Math.round(targetH) }
         }));
       } catch(e) {
         console.warn("Word 簽名檔內嵌失敗:", e);
@@ -1204,7 +1050,12 @@
       sections: [{
         properties: {
           page: {
-            margin: { top: 567, bottom: 680, left: 737, right: 737 }
+            margin: {
+              top: 567,    // 上 1.0 公分
+              bottom: 680, // 下 1.2 公分
+              left: 737,   // 左 1.3 公分
+              right: 737   // 右 1.3 公分
+            }
           }
         },
         children: [
@@ -1237,14 +1088,128 @@
     link.download = `經濟部速報單_${data.report_date || ''}.docx`;
     link.click();
 
-    showStatus('經濟部速報單 Word (.docx) 匯出成功！', 'success');
+    showStatus('經濟部速報單 Word (.docx) 匯出成功！格式已精準對應 PDF 排版。', 'success');
   }
 
-  // 6. 📄 產出高規格 PDF 文件 (包含精確頭部抬頭定位與簽名檔)
+  // 6. 長官簽名連線（串接 Render FastAPI 後端與持久化輪詢）
+  async function handleShareReview() {
+    const shareBtn = document.getElementById('btnShareReview');
+    const shareBtnText = document.getElementById('shareBtnText');
+
+    const data = getFormData();
+    if (!data.reporting_unit || !data.section_subject) { 
+      alert('請先填寫「陳報單位」與「案由」'); 
+      return; 
+    }
+
+    try {
+      if (shareBtnText) shareBtnText.innerText = '⏳ 處理中...';
+      if (shareBtn) shareBtn.disabled = true;
+
+      showStatus('正在向伺服器建立長官簽名連結...', 'info');
+
+      const cleanSubjectTitle = data.section_subject.split('\n')[0].replace(/^案由[：:]\s*/, '').trim() || '公務速報單';
+
+      const payload = {
+        title: cleanSubjectTitle,
+        unit: data.reporting_unit,
+        report_date: formatADDate(data.report_date),
+        contact: `${data.contact_person || ''} ${data.contact_phone || ''}`.trim(),
+        content: `【案由】\n${data.section_subject || ''}\n\n【出席人員】\n${data.section_attendees || '無'}\n\n【會議結論及指示事項】\n${data.section_conclusions || ''}\n\n【擬處意見或建議事項】\n${data.section_suggestions || ''}`,
+        full_data: data
+      };
+
+      const response = await fetch(`${API_BASE_URL}/draft`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`伺服器連線異常 (${response.status})`);
+      }
+
+      const resData = await response.json();
+      currentSignToken = resData.token;
+      
+      // 持久化記憶簽核 Token
+      localStorage.setItem('moea_report_sign_token', currentSignToken);
+
+      const signBaseUrl = window.location.origin + window.location.pathname.replace(/moea-report(_2)?\.html/, 'sign.html');
+      const targetUrl = `${signBaseUrl}?t=${currentSignToken}`;
+
+      const cleanSubjectShort = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
+      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubjectShort}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
+
+      await copyToClipboard(shareText);
+
+      showStatus('簽名連結已成功複製！系統正開啟自動連線感應...', 'success');
+      alert('🔗 長官簽名連結與訊息已成功複製！請貼上至 LINE 發送給長官。\n\n💡 長官在手機完成簽名後，本頁面會自動感應帶入長官親筆簽名！');
+
+      // 啟動背景自動輪詢感應長官簽核
+      startPollingSignStatus(currentSignToken);
+
+    } catch (err) {
+      console.error('建立遠端簽核失敗:', err);
+      showStatus(`建立簽核連結失敗: ${err.message}`, 'error');
+      alert(`建立簽核連結失敗: ${err.message}`);
+    } finally {
+      if (shareBtnText) shareBtnText.innerText = '長官簽名';
+      if (shareBtn) shareBtn.disabled = false;
+    }
+  }
+
+  // 自動感應輪詢與簽名帶回
+  function startPollingSignStatus(token) {
+    if (!token) return;
+    if (signPollInterval) clearInterval(signPollInterval);
+    
+    // 啟動即時檢測
+    checkSignStatus(token);
+    
+    signPollInterval = setInterval(() => {
+      checkSignStatus(token);
+    }, 3000);
+  }
+
+  async function checkSignStatus(token) {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/status/${token}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      const hasSig = Boolean(data.signature);
+      const isSigned = data.is_signed || data.status === 'signed' || data.signed === true || hasSig;
+
+      if (isSigned && hasSig) {
+        if (signPollInterval) {
+          clearInterval(signPollInterval);
+          signPollInterval = null;
+        }
+        
+        updateSignatureUI(data.signature, '✅ 長官已完成親筆簽名！');
+        
+        // 自動同步至本機草稿
+        const formData = getFormData();
+        formData.signature = data.signature;
+        localStorage.setItem('moea_report_temp_data_v1', JSON.stringify(formData));
+        
+        showStatus('🎉 感應成功！長官已完成親筆簽名，請點擊「產出 PDF」或「產出 Word」。', 'success');
+        alert('🎉 長官已完成線上簽核！親筆簽名檔已自動帶入速報單，您現在可以直接點擊「產出 PDF」或「產出 Word」！');
+        
+        const pdfBtn = document.getElementById('btnExportPDF');
+        if (pdfBtn) pdfBtn.classList.add('pulse-ready');
+      }
+    } catch (e) {
+      console.warn('輪詢簽核狀態連線中...', e);
+    }
+  }
+
+  // 7. 匯出 PDF 文件
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
-      alert('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成，請確認網路連線。');
-      return;
+      throw new Error('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
     }
 
     showStatus('正在生成經濟部速報單 PDF...', 'info');
@@ -1257,6 +1222,200 @@
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
   }
 
+  // 自動備份機制
+  function startAutoSave() {
+    const badge = document.getElementById('autosaveBadge');
+    
+    const lastAutoSave = localStorage.getItem('moea_report_autosave_v1');
+    if (lastAutoSave) {
+      try {
+        const parsed = JSON.parse(lastAutoSave);
+        if (parsed && parsed.timestamp) {
+          const date = new Date(parsed.timestamp);
+          const timeStr = date.toTimeString().split(' ')[0];
+          if (badge) badge.innerText = `⏱️ 上次備份於 ${timeStr}`;
+        }
+      } catch (e) {}
+    }
+
+    setInterval(() => {
+      const data = getFormData();
+      const savePayload = {
+        timestamp: new Date().toISOString(),
+        data: data
+      };
+      localStorage.setItem('moea_report_autosave_v1', JSON.stringify(savePayload));
+      
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0];
+      if (badge) {
+        badge.innerText = `⏱️ 已於 ${timeStr} 自動定時暫存`;
+      }
+    }, 30000);
+  }
+
+  function checkUrlForSignedData() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const signedParam = urlParams.get('s') || urlParams.get('signed');
+    if (signedParam) {
+      try {
+        const jsonStr = LZString.decompressFromEncodedURIComponent(signedParam);
+        if (jsonStr) {
+          const data = JSON.parse(jsonStr);
+          applyFormData(data);
+          showStatus('🎉 已成功接收長官簽名檔與速報單內容！請點擊「產出 PDF」。', 'success');
+          const pdfBtn = document.getElementById('btnExportPDF');
+          if (pdfBtn) pdfBtn.classList.add('pulse-ready');
+        }
+      } catch (err) {
+        console.warn('解析長官簽名帶回資料失敗:', err);
+      }
+    }
+  }
+
+  function updateSignatureUI(base64Png, statusMessage) {
+    currentSignatureBase64 = base64Png;
+    const imgEl = document.getElementById('sigPreviewImg');
+    const containerEl = document.getElementById('sigPreviewContainer');
+    const statusEl = document.getElementById('sigStatusText');
+    if (imgEl && containerEl && statusEl) {
+      imgEl.src = currentSignatureBase64;
+      containerEl.style.display = 'block';
+      statusEl.innerText = statusMessage || '✅ 長官已完成親筆簽名！';
+      statusEl.style.color = '#059669';
+    }
+  }
+
+  function checkSecretWarning() {
+    const activeSecrets = Array.from(document.querySelectorAll('#secretChips .chip-item.active'))
+                               .map(c => c.getAttribute('data-value'));
+    const hasSecret = activeSecrets.some(v => v !== '無');
+    const warnBox = document.getElementById('secretWarning');
+    if (warnBox) warnBox.style.display = hasSecret ? 'block' : 'none';
+  }
+
+  function showStatus(text, type = 'info') {
+    const msgEl = document.getElementById('status-msg');
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.className = `status-${type}`;
+      msgEl.innerText = text;
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+  }
+
+  function getFormData() {
+    const data = {
+      assigner: document.getElementById('assigner')?.value || '',
+      assigned_date: document.getElementById('assigned_date')?.value || '',
+      reporting_unit: document.getElementById('reporting_unit')?.value || '',
+      report_date: document.getElementById('report_date')?.value || '',
+      section_subject: document.getElementById('section_subject')?.value || '',
+      section_attendees: document.getElementById('section_attendees')?.value || '',
+      section_conclusions: document.getElementById('section_conclusions')?.value || '',
+      section_suggestions: document.getElementById('section_suggestions')?.value || '',
+      other_unit_text: document.getElementById('other_unit_text')?.value || '',
+      contact_person: document.getElementById('contact_person')?.value || '',
+      contact_phone: document.getElementById('contact_phone')?.value || '',
+      signature: currentSignatureBase64
+    };
+
+    const secrets = [];
+    document.querySelectorAll('#secretChips .chip-item.active').forEach(c => {
+      const val = c.getAttribute('data-value');
+      if (val) secrets.push(val);
+    });
+    data['secret_levels'] = secrets;
+
+    const categories = [];
+    document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => {
+      const val = c.getAttribute('data-value');
+      if (val) categories.push(val);
+    });
+    data['categories'] = categories;
+
+    const dispatch = [];
+    document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => {
+      const val = c.getAttribute('data-value');
+      if (val) dispatch.push(val);
+    });
+    data['dispatch_units'] = dispatch;
+
+    return data;
+  }
+
+  function applyFormData(data) {
+    if (!data || typeof data !== 'object') return;
+
+    const textFields = [
+      'assigner', 'assigned_date', 'reporting_unit', 'report_date',
+      'section_subject', 'section_attendees', 'section_conclusions',
+      'section_suggestions', 'other_unit_text', 'contact_person', 'contact_phone'
+    ];
+
+    textFields.forEach(fieldId => {
+      const el = document.getElementById(fieldId);
+      if (el && data[fieldId] !== undefined) {
+        el.value = data[fieldId];
+      }
+    });
+
+    if (Array.isArray(data.secret_levels)) {
+      document.querySelectorAll('#secretChips .chip-item').forEach(c => {
+        const val = c.getAttribute('data-value');
+        c.classList.toggle('active', data.secret_levels.includes(val));
+      });
+      checkSecretWarning();
+    }
+
+    if (Array.isArray(data.categories)) {
+      document.querySelectorAll('#categoryChips .chip-item').forEach(c => {
+        const val = c.getAttribute('data-value');
+        c.classList.toggle('active', data.categories.includes(val));
+      });
+    }
+
+    if (Array.isArray(data.dispatch_units)) {
+      document.querySelectorAll('#dispatchChipsGroup .chip-item').forEach(c => {
+        const val = c.getAttribute('data-value');
+        c.classList.toggle('active', data.dispatch_units.includes(val));
+      });
+    }
+
+    if (data.signature) {
+      updateSignatureUI(data.signature, '✅ 已載入長官親筆簽名檔');
+    }
+  }
+
+  async function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return;
+      } catch (err) {
+        console.warn('Clipboard API 失敗，改用傳統複製模式');
+      }
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      if (!successful) throw new Error();
+    } catch (err) {
+      document.body.removeChild(textArea);
+      prompt('請手動複製以下訊息：', text);
+    }
+  }
+
+  // 純前端楷體 PDF 引擎
   let cachedFontBytes = null;
 
   async function generatePDFBlob(data) {
@@ -1393,10 +1552,10 @@
 
     const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
 
-    // 左標題：經 濟 部 (22pt)
+    // 「經 濟 部」：靠右（向內）縮排 2 個字元
     drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
-    // 右標題：速 報 單 (22pt，完美修復頂部對齊與字體大小)
+    // 「速 報 單」：靠左（向內）縮排 2 個字元
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
     drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
@@ -1430,7 +1589,7 @@
       secItems.forEach(item => allLineItems.push(item));
     });
 
-    const footerNeededHeight = 115;
+    const footerNeededHeight = 125;
     let renderY = tableBoxStartY - 22;
 
     for (let i = 0; i < allLineItems.length; i++) {
@@ -1530,17 +1689,34 @@
     currentY -= 17;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    currentY -= 22;
-    currentPage.drawText(`陳報單位首長/主管簽核：`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
+    // 預留行距與計算文字寬度
+    currentY -= 32;
+    const sigLabelText = `陳報單位首長/主管簽核：`;
+    currentPage.drawText(sigLabelText, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
     if (currentSignatureBase64) {
       try {
         const sigImage = await pdfDoc.embedPng(currentSignatureBase64);
+        const labelWidth = measureTextWidth(sigLabelText, footerFontSize);
+
+        const origW = sigImage.width;
+        const origH = sigImage.height;
+        const maxH = 30;  // 限定最高 30pt
+        const maxW = 120; // 限定最寬 120pt
+
+        let targetW = maxH * (origW / origH);
+        let targetH = maxH;
+
+        if (targetW > maxW) {
+          targetW = maxW;
+          targetH = maxW * (origH / origW);
+        }
+
         currentPage.drawImage(sigImage, {
-          x: marginX + 160,
-          y: currentY - 8,
-          width: 120,
-          height: 36
+          x: marginX + labelWidth + 6,
+          y: currentY - (targetH / 2) + 3,
+          width: targetW,
+          height: targetH
         });
       } catch (e) {
         console.warn('繪製簽名圖檔失敗:', e);
@@ -1550,232 +1726,6 @@
     const pdfBytes = await pdfDoc.save();
     return new Blob([pdfBytes], { type: 'application/pdf' });
   }
-
-  // 輔助函式
-  function checkUrlForSignedData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const signedParam = urlParams.get('s') || urlParams.get('signed');
-    if (signedParam) {
-      try {
-        const jsonStr = LZString.decompressFromEncodedURIComponent(signedParam);
-        if (jsonStr) {
-          const data = JSON.parse(jsonStr);
-          applyFormData(data);
-          showStatus('🎉 已成功接收長官簽名檔與速報單內容！', 'success');
-        }
-      } catch (err) {
-        console.warn('解析簽名資料失敗:', err);
-      }
-    }
-  }
-
-  function updateSignatureUI(base64Png, statusMessage) {
-    currentSignatureBase64 = base64Png;
-    const imgEl = document.getElementById('sigPreviewImg');
-    const containerEl = document.getElementById('sigPreviewContainer');
-    if (imgEl && containerEl) {
-      imgEl.src = currentSignatureBase64;
-      containerEl.style.display = 'block';
-    }
-    updateSignatureStatusText(statusMessage || '✅ 長官已完成親筆簽名！');
-  }
-
-  function checkSecretWarning() {
-    const activeSecrets = Array.from(document.querySelectorAll('#secretChips .chip-item.active'))
-                               .map(c => c.getAttribute('data-value'));
-    const hasSecret = activeSecrets.some(v => v !== '無');
-    const warnBox = document.getElementById('secretWarning');
-    if (warnBox) warnBox.style.display = hasSecret ? 'block' : 'none';
-  }
-
-  function showStatus(text, type = 'info') {
-    const msgEl = document.getElementById('status-msg');
-    if (msgEl) {
-      msgEl.style.display = 'block';
-      msgEl.className = `status-${type}`;
-      msgEl.innerText = text;
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
-  }
-
-  // 收集純粹表單資料結構
-  function getRawFormData() {
-    const reportingUnit = document.getElementById('reporting_unit')?.value || '';
-    const assigner = document.getElementById('assigner')?.value || '';
-    const assignedDate = document.getElementById('assigned_date')?.value || '';
-    const reportDate = document.getElementById('report_date')?.value || '';
-    const subject = document.getElementById('section_subject')?.value || '';
-    const attendees = document.getElementById('section_attendees')?.value || '';
-    const conclusions = document.getElementById('section_conclusions')?.value || '';
-    const suggestions = document.getElementById('section_suggestions')?.value || '';
-    const otherUnitText = document.getElementById('other_unit_text')?.value || '';
-    const contactPerson = document.getElementById('contact_person')?.value || '';
-    const contactPhone = document.getElementById('contact_phone')?.value || '';
-
-    const secrets = [];
-    document.querySelectorAll('#secretChips .chip-item.active').forEach(c => {
-      const val = c.getAttribute('data-value');
-      if (val) secrets.push(val);
-    });
-
-    const categories = [];
-    document.querySelectorAll('#categoryChips .chip-item.active').forEach(c => {
-      const val = c.getAttribute('data-value');
-      if (val) categories.push(val);
-    });
-
-    const dispatch = [];
-    document.querySelectorAll('#dispatchChipsGroup .chip-item.active').forEach(c => {
-      const val = c.getAttribute('data-value');
-      if (val) dispatch.push(val);
-    });
-
-    return {
-      reporting_unit: reportingUnit,
-      assigner: assigner,
-      assigned_date: assignedDate,
-      report_date: reportDate,
-      section_subject: subject,
-      section_attendees: attendees,
-      section_conclusions: conclusions,
-      section_suggestions: suggestions,
-      other_unit_text: otherUnitText,
-      contact_person: contactPerson,
-      contact_phone: contactPhone,
-      secret_levels: secrets,
-      categories: categories,
-      dispatch_units: dispatch,
-      signature: currentSignatureBase64,
-
-      // 相容 Key
-      report_unit: reportingUnit,
-      assign_boss: assigner,
-      assign_date: assignedDate,
-      subject: subject,
-      attendees: attendees,
-      content: conclusions,
-      suggestion: suggestions,
-      confidentiality: secrets.join('、') || '無'
-    };
-  }
-
-  function getFormData() {
-    const rawData = getRawFormData();
-    return {
-      draft_data: rawData,
-      full_data: rawData,
-      ...rawData
-    };
-  }
-
-  function applyFormData(data) {
-    if (!data || typeof data !== 'object') return;
-    const src = data.full_data || data.draft_data || data;
-
-    const reportingUnitVal = src.reporting_unit || src.report_unit;
-    if (reportingUnitVal !== undefined && document.getElementById('reporting_unit')) {
-      document.getElementById('reporting_unit').value = reportingUnitVal;
-    }
-
-    const assignerVal = src.assigner || src.assign_boss;
-    if (assignerVal !== undefined && document.getElementById('assigner')) {
-      document.getElementById('assigner').value = assignerVal;
-    }
-
-    const assignedDateVal = src.assigned_date || src.assign_date;
-    if (assignedDateVal !== undefined && document.getElementById('assigned_date')) {
-      document.getElementById('assigned_date').value = assignedDateVal;
-    }
-
-    const reportDateVal = src.report_date;
-    if (reportDateVal !== undefined && document.getElementById('report_date')) {
-      document.getElementById('report_date').value = reportDateVal;
-    }
-
-    const subjectVal = src.section_subject || src.subject;
-    if (subjectVal !== undefined && document.getElementById('section_subject')) {
-      document.getElementById('section_subject').value = subjectVal;
-    }
-
-    const attendeesVal = src.section_attendees || src.attendees;
-    if (attendeesVal !== undefined && document.getElementById('section_attendees')) {
-      document.getElementById('section_attendees').value = attendeesVal;
-    }
-
-    const conclusionsVal = src.section_conclusions || src.content;
-    if (conclusionsVal !== undefined && document.getElementById('section_conclusions')) {
-      document.getElementById('section_conclusions').value = conclusionsVal;
-    }
-
-    const suggestionsVal = src.section_suggestions || src.suggestion;
-    if (suggestionsVal !== undefined && document.getElementById('section_suggestions')) {
-      document.getElementById('section_suggestions').value = suggestionsVal;
-    }
-
-    const otherUnitVal = src.other_unit_text;
-    if (otherUnitVal !== undefined && document.getElementById('other_unit_text')) {
-      document.getElementById('other_unit_text').value = otherUnitVal;
-    }
-
-    const contactPersonVal = src.contact_person;
-    if (contactPersonVal !== undefined && document.getElementById('contact_person')) {
-      document.getElementById('contact_person').value = contactPersonVal;
-    }
-
-    const contactPhoneVal = src.contact_phone;
-    if (contactPhoneVal !== undefined && document.getElementById('contact_phone')) {
-      document.getElementById('contact_phone').value = contactPhoneVal;
-    }
-
-    if (Array.isArray(src.secret_levels)) {
-      document.querySelectorAll('#secretChips .chip-item').forEach(c => {
-        const val = c.getAttribute('data-value');
-        c.classList.toggle('active', src.secret_levels.includes(val));
-      });
-      checkSecretWarning();
-    }
-
-    if (Array.isArray(src.categories)) {
-      document.querySelectorAll('#categoryChips .chip-item').forEach(c => {
-        const val = c.getAttribute('data-value');
-        c.classList.toggle('active', src.categories.includes(val));
-      });
-    }
-
-    if (Array.isArray(src.dispatch_units)) {
-      document.querySelectorAll('#dispatchChipsGroup .chip-item').forEach(c => {
-        const val = c.getAttribute('data-value');
-        c.classList.toggle('active', src.dispatch_units.includes(val));
-      });
-    }
-
-    if (src.signature) {
-      updateSignatureUI(src.signature, '✅ 已載入長官親筆簽名檔');
-    }
-  }
-
-  async function copyToClipboard(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return;
-      } catch (err) {}
-    }
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.opacity = '0';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-    } catch (err) {
-      document.body.removeChild(textArea);
-    }
-  }
 </script>
-
 </body>
 </html>
