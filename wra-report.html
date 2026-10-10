@@ -286,6 +286,16 @@
       transform: scale(0.96);
     }
 
+    /* 重置按鈕專屬樣式 (淡紅警示) */
+    .btn-reset {
+      background-color: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .btn-reset:active {
+      background-color: #fee2e2;
+    }
+
     /* 分類 1：本地快取區塊 (低調石墨灰) */
     .btn-local {
       background-color: #f1f5f9;
@@ -453,8 +463,9 @@
 <!-- 雙層優化固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <!-- 上層：草稿與 JSON 備份功能 -->
+    <!-- 上層：重置、草稿與 JSON 備份功能 -->
     <div class="actions-row">
+      <button type="button" id="btnResetForm" class="btn btn-reset">🧹<span>重置</span></button>
       <button type="button" id="btnSaveTemp" class="btn btn-local">💾<span>暫存</span></button>
       <button type="button" id="btnLoadTemp" class="btn btn-local">📂<span>載入</span></button>
       <button type="button" id="btnExportJson" class="btn btn-sync">📥<span>匯出檔</span></button>
@@ -472,11 +483,11 @@
 <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
 
 <script>
-  // PWA Service Worker 註冊 (v6.6)
+  // PWA Service Worker 註冊 (v6.7)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.6')
-        .then(reg => console.log('Service Worker v6.6 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.7')
+        .then(reg => console.log('Service Worker v6.7 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -492,6 +503,9 @@
         chip.classList.toggle('active');
       });
     });
+
+    // 綁定重置按鈕事件
+    document.getElementById('btnResetForm').addEventListener('click', handleResetForm);
   });
 
   function showStatus(text, type = 'info') {
@@ -500,6 +514,35 @@
     msgEl.className = `status-${type}`;
     msgEl.innerText = text;
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }
+
+  // 0. 🧹 重置水利署速報單表單
+  function handleResetForm() {
+    const today = new Date().toISOString().split('T')[0];
+
+    // 1. 恢復選單與預設文字
+    document.getElementById('meeting_type').value = '重要會議結論';
+    document.getElementById('assigner').value = '';
+    document.getElementById('reporting_unit').value = '';
+    document.getElementById('assigned_date').value = today;
+    document.getElementById('report_date').value = today;
+
+    document.getElementById('section_1').value = '[輸入案由]\n一、開會時間：\n二、開會地點：\n三、主持人：\n四、與會人員：';
+    document.getElementById('section_2').value = '一、\n(一)\n1.\n(1)';
+    document.getElementById('section_3').value = '';
+    document.getElementById('other_unit_text').value = '';
+    document.getElementById('contact_person').value = '';
+    document.getElementById('contact_phone').value = '';
+
+    // 2. 清除所有勾選膠囊狀態
+    document.querySelectorAll('.chip-item').forEach(chip => {
+      chip.classList.remove('active');
+    });
+
+    // 3. 清除本機暫存
+    localStorage.removeItem('speed_report_temp_data_v5');
+
+    showStatus('本機暫存已清空，速報單表單已恢復預設狀態！', 'success');
   }
 
   // 強制日期格式化為西元年：例如 2026年10月5日
