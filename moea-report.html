@@ -116,16 +116,6 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
-    .autosave-badge {
-      font-size: 0.75rem;
-      color: rgba(255, 255, 255, 0.88);
-      font-weight: 600;
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
     /* 現代卡片區塊 */
     .card-group {
       background: var(--card-bg);
@@ -413,7 +403,6 @@
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
     <div class="hero-main-title">經濟部速報單</div>
-    <div class="autosave-badge" id="autosaveBadge">⏱ 自動暫存服務準備中...</div>
   </div>
 
   <form id="moeaReportForm">
@@ -435,7 +424,7 @@
       <div class="form-group" style="margin-top: 14px;">
         <label>案件分類（點擊選擇）</label>
         <div class="chips-grid" id="categoryChips">
-          <div class="chip-item active" data-value="府院部長官交辦案件"><span>府院部長官交辦案件</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="府院部長官交辦案件"><span>府院部長官交辦案件</span><span class="check-icon">✓</span></div>
           <div class="chip-item" data-value="重要會議結論"><span>重要會議結論</span><span class="check-icon">✓</span></div>
           <div class="chip-item" data-value="立委監委關切事項"><span>立委監委關切事項</span><span class="check-icon">✓</span></div>
           <div class="chip-item" data-value="其他"><span>其他</span><span class="check-icon">✓</span></div>
@@ -502,12 +491,12 @@
       <div class="form-group">
         <label>本件分送單位（勾選）</label>
         <div class="chips-grid-2col" id="dispatchChipsGroup">
-          <div class="chip-item active" data-value="部長室"><span>部長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="何政務次長室"><span>何政務次長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="江政務次長室"><span>江政務次長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="賴次長室"><span>賴次長室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="莊主任秘書室"><span>莊主任秘書室</span><span class="check-icon">✓</span></div>
-          <div class="chip-item active" data-value="本部綜規司"><span>本部綜規司</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="部長室"><span>部長室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="何政務次長室"><span>何政務次長室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="江政務次長室"><span>江政務次長室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="賴次長室"><span>賴次長室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="莊主任秘書室"><span>莊主任秘書室</span><span class="check-icon">✓</span></div>
+          <div class="chip-item" data-value="本部綜規司"><span>本部綜規司</span><span class="check-icon">✓</span></div>
           <div class="chip-item" data-value="本部國會聯絡組"><span>本部國會聯絡組</span><span class="check-icon">✓</span></div>
         </div>
 
@@ -572,11 +561,11 @@
   let currentSignToken = null;
   let signPollInterval = null;
 
-  // PWA Service Worker 註冊 v6.7
+  // PWA Service Worker 註冊 v6.8
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.7')
-        .then(reg => console.log('MOEA Service Worker v6.7 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.8')
+        .then(reg => console.log('MOEA Service Worker v6.8 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -1216,28 +1205,14 @@
     const data = getFormData();
     const pdfBlob = await generatePDFBlob(data);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(pdfBlob);
+    link.href = URL.createObjectURL(blob);
     link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
     link.click();
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
   }
 
-  // 自動備份機制
+  // 自動備份機制（靜默於背景執行）
   function startAutoSave() {
-    const badge = document.getElementById('autosaveBadge');
-    
-    const lastAutoSave = localStorage.getItem('moea_report_autosave_v1');
-    if (lastAutoSave) {
-      try {
-        const parsed = JSON.parse(lastAutoSave);
-        if (parsed && parsed.timestamp) {
-          const date = new Date(parsed.timestamp);
-          const timeStr = date.toTimeString().split(' ')[0];
-          if (badge) badge.innerText = `⏱️ 上次備份於 ${timeStr}`;
-        }
-      } catch (e) {}
-    }
-
     setInterval(() => {
       const data = getFormData();
       const savePayload = {
@@ -1245,12 +1220,6 @@
         data: data
       };
       localStorage.setItem('moea_report_autosave_v1', JSON.stringify(savePayload));
-      
-      const now = new Date();
-      const timeStr = now.toTimeString().split(' ')[0];
-      if (badge) {
-        badge.innerText = `⏱️ 已於 ${timeStr} 自動定時暫存`;
-      }
     }, 30000);
   }
 
@@ -1552,10 +1521,8 @@
 
     const titleCenterY = headerTopY - (1.5 * catLineSpacing) - 6;
 
-    // 「經 濟 部」：靠右（向內）縮排 2 個字元
     drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
-    // 「速 報 單」：靠左（向內）縮排 2 個字元
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
     drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
@@ -1689,7 +1656,6 @@
     currentY -= 17;
     currentPage.drawText(`聯絡電話：${data.contact_phone || ''}`, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
 
-    // 預留行距與計算文字寬度
     currentY -= 32;
     const sigLabelText = `陳報單位首長/主管簽核：`;
     currentPage.drawText(sigLabelText, { x: marginX, y: currentY, size: footerFontSize, font: kaiFont });
@@ -1701,8 +1667,8 @@
 
         const origW = sigImage.width;
         const origH = sigImage.height;
-        const maxH = 30;  // 限定最高 30pt
-        const maxW = 120; // 限定最寬 120pt
+        const maxH = 30;
+        const maxW = 120;
 
         let targetW = maxH * (origW / origH);
         let targetH = maxH;
