@@ -561,11 +561,11 @@
   let currentSignToken = null;
   let signPollInterval = null;
 
-  // PWA Service Worker 註冊 v6.8
+  // PWA Service Worker 註冊 v6.9
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.8')
-        .then(reg => console.log('MOEA Service Worker v6.8 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.9')
+        .then(reg => console.log('MOEA Service Worker v6.9 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -1195,7 +1195,7 @@
     }
   }
 
-  // 7. 匯出 PDF 文件
+  // 7. 匯出 PDF 文件（已修正變數 pdfBlob 參照）
   async function handleExportPDF() {
     if (typeof PDFLib === 'undefined' || typeof fontkit === 'undefined') {
       throw new Error('PDF 生成套件 (pdf-lib / fontkit) 尚未載入完成或被網路阻擋，請確認網路連線或重新整理頁面。');
@@ -1205,7 +1205,7 @@
     const data = getFormData();
     const pdfBlob = await generatePDFBlob(data);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = URL.createObjectURL(pdfBlob);
     link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
     link.click();
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
