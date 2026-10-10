@@ -578,13 +578,14 @@
   const API_BASE = 'https://speed-report-api.onrender.com';
   let currentSignatureBase64 = null;
   let currentSignToken = '';
+  let currentSignUrl = '';
   let pollInterval = null;
 
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.1')
-        .then(reg => console.log('MOEA Service Worker v7.1 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.2')
+        .then(reg => console.log('MOEA Service Worker v7.2 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -667,7 +668,7 @@
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft_data: formData })
+        body: JSON.stringify({ draft_data: formData, ...formData })
       });
 
       if (response.ok) {
@@ -700,8 +701,8 @@
         const response = await fetch(`${API_BASE}/draft/${cloudToken}`);
         if (response.ok) {
           const resData = await response.json();
-          if (resData && resData.draft_data) {
-            loadedData = resData.draft_data;
+          if (resData && (resData.draft_data || resData.reporting_unit || resData.report_unit)) {
+            loadedData = resData.draft_data || resData;
             currentSignToken = cloudToken;
           }
         }
@@ -727,7 +728,7 @@
     }
   }
 
-  // 3. ✍️ 開啟長官簽名 Modal 並強制將最新表單 POST 同步至後端
+  // 3. ✍️ 開啟長官簽名 Modal (含「雙軌離線備援 + 自動隱藏底部狀態」)
   async function openSignatureModal() {
     const formData = getFormData();
     if (!formData.reporting_unit || !formData.section_subject) { 
@@ -735,28 +736,44 @@
       return; 
     }
 
-    const modal = document.getElementById('signModal');
-    modal.style.display = 'flex';
+    showStatus('正在生成最新的長官簽核連結...', 'info');
+
+    // 生成 LZString 離線備援壓縮碼 (確保即使 Render API 延遲，長官端開點也 100% 能看到資料)
+    const jsonStr = JSON.stringify(formData);
+    const compressedData = LZString.compressToEncodedURIComponent(jsonStr);
 
     try {
-      showStatus('正在生成最新的長官簽核連結...', 'info');
-      // 每次開啟皆強制將「最新表單內容」POST 給 Render API，確保簽核頁面 sign.html 能拿到完整數據
+      // 每次開啟皆強制將最新表單 POST 傳給伺服器
       const response = await fetch(`${API_BASE}/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draft_data: formData })
+        body: JSON.stringify({ draft_data: formData, ...formData })
       });
       const resData = await response.json();
       currentSignToken = resData.token;
-
-      const signUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
-      const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(signUrl)}`;
-      document.getElementById('qrCodeImg').src = qrApi;
-
-      startPollingSignature();
+      
+      // 建立同時帶有 Token 與 離線壓縮數據的雙軌連結
+      currentSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}&d=${compressedData}`;
     } catch (err) {
-      alert('無法連線簽核伺服器，請檢查網路連線。');
+      console.warn('伺服器連線延遲，啟用完全離線雙軌連結模式');
+      currentSignUrl = `${window.location.origin}/speed-report-pwa/sign.html?d=${compressedData}`;
     }
+
+    // 渲染 QR Code 並顯示 Modal 視窗
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentSignUrl)}`;
+    document.getElementById('qrCodeImg').src = qrApi;
+
+    const modal = document.getElementById('signModal');
+    modal.style.display = 'flex';
+
+    // 成功彈窗後自動清除下方提示
+    showStatus('✅ 已成功生成長官簽核連結，等待長官簽名中...', 'success');
+    setTimeout(() => {
+      const msgEl = document.getElementById('status-msg');
+      if (msgEl) msgEl.style.display = 'none';
+    }, 2500);
+
+    startPollingSignature();
   }
 
   function closeSignModal() {
@@ -765,11 +782,10 @@
   }
 
   function copySignLink() {
-    if (!currentSignToken) return;
+    if (!currentSignUrl) return;
     const formData = getFormData();
-    const signUrl = `${window.location.origin}/speed-report-pwa/sign.html?t=${currentSignToken}`;
     const cleanSubject = (formData.section_subject || '').replace(/\n/g, ' ').substring(0, 30);
-    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${formData.reporting_unit}\n📅 陳報日期：${formatADDate(formData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${signUrl}`;
+    const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${formData.reporting_unit}\n📅 陳報日期：${formatADDate(formData.report_date)}\n📄 案由：${cleanSubject}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${currentSignUrl}`;
 
     copyToClipboard(shareText);
     alert('📋 簽名連結與訊息已複製！請貼上至 LINE 發送給長官。');
@@ -1253,7 +1269,7 @@
     drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleSize, 2.2);
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
