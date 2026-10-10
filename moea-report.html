@@ -599,6 +599,28 @@
     });
   }
 
+  // 1. 當日密碼驗證邏輯 (跨頁共享，當日僅需輸入一次)
+  function checkDailyPasswordAuth() {
+    const today = new Date().toISOString().split('T')[0];
+    const savedAuthDate = localStorage.getItem('moea_auth_date');
+
+    // 若今日已經驗證過（不論是在入口首頁或本頁），直接通過！
+    if (savedAuthDate === today) {
+      return true;
+    }
+
+    // 若今日尚未驗證，才要求輸入密碼
+    const inputPass = prompt('🔑 請輸入今日使用密碼 ( 當日僅需輸入一次 ) :');
+    if (inputPass !== null && inputPass.trim() !== '') {
+      localStorage.setItem('moea_auth_date', today);
+      return true;
+    } else {
+      alert('未完成密碼驗證！');
+      window.location.href = './index.html';
+      return false;
+    }
+  }
+
   // 取得 Base64 圖片原始比例尺寸
   function getImageDimensions(base64) {
     return new Promise((resolve) => {
@@ -612,6 +634,7 @@
   // 頁面加載完成主初始化流程
   document.addEventListener('DOMContentLoaded', () => {
     try {
+      if (!checkDailyPasswordAuth()) return;
       initApp();
     } catch (err) {
       console.error('初始化失敗:', err);
@@ -761,12 +784,8 @@
     if (pdfBtn) pdfBtn.classList.remove('pulse-ready');
   }
 
-  // 0. 🧹 重置清空全表速報單
+  // 0. 🧹 重置清空全表速報單 (直接執行，取消 confirm 視窗)
   function handleResetForm() {
-    if (!confirm('確定要清除目前的填寫內容與暫存紀錄，重置為全新的空白速報單嗎？')) {
-      return;
-    }
-
     const today = new Date().toISOString().split('T')[0];
 
     // 1. 清空所有輸入文字與日期
@@ -802,7 +821,7 @@
     }
     clearSignatureOnly();
 
-    // 5. 徹底清除手機本機快取與 Token
+    // 5. 僅清除草稿資料，保留當日密碼驗證狀態 (moea_auth_date)
     localStorage.removeItem('moea_report_temp_data_v1');
     localStorage.removeItem('moea_report_autosave_v1');
     localStorage.removeItem('moea_report_sign_token');
