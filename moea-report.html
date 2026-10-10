@@ -1195,7 +1195,7 @@
       const targetUrl = `${signBaseUrl}?t=${currentSignToken}`;
 
       const cleanSubjectShort = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
-      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubjectShort}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
+      const shareText = `長官您好，檢陳速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubjectShort}...\n\n👇 請點擊連結進行審閱與簽核：\n${targetUrl}`;
 
       await copyToClipboard(shareText);
 
