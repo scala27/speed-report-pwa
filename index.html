@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>打工雲 - 公務速報與預算工具箱</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#66bab7">
+  <meta name="theme-color" content="#4ba39f">
 
   <style>
     :root {
-      --primary-teal: rgb(102, 186, 183);
+      --primary-teal: #4ba39f;
       --primary-dark: #2c8582;
-      --primary-light: #f0f8f8;
-      --bg-gradient: linear-gradient(180deg, #e6f4f4 0%, #f4fbfb 100%);
+      --bg-color: #f2f9f9;
       --card-bg: #ffffff;
       --border-color: #e2eceb;
       --text-main: #1e293b;
@@ -29,10 +28,10 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg-gradient);
+      background: var(--bg-color);
       min-height: 100vh;
       color: var(--text-main);
-      padding: 20px 16px;
+      padding: 24px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -40,48 +39,49 @@
 
     .container {
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       margin: 0 auto;
     }
 
-    /* 頂部 Header 卡片 (已精簡) */
+    /* 頂部 Header 卡片 (完全還原原設計樣式) */
     .hero-card {
-      background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
+      background: linear-gradient(135deg, #3fa09c 0%, #5fb8b5 100%);
       border-radius: var(--radius-card);
-      padding: 24px 20px;
+      padding: 20px 24px;
       color: #ffffff;
       display: flex;
       align-items: center;
-      box-shadow: 0 10px 20px -5px rgba(102, 186, 183, 0.4);
+      gap: 16px;
+      box-shadow: 0 8px 20px -4px rgba(75, 163, 159, 0.35);
       margin-bottom: 20px;
     }
 
-    .hero-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .hero-icon {
-      width: 56px;
-      height: 56px;
+    .hero-avatar-box {
+      width: 52px;
+      height: 52px;
       background: rgba(255, 255, 255, 0.25);
-      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
       border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 28px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .hero-avatar-box svg {
+      width: 28px;
+      height: 28px;
+      fill: #2c3e50;
     }
 
     .hero-title {
-      font-size: 1.8rem;
+      font-size: 1.85rem;
       font-weight: 800;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.03em;
+      color: #ffffff;
     }
 
-    /* 選單列表卡片 */
+    /* 選單列表卡片 (完全還原原設計樣式) */
     .menu-list {
       display: flex;
       flex-direction: column;
@@ -90,23 +90,21 @@
 
     .menu-item {
       background: var(--card-bg);
-      border: 1.5px solid var(--border-color);
+      border: 1px solid #e2eceb;
       border-radius: var(--radius-card);
-      padding: 22px 20px;
+      padding: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       text-decoration: none;
-      color: var(--text-main);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease;
       cursor: pointer;
     }
 
     .menu-item:active {
       transform: scale(0.98);
-      background: var(--primary-light);
-      border-color: var(--primary-teal);
+      background: #f8fcfc;
     }
 
     .menu-item-title {
@@ -116,31 +114,34 @@
       letter-spacing: -0.01em;
     }
 
-    .menu-item-icon {
+    .menu-item-arrow {
       width: 44px;
       height: 44px;
-      background: #f0fdfa;
-      border: 1px solid #ccfbf1;
-      border-radius: 12px;
+      background: #e6f7f5;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--primary-dark);
-      font-size: 1.2rem;
-      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .menu-item-arrow svg {
+      width: 20px;
+      height: 20px;
+      fill: #2a837f;
     }
 
     /* 頁尾文字 */
     .footer-text {
       margin-top: 40px;
       text-align: center;
-      color: var(--text-muted);
+      color: #64748b;
       font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: 0.05em;
     }
 
-    /* 🔐 密碼驗證遮罩 Modal */
+    /* 🔐 密碼驗證遮罩 Modal (不包含任何洩漏密碼的提示) */
     .auth-overlay {
       position: fixed;
       top: 0;
@@ -148,8 +149,8 @@
       width: 100vw;
       height: 100vh;
       background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: none;
       align-items: center;
       justify-content: center;
@@ -165,25 +166,23 @@
       max-width: 380px;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-      animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    @keyframes modalPop {
-      0% { transform: scale(0.8); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
     }
 
     .auth-card-icon {
-      width: 64px;
-      height: 64px;
+      width: 60px;
+      height: 60px;
       background: #e6f4f4;
-      color: var(--primary-dark);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
       margin: 0 auto 16px auto;
+    }
+
+    .auth-card-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #2c8582;
     }
 
     .auth-card-title {
@@ -213,20 +212,20 @@
 
     .auth-input:focus {
       border-color: var(--primary-teal);
-      box-shadow: 0 0 0 4px rgba(102, 186, 183, 0.2);
+      box-shadow: 0 0 0 4px rgba(75, 163, 159, 0.2);
     }
 
     .btn-auth-submit {
       width: 100%;
       padding: 14px;
-      background: linear-gradient(135deg, #2c8582 0%, rgb(102, 186, 183) 100%);
+      background: linear-gradient(135deg, #3fa09c 0%, #5fb8b5 100%);
       color: white;
       border: none;
       border-radius: 14px;
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(102, 186, 183, 0.35);
+      box-shadow: 0 4px 12px rgba(75, 163, 159, 0.35);
       transition: all 0.2s ease;
     }
 
@@ -237,7 +236,7 @@
     .auth-error-msg {
       margin-top: 12px;
       color: #ef4444;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: bold;
       min-height: 20px;
     }
@@ -258,39 +257,47 @@
 <!-- 🔐 密碼驗證遮罩 Modal -->
 <div id="authOverlay" class="auth-overlay">
   <div class="auth-card" id="authCard">
-    <div class="auth-card-icon">🔐</div>
+    <div class="auth-card-icon">
+      <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+    </div>
     <div class="auth-card-title" id="authTargetTitle">進入工作區驗證</div>
     <div class="auth-card-desc">請輸入今日工作區通行密碼</div>
-    <input type="password" id="authPasswordInput" class="auth-input" placeholder="例如：wra@1009" autocomplete="off" onkeyup="handleKeyUp(event)">
+    <input type="password" id="authPasswordInput" class="auth-input" placeholder="請輸入通行密碼" autocomplete="off" onkeyup="handleKeyUp(event)">
     <button type="button" class="btn-auth-submit" onclick="verifyAndNavigate()">解鎖並進入</button>
     <div id="authErrorMsg" class="auth-error-msg"></div>
   </div>
 </div>
 
 <div class="container">
-  <!-- 頂部 Header 卡片 -->
+  <!-- 頂部 Header 卡片 (完全還原原版樣式) -->
   <div class="hero-card">
-    <div class="hero-left">
-      <div class="hero-icon">👤</div>
-      <div class="hero-title">打工雲</div>
+    <div class="hero-avatar-box">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
     </div>
+    <div class="hero-title">打工雲</div>
   </div>
 
-  <!-- 選單列表 -->
+  <!-- 選單列表 (採用 SVG 箭頭圖示，確保手機與電腦呈現一致) -->
   <div class="menu-list">
     <div class="menu-item" onclick="openWorkspace('./wra-report.html', '水利署速報單')">
       <span class="menu-item-title">水利署速報單</span>
-      <div class="menu-item-icon">➔</div>
+      <div class="menu-item-arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#2a837f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
     </div>
 
     <div class="menu-item" onclick="openWorkspace('./moea-report.html', '經濟部速報單')">
       <span class="menu-item-title">經濟部速報單</span>
-      <div class="menu-item-icon">➔</div>
+      <div class="menu-item-arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#2a837f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
     </div>
 
     <div class="menu-item" onclick="openWorkspace('./budget.html', '計畫年度預算')">
       <span class="menu-item-title">計畫年度預算</span>
-      <div class="menu-item-icon">➔</div>
+      <div class="menu-item-arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#2a837f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
     </div>
   </div>
 
@@ -303,16 +310,16 @@
 <script>
   let targetWorkspaceUrl = '';
 
-  // PWA Service Worker 註冊
+  // 註冊 Service Worker 並更新快取版本至 v6.7
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.6')
-        .then(reg => console.log('Portal Service Worker v6.6 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=6.7')
+        .then(reg => console.log('Portal Service Worker v6.7 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
 
-  // 自動計算當天日期動態密碼 (格式：wra@MMDD 或 war@MMDD)
+  // 自動計算當天日期動態密碼 (wra@MMDD / war@MMDD)
   function getValidPasswords() {
     const now = new Date();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -370,7 +377,8 @@
         document.getElementById('authOverlay').style.display = 'none';
       }
     } else {
-      errorMsg.innerText = '❌ 密碼錯誤！今日密碼為 wra@當天日期';
+      // 僅顯示一般錯誤提醒，不洩漏任何密碼格式
+      errorMsg.innerText = '❌ 密碼錯誤，請重新輸入';
       passInput.value = '';
       passInput.focus();
       
