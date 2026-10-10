@@ -590,11 +590,14 @@
   let currentSignToken = null;
   let signPollInterval = null;
 
-  // PWA Service Worker 註冊 v7.2
+  // PWA Service Worker 註冊 v8.0（強制檢查更新並刷新舊快取）
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.2')
-        .then(reg => console.log('MOEA Service Worker v7.2 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=8.0')
+        .then(reg => {
+          console.log('MOEA Service Worker v8.0 註冊成功');
+          reg.update(); // 強制檢查並更換最新快取
+        })
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -609,7 +612,7 @@
     });
   }
 
-  // 頁面加載完成主初始化流程 (直接啟動，不重複要求驗證密碼)
+  // 頁面加載完成主初始化流程（無任何密碼詢問視窗）
   document.addEventListener('DOMContentLoaded', () => {
     try {
       initApp();
