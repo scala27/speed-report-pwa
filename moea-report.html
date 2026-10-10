@@ -286,6 +286,21 @@
       border-radius: 8px;
       padding: 4px;
     }
+    .btn-clear-sig {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: all 0.2s ease;
+    }
+    .btn-clear-sig:hover {
+      background: #fecdd3;
+    }
 
     /* 整潔雙層固定操作列 */
     .sticky-actions-bar {
@@ -532,6 +547,8 @@
         <div class="signature-area-box" id="sigAreaBox" title="點擊可手動更換簽名圖檔">
           <div id="sigPreviewContainer" style="display: none; text-align: center;">
             <img id="sigPreviewImg" class="sig-preview-img" alt="簽名檔">
+            <br>
+            <button type="button" id="btnClearSigOnly" class="btn-clear-sig">❌ 清除簽名檔</button>
           </div>
           <div id="sigStatusText" style="font-size: 0.85rem; color: #64748b; font-weight: 700;">尚未簽核（請傳送連結給長官簽名）</div>
         </div>
@@ -573,11 +590,11 @@
   let currentSignToken = null;
   let signPollInterval = null;
 
-  // PWA Service Worker 註冊 v7.1
+  // PWA Service Worker 註冊 v7.2
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.1')
-        .then(reg => console.log('MOEA Service Worker v7.1 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.2')
+        .then(reg => console.log('MOEA Service Worker v7.2 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
@@ -592,30 +609,9 @@
     });
   }
 
-  // 當日輸入密碼驗證邏輯（一天僅需輸入一次）
-  function checkDailyPasswordAuth() {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const lastAuthDate = localStorage.getItem('moea_daily_auth_date');
-
-    if (lastAuthDate === todayStr) {
-      return true; // 當天已通過驗證，直接放行
-    }
-
-    const password = prompt('🔑 請輸入今日使用密碼（當日僅需輸入一次）：');
-    if (password !== null && password.trim() !== '') {
-      localStorage.setItem('moea_daily_auth_date', todayStr);
-      return true;
-    } else {
-      alert('⚠️ 未完成密碼驗證，無法繼續使用。');
-      document.body.innerHTML = '<div style="text-align:center; padding:50px 20px; font-family:sans-serif; color:#64748b;"><h2>🔒 未完成當日密碼驗證</h2><p style="margin-top:10px;">請重新整理頁面並輸入通行密碼。</p></div>';
-      return false;
-    }
-  }
-
   // 頁面加載完成主初始化流程
   document.addEventListener('DOMContentLoaded', () => {
     try {
-      if (!checkDailyPasswordAuth()) return;
       initApp();
     } catch (err) {
       console.error('初始化失敗:', err);
@@ -658,9 +654,11 @@
       });
     });
 
-    // 手動備援點擊上傳簽名圖檔
+    // 手動備援點擊上傳簽名圖檔與獨立清除按鈕
     const sigBox = document.getElementById('sigAreaBox');
     const sigInput = document.getElementById('sigFileInput');
+    const btnClearSig = document.getElementById('btnClearSigOnly');
+
     if (sigBox && sigInput) {
       sigBox.addEventListener('click', () => sigInput.click());
       sigInput.addEventListener('change', (e) => {
@@ -675,7 +673,15 @@
       });
     }
 
-    // 讀入 JSON 檔案選擇事件綁定
+    if (btnClearSig) {
+      btnClearSig.addEventListener('click', (e) => {
+        e.stopPropagation(); // 避免觸發 sigBox 上傳圖片選擇器
+        clearSignatureOnly();
+        showStatus('已清空簽名檔！文字與勾選內容皆已保留。', 'info');
+      });
+    }
+
+    // 讀入 JSON 檔案選擇事件綁定（自動清空舊簽名，方便作為新範本）
     const jsonInput = document.getElementById('jsonFileInput');
     if (jsonInput) {
       jsonInput.addEventListener('change', (e) => {
@@ -685,8 +691,13 @@
         reader.onload = (event) => {
           try {
             const importedData = JSON.parse(event.target.result);
+            
+            // 實務優化：讀入舊草稿範本時自動忽略舊簽名，並清除簽名 UI
+            delete importedData.signature;
+            clearSignatureOnly();
+
             applyFormData(importedData);
-            showStatus('已成功讀入經濟部速報單草稿！', 'success');
+            showStatus('已成功讀入速報單草稿！（已為您自動過濾舊簽名檔）', 'success');
           } catch (err) {
             showStatus('讀取失敗：檔案格式不相符或檔案毀損', 'error');
             alert('讀取失敗：檔案格式不相符或檔案毀損');
@@ -736,7 +747,21 @@
     }
   }
 
-  // 0. 🧹 重置清空速報單
+  // 獨立清除簽名檔邏輯
+  function clearSignatureOnly() {
+    currentSignatureBase64 = null;
+    const containerEl = document.getElementById('sigPreviewContainer');
+    const statusEl = document.getElementById('sigStatusText');
+    if (containerEl) containerEl.style.display = 'none';
+    if (statusEl) {
+      statusEl.innerText = '尚未簽核（請傳送連結給長官簽名）';
+      statusEl.style.color = '#64748b';
+    }
+    const pdfBtn = document.getElementById('btnExportPDF');
+    if (pdfBtn) pdfBtn.classList.remove('pulse-ready');
+  }
+
+  // 0. 🧹 重置清空全表速報單
   function handleResetForm() {
     if (!confirm('確定要清除目前的填寫內容與暫存紀錄，重置為全新的空白速報單嗎？')) {
       return;
@@ -770,25 +795,14 @@
     });
 
     // 4. 重置簽名與輪詢狀態
-    currentSignatureBase64 = null;
     currentSignToken = null;
     if (signPollInterval) {
       clearInterval(signPollInterval);
       signPollInterval = null;
     }
+    clearSignatureOnly();
 
-    const containerEl = document.getElementById('sigPreviewContainer');
-    const statusEl = document.getElementById('sigStatusText');
-    if (containerEl) containerEl.style.display = 'none';
-    if (statusEl) {
-      statusEl.innerText = '尚未簽核（請傳送連結給長官簽名）';
-      statusEl.style.color = '#64748b';
-    }
-
-    const pdfBtn = document.getElementById('btnExportPDF');
-    if (pdfBtn) pdfBtn.classList.remove('pulse-ready');
-
-    // 5. 徹底清除手機本機快取與 Token（保留當日驗證紀錄）
+    // 5. 徹底清除手機本機快取與 Token
     localStorage.removeItem('moea_report_temp_data_v1');
     localStorage.removeItem('moea_report_autosave_v1');
     localStorage.removeItem('moea_report_sign_token');
@@ -1195,7 +1209,7 @@
       const targetUrl = `${signBaseUrl}?t=${currentSignToken}`;
 
       const cleanSubjectShort = data.section_subject.replace(/\n/g, ' ').substring(0, 30);
-      const shareText = `長官您好，檢陳速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubjectShort}...\n\n👇 請點擊連結進行審閱與簽核：\n${targetUrl}`;
+      const shareText = `長官您好，已為您準備好速報單草稿：\n\n🏢 陳報單位：${data.reporting_unit}\n📅 陳報日期：${formatADDate(data.report_date)}\n📄 案由：${cleanSubjectShort}...\n\n👇 請點擊連結進行線上審閱與親筆簽名：\n${targetUrl}`;
 
       await copyToClipboard(shareText);
 
