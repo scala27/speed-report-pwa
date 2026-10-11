@@ -123,7 +123,7 @@
     }
 
     .kpi-value {
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 800;
       color: var(--primary-dark);
     }
@@ -219,6 +219,13 @@
       color: var(--text-main);
     }
 
+    .badge-group {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
     .category-badge {
       font-size: 0.72rem;
       font-weight: 700;
@@ -229,6 +236,7 @@
     .badge-gov { background: var(--badge-gov); color: var(--badge-gov-text); }
     .badge-spec { background: var(--badge-spec); color: var(--badge-spec-text); }
     .badge-total { background: var(--badge-total); color: var(--badge-total-text); }
+    .badge-period { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
     .budget-summary-row {
       display: flex;
@@ -245,12 +253,12 @@
 
     .card-actions {
       display: flex;
-      gap: 6px;
+      gap: 8px;
     }
 
     .btn-sm {
-      padding: 6px 10px;
-      font-size: 0.78rem;
+      padding: 8px 12px;
+      font-size: 0.82rem;
       font-weight: 700;
       border-radius: 8px;
       border: none;
@@ -260,6 +268,7 @@
       gap: 4px;
       flex: 1;
       justify-content: center;
+      transition: all 0.18s ease;
     }
 
     .btn-outline { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
@@ -273,19 +282,18 @@
       margin-top: 10px;
       display: none;
       overflow-x: auto;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 8px;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 10px;
     }
 
     .details-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.8rem;
-      text-align: right;
+      font-size: 0.82rem;
     }
 
     .details-table th, .details-table td {
-      padding: 5px 8px;
+      padding: 6px 10px;
       border-bottom: 1px solid #f1f5f9;
     }
 
@@ -296,7 +304,24 @@
       text-align: center;
     }
 
-    /* 底部操作列 (擴充與備份工具) */
+    .details-footer-edit {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+      padding-top: 6px;
+    }
+
+    .btn-text-edit {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* 底部操作列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -319,7 +344,7 @@
 
     .btn-action {
       flex: 1;
-      padding: 9px 4px;
+      padding: 10px 4px;
       font-size: 0.8rem;
       font-weight: 700;
       border-radius: 10px;
@@ -333,16 +358,18 @@
     .btn-action:active { transform: scale(0.96); }
 
     .btn-action-hero {
+      flex: 1.3;
       background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 100%);
       color: #ffffff;
       border: none;
+      box-shadow: 0 4px 12px rgba(88, 178, 220, 0.35);
     }
 
     /* Modal 對話框 */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(15, 23, 42, 0.55);
       backdrop-filter: blur(4px);
       z-index: 2000;
       display: none;
@@ -355,11 +382,11 @@
       background: #ffffff;
       border-radius: 18px;
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
       max-height: 85vh;
       overflow-y: auto;
       padding: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
     }
 
     .modal-header {
@@ -367,9 +394,11 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 10px;
     }
 
-    .modal-title { font-size: 1.1rem; font-weight: 800; }
+    .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
     .btn-close-modal { font-size: 1.2rem; background: none; border: none; cursor: pointer; color: var(--text-muted); }
 
     .form-group-modal {
@@ -384,21 +413,31 @@
       color: #334155;
     }
 
+    .form-row-modal {
+      display: flex;
+      gap: 10px;
+    }
+
     .input-modal {
       width: 100%;
-      padding: 8px 10px;
+      padding: 9px 10px;
       font-size: 0.88rem;
       border: 1px solid #cbd5e1;
       border-radius: 8px;
+      outline: none;
     }
+    .input-modal:focus { border-color: var(--primary-water); }
 
     .modal-budget-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
-      max-height: 300px;
+      max-height: 260px;
       overflow-y: auto;
-      padding-right: 4px;
+      padding: 8px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
     }
 
     #status-msg {
@@ -438,14 +477,14 @@
       <div class="kpi-value" id="kpiProjectCount">0 筆</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-title">資料最新年度</div>
-      <div class="kpi-value" id="kpiLatestYear">109 年</div>
+      <div class="kpi-title">涵蓋年度區間</div>
+      <div class="kpi-value" id="kpiLatestYear">91~109年</div>
     </div>
   </div>
 
   <!-- 搜尋與動態過濾 -->
   <div class="control-card">
-    <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋計畫名稱（例如：海岸、前瞻、淹水）...">
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 搜尋計畫名稱（如：海岸、前瞻、淹水）...">
 
     <div class="chip-group">
       <button class="chip-btn active" data-cat="ALL">全部類別</button>
@@ -455,7 +494,7 @@
     </div>
 
     <div class="year-range-row">
-      <span>📅 統計年度區間：</span>
+      <span>📅 統計檢視年度：</span>
       <div>
         <select id="startYearSelect" class="select-year"></select>
         <span>至</span>
@@ -470,11 +509,10 @@
   <div id="projectListContainer"></div>
 </div>
 
-<!-- 底部操作與動態擴充列 -->
+<!-- 底部操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <button type="button" class="btn-action btn-action-hero" id="btnAddYearBtn">➕ 新增年度</button>
-    <button type="button" class="btn-action" id="btnAddProjectBtn">➕ 新增計畫</button>
+    <button type="button" class="btn-action btn-action-hero" id="btnAddProjectBtn">➕ 新增計畫/新期程</button>
     <button type="button" class="btn-action" id="btnExportJson">📥 匯出 JSON</button>
     <button type="button" class="btn-action" id="btnImportJson">📂 讀入 JSON</button>
     <button type="button" class="btn-action" id="btnResetData">🧹 重置</button>
@@ -484,79 +522,94 @@
 <!-- 隱藏的 JSON 檔案輸入 -->
 <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
 
-<!-- Modal 1: 編輯計畫預算對話框 -->
+<!-- Modal 1: 新增 / 編輯計畫與期程對話框 -->
 <div class="modal-overlay" id="editModal">
   <div class="modal-card">
     <div class="modal-header">
-      <div class="modal-title" id="editModalTitle">編輯計畫預算</div>
+      <div class="modal-title" id="editModalTitle">新增計畫與期程預算</div>
       <button class="btn-close-modal" id="btnCloseEditModal">✕</button>
     </div>
     <div class="form-group-modal">
       <label>計畫名稱</label>
-      <input type="text" id="modalProjectName" class="input-modal">
+      <input type="text" id="modalProjectName" class="input-modal" placeholder="例如：重要河川環境營造計畫(第2期)">
     </div>
-    <div class="form-group-modal">
-      <label>預算類別</label>
-      <select id="modalProjectCategory" class="input-modal">
-        <option value="公務預算">公務預算</option>
-        <option value="特別預算">特別預算</option>
-        <option value="分類總計">分類總計</option>
-      </select>
+    <div class="form-row-modal">
+      <div class="form-group-modal" style="flex:1;">
+        <label>預算類別</label>
+        <select id="modalProjectCategory" class="input-modal">
+          <option value="公務預算">公務預算</option>
+          <option value="特別預算">特別預算</option>
+          <option value="分類總計">分類總計</option>
+        </select>
+      </div>
     </div>
+    <div class="form-row-modal">
+      <div class="form-group-modal" style="flex:1;">
+        <label>執行起始年度</label>
+        <input type="number" id="modalStartYear" class="input-modal" value="110" placeholder="如 110">
+      </div>
+      <div class="form-group-modal" style="flex:1;">
+        <label>執行結束年度 (例6年期)</label>
+        <input type="number" id="modalEndYear" class="input-modal" value="115" placeholder="如 115">
+      </div>
+    </div>
+
+    <button type="button" class="btn-action" id="btnGenerateYearInputs" style="width:100%; margin-bottom:10px; background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">🔄 產生該期程預算填寫欄位</button>
+
     <div class="form-group-modal">
-      <label>各年度預算數（單位：千元）</label>
+      <label>期程各年度預算數（單位：千元）</label>
       <div class="modal-budget-grid" id="modalBudgetInputs"></div>
     </div>
-    <button type="button" class="btn-action btn-action-hero" id="btnSaveProjectEdit" style="width: 100%; margin-top: 10px; padding: 10px;">💾 儲存變更</button>
+    <button type="button" class="btn-action btn-action-hero" id="btnSaveProjectEdit" style="width: 100%; margin-top: 12px; padding: 11px;">💾 儲存計畫預算資料</button>
   </div>
 </div>
 
 <script>
-  // 1. 預置 91~109 年 42 項計畫原始基底資料庫 (單位：千元)
+  // 1. 預置 91~109 年 42 項計畫原始歸檔資料庫 (單位：千元)
   const defaultBudgetData = {
     years: ["91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109"],
     projects: [
-      { id: "p_01", name: "防洪排水次類別", category: "分類總計", budgets: {"91":15354117,"92":9127100,"93":14590973,"94":12180497,"95":11650876,"96":11888964,"97":12241969,"98":13728057,"99":4684494,"100":3690275,"101":11120100,"102":9830060,"103":9440782,"104":9024266,"105":9424813,"106":8990283,"107":10972703,"108":10428310,"109":10784290} },
-      { id: "p_02", name: "河川海岸及排水環境營造", category: "分類總計", budgets: {"91":15354117,"92":9127100,"93":14590973,"94":12180497,"95":11650876,"96":11888964,"97":12241969,"98":13728057,"99":4684494,"100":3690275,"101":11120100,"102":9830060,"103":9440782,"104":9024266,"105":9424813,"106":8990283,"107":10972703,"108":10428310,"109":10784290} },
-      { id: "p_03", name: "重要河川環境營造計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":5998877,"94":5939149,"95":7334080,"96":7584917,"97":9269269,"98":9621057,"99":0,"100":0,"101":7844500,"102":6855640,"103":6806500,"104":6509455,"105":6500000,"106":6205700,"107":7416104,"108":7275000,"109":7226500} },
-      { id: "p_04", name: "海岸環境營造計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":499900,"94":486599,"95":513312,"96":540813,"97":862000,"98":1147000,"99":1290000,"100":900000,"101":800000,"102":730160,"103":682200,"104":722148,"105":883000,"106":826900,"107":1450481,"108":1057310,"109":1122181} },
-      { id: "p_05", name: "河海堤整建工程計畫", category: "公務預算", budgets: {"91":8047376,"92":6638300,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_06", name: "高屏溪流域整體治理計畫", category: "公務預算", budgets: {"91":30000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_07", name: "鹽水溪治理工程初期實施計畫", category: "公務預算", budgets: {"91":50000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_08", name: "基隆河治理工程初期實施計畫", category: "公務預算", budgets: {"91":1322000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_09", name: "大里溪治理工程第一期實施計畫", category: "公務預算", budgets: {"91":1200000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_10", name: "大里溪治理工程第二期實施計畫", category: "公務預算", budgets: {"91":917000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_11", name: "基隆河治理工程(含員山子分洪)第二期實施計畫", category: "公務預算", budgets: {"91":235013,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_12", name: "筏子溪治理工程實施計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":610200,"95":788800,"96":867000,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_13", name: "高鐵桃園車站特定區內河川(含南崁溪)整治工程計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":490200,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_14", name: "西湖溪高鐵高架橋上下游整治工程實施計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":219000,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_15", name: "天然災害復建復育計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":1695200,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_16", name: "大里溪治理計畫第三期實施計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":5480000,"94":0,"95":1526300,"96":1600000,"97":669000,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_17", name: "南湖溪治理工程實施計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":220000,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_18", name: "國土復育策略方案暨行動計畫先期作業", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":219712,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_19", name: "二仁溪河道廢棄物清理實施計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":262554,"100":270000,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_20", name: "國家重要濕地保育計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":7200,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_21", name: "水災災害防救策進計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":99500,"102":72970,"103":81243,"104":114474,"105":168000,"106":204000,"107":0,"108":0,"109":0} },
-      { id: "p_22", name: "區域排水改善工程計畫", category: "公務預算", budgets: {"91":2995328,"92":2185300,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_23", name: "區域排水整治及環境營造計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":2099635,"94":1985689,"95":1488384,"96":1076522,"97":1441700,"98":2960000,"99":2574690,"100":2139580,"101":2087000,"102":1805100,"103":1506900,"104":1391599,"105":1603813,"106":1429290,"107":1829471,"108":1818000,"109":1913339} },
-      { id: "p_24", name: "台南科學園區排水改善後續工程", category: "公務預算", budgets: {"91":557400,"92":303500,"93":127020,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_25", name: "台北防洪初、二、三期排水工程急需改善增建抽水站計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":165541,"94":754460,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_26", name: "台灣水文觀測長期發展計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":195170,"100":160000,"101":122000,"102":120040,"103":95538,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_27", name: "地下水保育管理暨地層下陷防治計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":362080,"100":213495,"101":167100,"102":246150,"103":268401,"104":286590,"105":270000,"106":324393,"107":276647,"108":278000,"109":264900} },
-      { id: "p_28", name: "水災智慧防災計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":257370} },
-      { id: "p_29", name: "基隆河特別預算", category: "特別預算", budgets: {"91":3108000,"92":10447400,"93":8341887,"94":3012600,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_30", name: "擴大公共建設投資特別預算", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":67000,"95":1486000,"96":100000,"97":4446010,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_31", name: "振興經濟擴大公共建設特別預算", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":3600000,"99":13545000,"100":12560000,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_32", name: "加速辦理中央管河川急要段治理與環境營造計畫", category: "公務預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":3600000,"99":13545000,"100":12560000,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_33", name: "易淹水地區水患治理計畫第1期特別預算(95-96)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":9880450,"96":12209550,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_34", name: "易淹水地區水患治理計畫第2期特別預算(97-99)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":12627385,"98":10750073,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_35", name: "易淹水地區水患治理計畫第3期特別預算(100-102)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":12682500,"101":10814700,"102":6160500,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_36", name: "莫拉克颱風災後重建特別預算(98-101)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":4510000,"99":11566000,"100":3343000,"101":1300000,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_37", name: "流域綜合治理第1期特別預算(103-104)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":1063000,"104":4772000,"105":0,"106":0,"107":0,"108":0,"109":0} },
-      { id: "p_38", name: "流域綜合治理第2期特別預算(105-106)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":10059800,"106":11000000,"107":0,"108":0,"109":0} },
-      { id: "p_39", name: "流域綜合治理第3期特別預算(107-108)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":10000000,"108":5100000,"109":0} },
-      { id: "p_40", name: "前瞻基礎建設計畫第1期特別預算(106-107)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":7970000,"107":6894000,"108":0,"109":0} },
-      { id: "p_41", name: "前瞻基礎建設計畫第2期特別預算(108-109)", category: "特別預算", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":14374900,"109":23859235} }
+      { id: "p_01", name: "防洪排水次類別", category: "分類總計", startYear: "91", endYear: "109", budgets: {"91":15354117,"92":9127100,"93":14590973,"94":12180497,"95":11650876,"96":11888964,"97":12241969,"98":13728057,"99":4684494,"100":3690275,"101":11120100,"102":9830060,"103":9440782,"104":9024266,"105":9424813,"106":8990283,"107":10972703,"108":10428310,"109":10784290} },
+      { id: "p_02", name: "河川海岸及排水環境營造", category: "分類總計", startYear: "91", endYear: "109", budgets: {"91":15354117,"92":9127100,"93":14590973,"94":12180497,"95":11650876,"96":11888964,"97":12241969,"98":13728057,"99":4684494,"100":3690275,"101":11120100,"102":9830060,"103":9440782,"104":9024266,"105":9424813,"106":8990283,"107":10972703,"108":10428310,"109":10784290} },
+      { id: "p_03", name: "重要河川環境營造計畫", category: "公務預算", startYear: "93", endYear: "109", budgets: {"91":0,"92":0,"93":5998877,"94":5939149,"95":7334080,"96":7584917,"97":9269269,"98":9621057,"99":0,"100":0,"101":7844500,"102":6855640,"103":6806500,"104":6509455,"105":6500000,"106":6205700,"107":7416104,"108":7275000,"109":7226500} },
+      { id: "p_04", name: "海岸環境營造計畫", category: "公務預算", startYear: "93", endYear: "109", budgets: {"91":0,"92":0,"93":499900,"94":486599,"95":513312,"96":540813,"97":862000,"98":1147000,"99":1290000,"100":900000,"101":800000,"102":730160,"103":682200,"104":722148,"105":883000,"106":826900,"107":1450481,"108":1057310,"109":1122181} },
+      { id: "p_05", name: "河海堤整建工程計畫", category: "公務預算", startYear: "91", endYear: "92", budgets: {"91":8047376,"92":6638300,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_06", name: "高屏溪流域整體治理計畫", category: "公務預算", startYear: "91", endYear: "91", budgets: {"91":30000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_07", name: "鹽水溪治理工程初期實施計畫", category: "公務預算", startYear: "91", endYear: "91", budgets: {"91":50000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_08", name: "基隆河治理工程初期實施計畫", category: "公務預算", startYear: "91", endYear: "91", budgets: {"91":1322000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_09", name: "大里溪治理工程第一期實施計畫", category: "公務預算", startYear: "91", endYear: "91", budgets: {"91":1200000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_10", name: "大里溪治理工程第二期實施計畫", category: "公務預算", startYear: "91", endYear: "91", budgets: {"91":917000,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_11", name: "基隆河治理工程(含員山子分洪)第二期實施計畫", category: "公務預算", startYear: "91", endYear: "91", budgets: {"91":235013,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_12", name: "筏子溪治理工程實施計畫", category: "公務預算", startYear: "94", endYear: "96", budgets: {"91":0,"92":0,"93":0,"94":610200,"95":788800,"96":867000,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_13", name: "高鐵桃園車站特定區內河川(含南崁溪)整治工程計畫", category: "公務預算", startYear: "94", endYear: "94", budgets: {"91":0,"92":0,"93":0,"94":490200,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_14", name: "西湖溪高鐵高架橋上下游整治工程實施計畫", category: "公務預算", startYear: "94", endYear: "94", budgets: {"91":0,"92":0,"93":0,"94":219000,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_15", name: "天然災害復建復育計畫", category: "公務預算", startYear: "94", endYear: "94", budgets: {"91":0,"92":0,"93":0,"94":1695200,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_16", name: "大里溪治理計畫第三期實施計畫", category: "公務預算", startYear: "93", endYear: "97", budgets: {"91":0,"92":0,"93":5480000,"94":0,"95":1526300,"96":1600000,"97":669000,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_17", name: "南湖溪治理工程實施計畫", category: "公務預算", startYear: "93", endYear: "93", budgets: {"91":0,"92":0,"93":220000,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_18", name: "國土復育策略方案暨行動計畫先期作業", category: "公務預算", startYear: "96", endYear: "96", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":219712,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_19", name: "二仁溪河道廢棄物清理實施計畫", category: "公務預算", startYear: "99", endYear: "100", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":262554,"100":270000,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_20", name: "國家重要濕地保育計畫", category: "公務預算", startYear: "100", endYear: "100", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":7200,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_21", name: "水災災害防救策進計畫", category: "公務預算", startYear: "101", endYear: "106", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":99500,"102":72970,"103":81243,"104":114474,"105":168000,"106":204000,"107":0,"108":0,"109":0} },
+      { id: "p_22", name: "區域排水改善工程計畫", category: "公務預算", startYear: "91", endYear: "92", budgets: {"91":2995328,"92":2185300,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_23", name: "區域排水整治及環境營造計畫", category: "公務預算", startYear: "93", endYear: "109", budgets: {"91":0,"92":0,"93":2099635,"94":1985689,"95":1488384,"96":1076522,"97":1441700,"98":2960000,"99":2574690,"100":2139580,"101":2087000,"102":1805100,"103":1506900,"104":1391599,"105":1603813,"106":1429290,"107":1829471,"108":1818000,"109":1913339} },
+      { id: "p_24", name: "台南科學園區排水改善後續工程", category: "公務預算", startYear: "91", endYear: "93", budgets: {"91":557400,"92":303500,"93":127020,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_25", name: "台北防洪初、二、三期排水工程急需改善增建抽水站計畫", category: "公務預算", startYear: "93", endYear: "94", budgets: {"91":0,"92":0,"93":165541,"94":754460,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_26", name: "台灣水文觀測長期發展計畫", category: "公務預算", startYear: "99", endYear: "103", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":195170,"100":160000,"101":122000,"102":120040,"103":95538,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_27", name: "地下水保育管理暨地層下陷防治計畫", category: "公務預算", startYear: "99", endYear: "109", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":362080,"100":213495,"101":167100,"102":246150,"103":268401,"104":286590,"105":270000,"106":324393,"107":276647,"108":278000,"109":264900} },
+      { id: "p_28", name: "水災智慧防災計畫", category: "公務預算", startYear: "109", endYear: "109", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":257370} },
+      { id: "p_29", name: "基隆河特別預算", category: "特別預算", startYear: "91", endYear: "94", budgets: {"91":3108000,"92":10447400,"93":8341887,"94":3012600,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_30", name: "擴大公共建設投資特別預算", category: "特別預算", startYear: "94", endYear: "97", budgets: {"91":0,"92":0,"93":0,"94":67000,"95":1486000,"96":100000,"97":4446010,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_31", name: "振興經濟擴大公共建設特別預算", category: "特別預算", startYear: "98", endYear: "100", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":3600000,"99":13545000,"100":12560000,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_32", name: "加速辦理中央管河川急要段治理與環境營造計畫", category: "公務預算", startYear: "98", endYear: "100", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":3600000,"99":13545000,"100":12560000,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_33", name: "易淹水地區水患治理計畫第1期特別預算(95-96)", category: "特別預算", startYear: "95", endYear: "96", budgets: {"91":0,"92":0,"93":0,"94":0,"95":9880450,"96":12209550,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_34", name: "易淹水地區水患治理計畫第2期特別預算(97-99)", category: "特別預算", startYear: "97", endYear: "98", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":12627385,"98":10750073,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_35", name: "易淹水地區水患治理計畫第3期特別預算(100-102)", category: "特別預算", startYear: "100", endYear: "102", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":12682500,"101":10814700,"102":6160500,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_36", name: "莫拉克颱風災後重建特別預算(98-101)", category: "特別預算", startYear: "98", endYear: "101", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":4510000,"99":11566000,"100":3343000,"101":1300000,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_37", name: "流域綜合治理第1期特別預算(103-104)", category: "特別預算", startYear: "103", endYear: "104", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":1063000,"104":4772000,"105":0,"106":0,"107":0,"108":0,"109":0} },
+      { id: "p_38", name: "流域綜合治理第2期特別預算(105-106)", category: "特別預算", startYear: "105", endYear: "106", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":10059800,"106":11000000,"107":0,"108":0,"109":0} },
+      { id: "p_39", name: "流域綜合治理第3期特別預算(107-108)", category: "特別預算", startYear: "107", endYear: "108", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":10000000,"108":5100000,"109":0} },
+      { id: "p_40", name: "前瞻基礎建設計畫第1期特別預算(106-107)", category: "特別預算", startYear: "106", endYear: "107", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":7970000,"107":6894000,"108":0,"109":0} },
+      { id: "p_41", name: "前瞻基礎建設計畫第2期特別預算(108-109)", category: "特別預算", startYear: "108", endYear: "109", budgets: {"91":0,"92":0,"93":0,"94":0,"95":0,"96":0,"97":0,"98":0,"99":0,"100":0,"101":0,"102":0,"103":0,"104":0,"105":0,"106":0,"107":0,"108":14374900,"109":23859235} }
     ]
   };
 
@@ -572,7 +625,7 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.0')
+      navigator.serviceWorker.register('./service-worker.js?v=7.1')
         .then(reg => console.log('SW註冊成功'))
         .catch(err => console.log('SW註冊失敗', err));
     });
@@ -585,7 +638,7 @@
   });
 
   function loadAppState() {
-    const saved = localStorage.getItem('wra_budget_app_data_v1');
+    const saved = localStorage.getItem('wra_budget_app_data_v2');
     if (saved) {
       try {
         appState.data = JSON.parse(saved);
@@ -596,13 +649,18 @@
       appState.data = JSON.parse(JSON.stringify(defaultBudgetData));
     }
 
-    const sortedYears = [...appState.data.years].sort((a,b) => parseInt(a)-parseInt(b));
+    const sortedYears = getSortedYearsList();
     appState.startYear = sortedYears[0];
     appState.endYear = sortedYears[sortedYears.length - 1];
   }
 
   function saveAppState() {
-    localStorage.setItem('wra_budget_app_data_v1', JSON.stringify(appState.data));
+    localStorage.setItem('wra_budget_app_data_v2', JSON.stringify(appState.data));
+  }
+
+  function getSortedYearsList() {
+    if (!appState.data || !appState.data.years) return ["91","109"];
+    return [...appState.data.years].sort((a,b) => parseInt(a)-parseInt(b));
   }
 
   function showStatus(text, type = 'info') {
@@ -624,7 +682,7 @@
       const wan = (valNTD / 10000).toFixed(0);
       return `${wan} 萬元`;
     }
-    return `${valThousand} 千元`;
+    return `${valThousand.toLocaleString()} 千元`;
   }
 
   function initUIEvents() {
@@ -652,41 +710,22 @@
       renderApp();
     });
 
-    // 動態新增年度 (例如 110、111...115年)
-    document.getElementById('btnAddYearBtn').addEventListener('click', () => {
-      const years = appState.data.years.map(y => parseInt(y));
-      const maxYear = Math.max(...years);
-      const nextYear = (maxYear + 1).toString();
-
-      if (confirm(`確定新增 ${nextYear} 年度數據欄位？`)) {
-        appState.data.years.push(nextYear);
-        appState.data.projects.forEach(p => {
-          if (!p.budgets) p.budgets = {};
-          p.budgets[nextYear] = 0;
-        });
-        appState.endYear = nextYear;
-        saveAppState();
-        renderApp();
-        showStatus(`已成功擴充 ${nextYear} 年度欄位！可編輯補輸入預算。`, 'success');
-      }
+    // 按鈕：新增計畫 / 新期程
+    document.getElementById('btnAddProjectBtn').addEventListener('click', () => {
+      openProjectEditModal(null);
     });
 
-    // 新增計畫
-    document.getElementById('btnAddProjectBtn').addEventListener('click', () => {
-      const pName = prompt('請輸入新計畫名稱：');
-      if (!pName) return;
-      const newId = `p_${Date.now()}`;
-      const newP = {
-        id: newId,
-        name: pName,
-        category: '公務預算',
-        budgets: {}
-      };
-      appState.data.years.forEach(y => newP.budgets[y] = 0);
-      appState.data.projects.unshift(newP);
-      saveAppState();
-      renderApp();
-      showStatus(`已成功新增計畫：${pName}`, 'success');
+    // 產生該期程預算填寫欄位
+    document.getElementById('btnGenerateYearInputs').addEventListener('click', () => {
+      const startY = parseInt(document.getElementById('modalStartYear').value) || 110;
+      const endY = parseInt(document.getElementById('modalEndYear').value) || 115;
+
+      if (startY > endY) {
+        alert('起始年度不能大於結束年度！');
+        return;
+      }
+
+      renderModalYearInputs(startY.toString(), endY.toString(), {});
     });
 
     // 匯出 / 讀入 JSON / 重置
@@ -694,7 +733,7 @@
       const blob = new Blob([JSON.stringify(appState.data, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = `水利署計畫年度預算資料庫_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `水利署計畫預算資料庫_${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       showStatus('預算資料庫 (.json) 已成功匯出備份！', 'success');
     });
@@ -726,15 +765,15 @@
     });
 
     document.getElementById('btnResetData').addEventListener('click', () => {
-      if (confirm('確定恢復原始 91~109 年基底預算資料？自訂新增內容將被還原。')) {
+      if (confirm('確定恢復原始 91~109 年基底預算資料？所有新新增的期程資料將被還原。')) {
         appState.data = JSON.parse(JSON.stringify(defaultBudgetData));
         saveAppState();
         renderApp();
-        showStatus('已還原為原始 91~109 年基底預算數據！', 'success');
+        showStatus('已還原為原始 91~109 年歸檔數據！', 'success');
       }
     });
 
-    // Modal 事件
+    // Modal 關閉與儲存
     document.getElementById('btnCloseEditModal').addEventListener('click', () => {
       document.getElementById('editModal').style.display = 'none';
     });
@@ -748,7 +787,7 @@
   }
 
   function renderYearSelects() {
-    const sortedYears = [...appState.data.years].sort((a,b) => parseInt(a)-parseInt(b));
+    const sortedYears = getSortedYearsList();
     const startSel = document.getElementById('startYearSelect');
     const endSel = document.getElementById('endYearSelect');
 
@@ -760,7 +799,7 @@
       endSel.innerHTML += `<option value="${y}" ${y === appState.endYear ? 'selected':''}>${y}年</option>`;
     });
 
-    document.getElementById('kpiLatestYear').innerText = `${sortedYears[sortedYears.length - 1]} 年`;
+    document.getElementById('kpiLatestYear').innerText = `${sortedYears[0]}~${sortedYears[sortedYears.length - 1]}年`;
   }
 
   function getSelectedYearsRange() {
@@ -769,10 +808,10 @@
     const minY = Math.min(start, end);
     const maxY = Math.max(start, end);
 
-    return appState.data.years.filter(y => {
+    return getSortedYearsList().filter(y => {
       const val = parseInt(y);
       return val >= minY && val <= maxY;
-    }).sort((a,b) => parseInt(a)-parseInt(b));
+    });
   }
 
   function renderKPIAndList() {
@@ -784,9 +823,7 @@
     let filteredProjectsCount = 0;
 
     const filteredProjects = appState.data.projects.filter(p => {
-      // 關鍵字過濾
       if (appState.searchKey && !p.name.includes(appState.searchKey)) return false;
-      // 類別過濾
       if (appState.selectedCategory !== 'ALL' && p.category !== appState.selectedCategory) return false;
       return true;
     });
@@ -796,27 +833,38 @@
 
       // 計算選定區間總額
       let pRangeTotal = 0;
+      let maxYearVal = 0;
+      let maxYearName = '';
+
       rangeYears.forEach(y => {
-        pRangeTotal += (p.budgets[y] || 0);
+        const b = p.budgets[y] || 0;
+        pRangeTotal += b;
+        if (b > maxYearVal) {
+          maxYearVal = b;
+          maxYearName = y;
+        }
       });
 
       if (p.category !== '分類總計') {
         grandTotalThousand += pRangeTotal;
       }
 
-      const latestYear = rangeYears[rangeYears.length - 1];
-      const latestBudget = p.budgets[latestYear] || 0;
-
       let badgeClass = 'badge-gov';
       if (p.category === '特別預算') badgeClass = 'badge-spec';
       if (p.category === '分類總計') badgeClass = 'badge-total';
 
+      const periodText = (p.startYear && p.endYear) ? `${p.startYear}~${p.endYear}年期` : '全歷年';
+
       const card = document.createElement('div');
       card.className = 'project-card';
-      card.innerHTML = `
+      
+      const cardHeaderHtml = `
         <div class="project-card-header">
           <div class="project-title">${p.name}</div>
-          <span class="category-badge ${badgeClass}">${p.category}</span>
+          <div class="badge-group">
+            <span class="category-badge ${badgeClass}">${p.category}</span>
+            <span class="category-badge badge-period">${periodText}</span>
+          </div>
         </div>
         <div class="budget-summary-row">
           <div>
@@ -824,37 +872,47 @@
             <span class="summary-item-val">${formatMoneyText(pRangeTotal)}</span>
           </div>
           <div>
-            <span class="summary-item-label">${latestYear}年：</span>
-            <span class="summary-item-val">${formatMoneyText(latestBudget)}</span>
+            <span class="summary-item-label">最高單年預算：</span>
+            <span class="summary-item-val">${maxYearName ? maxYearName + '年 (' + formatMoneyText(maxYearVal) + ')' : '無'}</span>
           </div>
         </div>
         <div class="card-actions">
           <button class="btn-sm btn-outline" onclick="toggleDetails('${p.id}')">📊 歷年明細</button>
-          <button class="btn-sm btn-primary-sm" onclick="openEditModal('${p.id}')">✏️ 編輯數據</button>
-          <button class="btn-sm btn-outline" onclick="copySummaryText('${p.id}')">📋 複製摘要</button>
+          <button class="btn-sm btn-primary-sm" onclick="copySummaryText('${p.id}')">📋 複製摘要</button>
         </div>
         <div class="details-table-wrapper" id="details_${p.id}">
-          <table class="details-table">
-            <thead>
-              <tr><th>年度</th><th>預算金額 (千元)</th><th>換算</th></tr>
-            </thead>
-            <tbody>
-              ${rangeYears.map(y => `
-                <tr>
-                  <td style="text-align:center;">\${y}年</td>
-                  <td>\${(p.budgets[y] || 0).toLocaleString()}</td>
-                  <td>\${formatMoneyText(p.budgets[y] || 0)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          ${buildDetailsTableHTML(p, rangeYears)}
+          <div class="details-footer-edit">
+            <button class="btn-text-edit" onclick="openProjectEditModal('${p.id}')">✏️ 更正/修訂計畫資料</button>
+          </div>
         </div>
       `;
+      
+      card.innerHTML = cardHeaderHtml;
       container.appendChild(card);
     });
 
     document.getElementById('kpiTotalBudget').innerText = formatMoneyText(grandTotalThousand);
     document.getElementById('kpiProjectCount').innerText = `${filteredProjectsCount} 筆`;
+  }
+
+  // 純字串拼接建構歷年明細表格（避免嵌套 Template Literals 錯誤）
+  function buildDetailsTableHTML(p, rangeYears) {
+    let rowsHtml = '';
+    rangeYears.forEach(y => {
+      const val = p.budgets[y] || 0;
+      const isZero = (val === 0);
+      rowsHtml += '<tr style="' + (isZero ? 'color:#94a3b8;' : 'font-weight:600;') + '">' +
+        '<td style="text-align:center;">' + y + '年</td>' +
+        '<td style="text-align:right;">' + val.toLocaleString() + '</td>' +
+        '<td style="text-align:right; color:#2b81ad;">' + formatMoneyText(val) + '</td>' +
+      '</tr>';
+    });
+
+    return '<table class="details-table">' +
+      '<thead><tr><th style="width:25%;">年度</th><th style="width:40%; text-align:right;">預算數 (千元)</th><th style="width:35%; text-align:right;">換算顯示</th></tr></thead>' +
+      '<tbody>' + rowsHtml + '</tbody>' +
+    '</table>';
   }
 
   function toggleDetails(pid) {
@@ -864,48 +922,105 @@
     }
   }
 
-  function openEditModal(pid) {
+  // 開啟 Modal（新增或編輯特定期程）
+  function openProjectEditModal(pid) {
     appState.editingProjectId = pid;
-    const p = appState.data.projects.find(item => item.id === pid);
-    if (!p) return;
+    const titleEl = document.getElementById('editModalTitle');
 
-    document.getElementById('modalProjectName').value = p.name;
-    document.getElementById('modalProjectCategory').value = p.category;
+    if (pid) {
+      const p = appState.data.projects.find(item => item.id === pid);
+      if (!p) return;
 
-    const grid = document.getElementById('modalBudgetInputs');
-    grid.innerHTML = '';
-
-    const sortedYears = [...appState.data.years].sort((a,b) => parseInt(a)-parseInt(b));
-    sortedYears.forEach(y => {
-      const val = p.budgets[y] || 0;
-      grid.innerHTML += `
-        <div class="form-group-modal">
-          <label>${y} 年預算 (千元)</label>
-          <input type="number" class="input-modal modal-year-input" data-year="${y}" value="${val}">
-        </div>
-      `;
-    });
+      titleEl.innerText = `更正：${p.name}`;
+      document.getElementById('modalProjectName').value = p.name;
+      document.getElementById('modalProjectCategory').value = p.category;
+      document.getElementById('modalStartYear').value = p.startYear || '91';
+      document.getElementById('modalEndYear').value = p.endYear || '109';
+      renderModalYearInputs(p.startYear || '91', p.endYear || '109', p.budgets);
+    } else {
+      titleEl.innerText = '新增計畫與期程預算';
+      document.getElementById('modalProjectName').value = '';
+      document.getElementById('modalProjectCategory').value = '公務預算';
+      document.getElementById('modalStartYear').value = '110';
+      document.getElementById('modalEndYear').value = '115';
+      renderModalYearInputs('110', '115', {});
+    }
 
     document.getElementById('editModal').style.display = 'flex';
   }
 
+  function renderModalYearInputs(startYStr, endYStr, existingBudgets) {
+    const grid = document.getElementById('modalBudgetInputs');
+    grid.innerHTML = '';
+
+    const startY = parseInt(startYStr);
+    const endY = parseInt(endYStr);
+
+    for (let y = startY; y <= endY; y++) {
+      const yKey = y.toString();
+      const val = existingBudgets[yKey] || 0;
+      grid.innerHTML += `
+        <div class="form-group-modal">
+          <label>${yKey} 年預算 (千元)</label>
+          <input type="number" class="input-modal modal-year-input" data-year="${yKey}" value="${val}">
+        </div>
+      `;
+    }
+  }
+
   function saveProjectModalEdit() {
+    const pName = document.getElementById('modalProjectName').value.trim();
+    if (!pName) {
+      alert('請輸入計畫名稱！');
+      return;
+    }
+
+    const pCategory = document.getElementById('modalProjectCategory').value;
+    const startY = document.getElementById('modalStartYear').value.trim();
+    const endY = document.getElementById('modalEndYear').value.trim();
+
     const pid = appState.editingProjectId;
-    const p = appState.data.projects.find(item => item.id === pid);
-    if (!p) return;
+    let targetP = null;
 
-    p.name = document.getElementById('modalProjectName').value.trim();
-    p.category = document.getElementById('modalProjectCategory').value;
+    if (pid) {
+      targetP = appState.data.projects.find(item => item.id === pid);
+    } else {
+      targetP = {
+        id: `p_${Date.now()}`,
+        budgets: {}
+      };
+      appState.data.projects.unshift(targetP);
+    }
 
+    targetP.name = pName;
+    targetP.category = pCategory;
+    targetP.startYear = startY;
+    targetP.endYear = endY;
+
+    // 將該期程年份加入系統總年份列表
+    const startInt = parseInt(startY);
+    const endInt = parseInt(endY);
+    for (let y = startInt; y <= endInt; y++) {
+      const yStr = y.toString();
+      if (!appState.data.years.includes(yStr)) {
+        appState.data.years.push(yStr);
+      }
+    }
+    appState.data.years.sort((a,b) => parseInt(a)-parseInt(b));
+
+    // 收集該期程的各年度輸入數值
     document.querySelectorAll('.modal-year-input').forEach(input => {
       const y = input.getAttribute('data-year');
-      p.budgets[y] = parseInt(input.value) || 0;
+      targetP.budgets[y] = parseInt(input.value) || 0;
     });
 
     saveAppState();
     document.getElementById('editModal').style.display = 'none';
+
+    // 自動拉大選定區間至新期程
+    appState.endYear = appState.data.years[appState.data.years.length - 1];
     renderApp();
-    showStatus('已成功儲存預算數據變更！', 'success');
+    showStatus(`已成功儲存「${pName}」之期程預算數據！`, 'success');
   }
 
   // 複製速報單 / 公文簡報摘要
@@ -915,12 +1030,19 @@
 
     const rangeYears = getSelectedYearsRange();
     let totalThousand = 0;
-    rangeYears.forEach(y => totalThousand += (p.budgets[y] || 0));
+    let maxVal = 0;
+    let maxYear = '';
 
-    const latestYear = rangeYears[rangeYears.length - 1];
-    const latestBudget = p.budgets[latestYear] || 0;
+    rangeYears.forEach(y => {
+      const val = p.budgets[y] || 0;
+      totalThousand += val;
+      if (val > maxVal) {
+        maxVal = val;
+        maxYear = y;
+      }
+    });
 
-    const summaryStr = `${p.name}於 ${appState.startYear} 年至 ${appState.endYear} 年間累計編列預算共 ${formatMoneyText(totalThousand)}，其中 ${latestYear} 年度編列 ${formatMoneyText(latestBudget)}。`;
+    const summaryStr = `${p.name}於 ${appState.startYear} 年至 ${appState.endYear} 年間累計編列預算共 ${formatMoneyText(totalThousand)}，其中最高單年為 ${maxYear} 年度編列 ${formatMoneyText(maxVal)}。`;
 
     navigator.clipboard.writeText(summaryStr).then(() => {
       showStatus('已複製陳報摘要文字至剪貼簿！可直接貼入速報單。', 'success');
