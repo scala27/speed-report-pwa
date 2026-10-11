@@ -33,7 +33,7 @@
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding: 12px 12px 160px 12px;
+      padding: 12px 12px 130px 12px;
       line-height: 1.5;
       min-height: 100vh;
     }
@@ -259,13 +259,13 @@
       margin-top: 8px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      gap: 4px;
     }
 
     .node-box-l3 {
       background: #f1f5f9;
       border-radius: 8px;
-      padding: 6px 4px;
+      padding: 6px 2px;
       text-align: center;
     }
 
@@ -274,15 +274,17 @@
       color: var(--text-muted);
       font-weight: 700;
       margin-bottom: 2px;
+      white-space: nowrap;
     }
 
     .node-amount-l3 {
-      font-size: 0.88rem;
+      font-size: 0.75rem;
       font-weight: 800;
       color: #0f172a;
+      white-space: nowrap;
     }
 
-    /* 底部固定雙排 3 欄功能列 */
+    /* 底部固定 2x2 雙排功能列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -301,13 +303,13 @@
       max-width: 650px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
     }
 
     .btn-action {
       padding: 10px 4px;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 700;
       border-radius: 10px;
       border: 1px solid #cbd5e1;
@@ -459,19 +461,15 @@
   <div id="projectCardsContainer"></div>
 </div>
 
-<!-- 底部固定功能列 -->
+<!-- 底部固定功能列 (精簡為 4 個選項) -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" class="btn-action btn-action-hero" id="btnBottomAddPlan">➕ 新增計畫</button>
     <button type="button" class="btn-action" id="btnCopySummary">📋 複製摘要</button>
     <button type="button" class="btn-action" id="btnExportExcel">📊 匯出Excel</button>
-    <button type="button" class="btn-action" id="btnBackupJson">📤 備份JSON</button>
-    <button type="button" class="btn-action" id="btnRestoreJson">📥 匯入JSON</button>
-    <button type="button" class="btn-action btn-action-formal" id="btnTransferToFormal">🚀 轉法定庫</button>
+    <button type="button" class="btn-action btn-action-formal" id="btnTransferToFormal">🚀 轉入計畫年度預算</button>
   </div>
 </div>
-
-<input type="file" id="jsonFileInput" accept=".json" style="display:none;">
 
 <!-- Modal 1: 填寫 / 修正數據對話框 -->
 <div class="modal-overlay" id="editModal">
@@ -808,12 +806,6 @@
     document.getElementById('btnCopySummary').addEventListener('click', copyExecutiveSummary);
     document.getElementById('btnExportExcel').addEventListener('click', exportExcelReport);
     document.getElementById('btnTransferToFormal').addEventListener('click', transferToFormalBudgetApp);
-
-    document.getElementById('btnBackupJson').addEventListener('click', backupJsonData);
-    document.getElementById('btnRestoreJson').addEventListener('click', () => {
-      document.getElementById('jsonFileInput').click();
-    });
-    document.getElementById('jsonFileInput').addEventListener('change', restoreJsonData);
   }
 
   function addNewProject() {
@@ -1101,48 +1093,6 @@
     showStatus(`已成功匯出 ${curYr} 年度 Excel 統計表 (.csv)！`, 'success');
   }
 
-  function backupJsonData() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState.data, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `預算籌編資料庫備份_${new Date().toISOString().slice(0,10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    showStatus('已下載全 JSON 資料備份檔！', 'success');
-  }
-
-  function restoreJsonData(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      try {
-        const importedData = JSON.parse(event.target.result);
-        if (importedData && (importedData.yearsData || importedData.projects)) {
-          if (importedData.yearsData) {
-            appState.data = importedData;
-          } else {
-            appState.data = {
-              currentYear: "116",
-              yearsData: { "116": importedData.projects || [] }
-            };
-          }
-          saveAppState();
-          renderApp();
-          showStatus('🎉 已成功匯入備份資料！', 'success');
-        } else {
-          alert('匯入的 JSON 檔案格式不符合！');
-        }
-      } catch (err) {
-        alert('解析 JSON 檔案失敗！');
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  }
-
   function transferToFormalBudgetApp() {
     const curYr = appState.data.currentYear;
     const yearProjects = getActiveYearProjects();
@@ -1155,7 +1105,7 @@
     }
 
     if (!formalData) {
-      alert('找不到正式預算資料庫，請先開啟「計畫年度預算統計資訊」頁面建置！');
+      alert('找不到計畫年度預算資料庫，請先開啟「計畫年度預算統計資訊」頁面建置！');
       return;
     }
 
