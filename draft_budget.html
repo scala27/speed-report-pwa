@@ -403,6 +403,7 @@
       margin-bottom: 8px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
     #status-msg {
@@ -461,7 +462,7 @@
   <div id="projectCardsContainer"></div>
 </div>
 
-<!-- 底部固定功能列 (精簡為 4 個選項) -->
+<!-- 底部固定功能列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" class="btn-action btn-action-hero" id="btnBottomAddPlan">➕ 新增計畫</button>
@@ -522,6 +523,11 @@
       </div>
     </div>
 
+    <!-- 動態其他部會/單位填寫區容器 -->
+    <div id="modalOtherAgenciesContainer"></div>
+
+    <button type="button" class="btn-action" id="btnAddOtherAgency" style="width:100%; margin-bottom:12px; background:#f1f5f9; color:#334155; border-color:#cbd5e1;">➕ 新增其他部會/單位經費</button>
+
     <button type="button" class="btn-action btn-action-hero" id="btnSaveStageData" style="width:100%; padding:11px;">💾 儲存並更新數據</button>
   </div>
 </div>
@@ -539,7 +545,7 @@
           id: "p_116_01",
           name: "中央管流域整體改善與調適計畫(116-121年)",
           stages: {
-            "1": { wra_cur: 1300000, wra_cap: 9450000, wra_sub: 600000, wra_fund: 1500000, moa: 500000, moe: 150000 },
+            "1": { wra_cur: 1300000, wra_cap: 9450000, wra_sub: 600000, wra_fund: 1500000, moa: 500000, moe: 150000, other_agencies: [] },
             "2": null,
             "3": null,
             "4": null
@@ -549,7 +555,7 @@
           id: "p_116_02",
           name: "荖濃溪防災韌性計畫(114-118 年)",
           stages: {
-            "1": { wra_cur: 12400, wra_cap: 287600, wra_sub: 0, wra_fund: 0, moa: 50500, moe: 0 },
+            "1": { wra_cur: 12400, wra_cap: 287600, wra_sub: 0, wra_fund: 0, moa: 50500, moe: 0, other_agencies: [] },
             "2": null,
             "3": null,
             "4": null
@@ -746,14 +752,16 @@
   function getEffectiveStageData(project, stageNum) {
     const sKey = stageNum.toString();
     if (project.stages[sKey] !== null && project.stages[sKey] !== undefined) {
-      return JSON.parse(JSON.stringify(project.stages[sKey]));
+      const res = JSON.parse(JSON.stringify(project.stages[sKey]));
+      if (!res.other_agencies) res.other_agencies = [];
+      return res;
     }
 
     if (stageNum > 1) {
       return getEffectiveStageData(project, stageNum - 1);
     }
 
-    return { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0 };
+    return { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0, other_agencies: [] };
   }
 
   function showStatus(text, type = 'info') {
@@ -802,10 +810,35 @@
       input.addEventListener('input', updateModalCalcSummary);
     });
 
+    document.getElementById('btnAddOtherAgency').addEventListener('click', () => {
+      addOtherAgencyRowToModal('', 0);
+    });
+
     document.getElementById('btnSaveStageData').addEventListener('click', saveModalStageData);
     document.getElementById('btnCopySummary').addEventListener('click', copyExecutiveSummary);
     document.getElementById('btnExportExcel').addEventListener('click', exportExcelReport);
     document.getElementById('btnTransferToFormal').addEventListener('click', transferToFormalBudgetApp);
+  }
+
+  function addOtherAgencyRowToModal(name = '', amount = 0) {
+    const container = document.getElementById('modalOtherAgenciesContainer');
+    const div = document.createElement('div');
+    div.className = 'section-box-modal other-agency-modal-row';
+    div.innerHTML = `
+      <div class="section-title-modal">
+        <span>🏛️ 其他部會/單位</span>
+        <button type="button" class="btn-card-action" style="color:#ef4444; padding:2px 8px;" onclick="this.closest('.other-agency-modal-row').remove()">🗑️ 刪除</button>
+      </div>
+      <div class="form-group-modal">
+        <label>部會/單位名稱</label>
+        <input type="text" class="input-modal modal-other-agency-name" placeholder="例如：內政部、交通部、國科會..." value="${name}">
+      </div>
+      <div class="form-group-modal">
+        <label>經費額度 (單位：千元)</label>
+        <input type="number" class="input-modal modal-other-agency-amount" value="${amount}">
+      </div>
+    `;
+    container.appendChild(div);
   }
 
   function addNewProject() {
@@ -818,7 +851,7 @@
     yearProjects.push({
       id: newId,
       name: pName.trim(),
-      stages: { "1": { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0 }, "2": null, "3": null, "4": null }
+      stages: { "1": { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0, other_agencies: [] }, "2": null, "3": null, "4": null }
     });
 
     saveAppState();
@@ -945,6 +978,21 @@
           </div>`;
       }
 
+      let otherAgenciesHtml = '';
+      if (stData.other_agencies && Array.isArray(stData.other_agencies)) {
+        stData.other_agencies.forEach(oa => {
+          if (oa.name && oa.amount > 0) {
+            otherAgenciesHtml += `
+              <div class="node-level-1">
+                <div class="node-row">
+                  <div class="node-title-l1">🏛️ ${oa.name}</div>
+                  <div class="node-amount-l1">${formatMoneyText(oa.amount)}</div>
+                </div>
+              </div>`;
+          }
+        });
+      }
+
       card.innerHTML = `
         <div class="project-card-header">
           <div class="project-title-row">
@@ -960,6 +1008,7 @@
           ${wraHtml}
           ${moaHtml}
           ${moeHtml}
+          ${otherAgenciesHtml}
         </div>
       `;
 
@@ -987,6 +1036,15 @@
     document.getElementById('input_moa').value = stData.moa || 0;
     document.getElementById('input_moe').value = stData.moe || 0;
 
+    // 清空並載入動態其他部會/單位
+    const otherContainer = document.getElementById('modalOtherAgenciesContainer');
+    otherContainer.innerHTML = '';
+    if (stData.other_agencies && Array.isArray(stData.other_agencies)) {
+      stData.other_agencies.forEach(oa => {
+        addOtherAgencyRowToModal(oa.name, oa.amount);
+      });
+    }
+
     updateModalCalcSummary();
     document.getElementById('editModal').style.display = 'flex';
   }
@@ -1012,13 +1070,27 @@
     const moa = parseInt(document.getElementById('input_moa').value) || 0;
     const moe = parseInt(document.getElementById('input_moe').value) || 0;
 
+    // 讀取動態新增的其他部會/單位列表
+    const otherAgencies = [];
+    document.querySelectorAll('.other-agency-modal-row').forEach(row => {
+      const nameInput = row.querySelector('.modal-other-agency-name');
+      const amountInput = row.querySelector('.modal-other-agency-amount');
+      if (nameInput && nameInput.value.trim() !== '') {
+        otherAgencies.push({
+          name: nameInput.value.trim(),
+          amount: parseInt(amountInput.value) || 0
+        });
+      }
+    });
+
     p.stages[appState.currentStage] = {
       wra_cur: cur,
       wra_cap: cap,
       wra_sub: sub,
       wra_fund: fund,
       moa: moa,
-      moe: moe
+      moe: moe,
+      other_agencies: otherAgencies
     };
 
     saveAppState();
@@ -1042,7 +1114,19 @@
       const wraTotal = wraGov + (stData.wra_fund || 0);
       const moa = stData.moa || 0;
       const moe = stData.moe || 0;
-      const tot = wraTotal + moa + moe;
+
+      let otherTot = 0;
+      let otherText = '';
+      if (stData.other_agencies && Array.isArray(stData.other_agencies)) {
+        stData.other_agencies.forEach(oa => {
+          if (oa.name && oa.amount > 0) {
+            otherTot += oa.amount;
+            otherText += `\n   - ${oa.name}：${formatMoneyText(oa.amount)}`;
+          }
+        });
+      }
+
+      const tot = wraTotal + moa + moe + otherTot;
       grandAll += tot;
 
       let pText = `${index + 1}. ${p.name}\n` +
@@ -1052,6 +1136,7 @@
 
       if (moa > 0) pText += `\n   - 農業部：${formatMoneyText(moa)}`;
       if (moe > 0) pText += `\n   - 環境部：${formatMoneyText(moe)}`;
+      if (otherText) pText += otherText;
 
       lines.push(pText);
     });
@@ -1072,16 +1157,22 @@
     const yearProjects = getActiveYearProjects();
 
     let csvContent = "\uFEFF";
-    csvContent += `"計畫名稱","審議階段","水利署經常門(千元)","水利署資本門(千元)","水利署補助款(千元)","水利署公務小計(千元)","水資源基金(千元)","水利署合計(千元)","農業部(千元)","環境部(千元)","${curYr}年總計(千元)"\n`;
+    csvContent += `"計畫名稱","審議階段","水利署經常門(千元)","水利署資本門(千元)","水利署補助款(千元)","水利署公務小計(千元)","水資源基金(千元)","水利署合計(千元)","農業部(千元)","環境部(千元)","其他部會(千元)","${curYr}年總計(千元)"\n`;
 
     yearProjects.forEach(p => {
       for (let st = 1; st <= 4; st++) {
         const stData = getEffectiveStageData(p, st);
         const gov = (stData.wra_cur||0) + (stData.wra_cap||0) + (stData.wra_sub||0);
         const wraTot = gov + (stData.wra_fund||0);
-        const grand = wraTot + (stData.moa||0) + (stData.moe||0);
 
-        csvContent += `"${p.name.replace(/"/g, '""')}","${STAGE_NAMES[st.toString()]}",${stData.wra_cur||0},${stData.wra_cap||0},${stData.wra_sub||0},${gov},${stData.wra_fund||0},${wraTot},${stData.moa||0},${stData.moe||0},${grand}\n`;
+        let otherTot = 0;
+        if (stData.other_agencies && Array.isArray(stData.other_agencies)) {
+          stData.other_agencies.forEach(oa => otherTot += (oa.amount || 0));
+        }
+
+        const grand = wraTot + (stData.moa||0) + (stData.moe||0) + otherTot;
+
+        csvContent += `"${p.name.replace(/"/g, '""')}","${STAGE_NAMES[st.toString()]}",${stData.wra_cur||0},${stData.wra_cap||0},${stData.wra_sub||0},${gov},${stData.wra_fund||0},${wraTot},${stData.moa||0},${stData.moe||0},${otherTot},${grand}\n`;
       }
     });
 
