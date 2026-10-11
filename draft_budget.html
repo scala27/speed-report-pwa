@@ -135,12 +135,12 @@
       font-weight: 800;
     }
 
-    /* 年度選擇下拉選單 */
+    /* 長遠年度選擇下拉選單 */
     .year-select-dropdown {
-      padding: 5px 12px;
+      padding: 6px 12px;
       font-size: 0.88rem;
       font-weight: 800;
-      color: #1e293b;
+      color: #0f172a;
       background: #ffffff;
       border: 1.5px solid #cbd5e1;
       border-radius: 10px;
@@ -282,7 +282,7 @@
       color: #0f172a;
     }
 
-    /* 底部雙排 3 欄功能列 */
+    /* 底部固定雙排 3 欄功能列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -450,11 +450,7 @@
     <div class="section-title-text">
       📌 <span id="dispTargetYear">116</span>年度籌編計畫列表
     </div>
-    <select id="selectTargetYear" class="year-select-dropdown">
-      <option value="116">116 年度</option>
-      <option value="117">117 年度</option>
-      <option value="118">118 年度</option>
-    </select>
+    <select id="selectTargetYear" class="year-select-dropdown"></select>
   </div>
 
   <div id="status-msg"></div>
@@ -533,7 +529,7 @@
 </div>
 
 <script>
-  // 多年度資料結構預設值
+  // 多年度資料結構預設值（預設包含 116 年）
   const defaultDraftData = {
     currentYear: "116",
     yearsData: {
@@ -558,9 +554,7 @@
             "4": null
           }
         }
-      ],
-      "117": [],
-      "118": []
+      ]
     }
   };
 
@@ -584,7 +578,7 @@
   });
 
   function loadAppState() {
-    const saved = localStorage.getItem('wra_draft_budget_v4');
+    const saved = localStorage.getItem('wra_draft_budget_v5');
     if (saved) {
       try {
         appState.data = JSON.parse(saved);
@@ -593,17 +587,13 @@
       }
     } else {
       // 舊版轉新版資料相容
-      const oldSaved = localStorage.getItem('wra_draft_budget_v3');
+      const oldSaved = localStorage.getItem('wra_draft_budget_v4') || localStorage.getItem('wra_draft_budget_v3');
       if (oldSaved) {
         try {
           const oldData = JSON.parse(oldSaved);
           appState.data = {
-            currentYear: "116",
-            yearsData: {
-              "116": oldData.projects || [],
-              "117": [],
-              "118": []
-            }
+            currentYear: oldData.currentYear || "116",
+            yearsData: oldData.yearsData || { "116": oldData.projects || [] }
           };
         } catch(e) {
           appState.data = JSON.parse(JSON.stringify(defaultDraftData));
@@ -614,7 +604,7 @@
     }
 
     if (!appState.data.yearsData) {
-      appState.data.yearsData = { "116": [], "117": [], "118": [] };
+      appState.data.yearsData = { "116": [] };
     }
     if (!appState.data.currentYear) {
       appState.data.currentYear = "116";
@@ -622,7 +612,35 @@
   }
 
   function saveAppState() {
-    localStorage.setItem('wra_draft_budget_v4', JSON.stringify(appState.data));
+    localStorage.setItem('wra_draft_budget_v5', JSON.stringify(appState.data));
+  }
+
+  // 動態產生長遠年度選單 (預設 116 ~ 130，並相容更大年份)
+  function populateYearDropdown() {
+    const select = document.getElementById('selectTargetYear');
+    select.innerHTML = '';
+
+    let minYear = 116;
+    let maxYear = 130;
+
+    // 若資料庫已有更高年份，自動延伸選單上限
+    if (appState.data && appState.data.yearsData) {
+      Object.keys(appState.data.yearsData).forEach(yKey => {
+        const yNum = parseInt(yKey);
+        if (!isNaN(yNum) && yNum > maxYear) maxYear = yNum;
+      });
+    }
+
+    for (let y = minYear; y <= maxYear; y++) {
+      const yStr = y.toString();
+      const opt = document.createElement('option');
+      opt.value = yStr;
+      opt.innerText = `${yStr} 年度`;
+      if (yStr === appState.data.currentYear) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    }
   }
 
   function getActiveYearProjects() {
@@ -739,9 +757,10 @@
   }
 
   function renderApp() {
+    populateYearDropdown();
+
     const curYr = appState.data.currentYear;
     document.getElementById('dispTargetYear').innerText = curYr;
-    document.getElementById('selectTargetYear').value = curYr;
 
     const container = document.getElementById('projectCardsContainer');
     container.innerHTML = '';
@@ -1009,7 +1028,7 @@
           } else {
             appState.data = {
               currentYear: "116",
-              yearsData: { "116": importedData.projects || [], "117": [], "118": [] }
+              yearsData: { "116": importedData.projects || [] }
             };
           }
           saveAppState();
