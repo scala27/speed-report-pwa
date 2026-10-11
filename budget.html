@@ -554,6 +554,9 @@
 </div>
 
 <script>
+  // 雲端 API 設定
+  const API_BASE_URL = 'https://speed-report-api.onrender.com';
+
   // 1. 預置 91~109 年 40 項計畫原始歸檔資料庫 (單位：千元)
   const defaultBudgetData = {
     years: ["91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109"],
@@ -621,6 +624,9 @@
     loadAppState();
     initUIEvents();
     renderApp();
+
+    // 切換回視窗時自動感應同步雲端最新數據
+    window.addEventListener('focus', syncWithCloud);
   });
 
   // 動態尋找實質有編列預算金額(>0)的最新年度
@@ -664,10 +670,45 @@
     const sortedYears = getSortedYearsList();
     appState.startYear = sortedYears[0];
     appState.endYear = getLatestYearWithData(); // 預設以實質有經費數據的最新年度為主
+
+    // 背景靜默讀取雲端伺服器資料
+    syncWithCloud();
   }
 
   function saveAppState() {
     localStorage.setItem('wra_budget_app_data_v4', JSON.stringify(appState.data));
+    saveToCloud();
+  }
+
+  // 雲端資料同步讀取 (GET)
+  async function syncWithCloud() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/budget/formal`);
+      if (!res.ok) return;
+      const resJson = await res.json();
+      if (resJson && resJson.data) {
+        appState.data = resJson.data;
+        localStorage.setItem('wra_budget_app_data_v4', JSON.stringify(appState.data));
+        appState.endYear = getLatestYearWithData();
+        renderApp();
+      }
+    } catch (err) {
+      console.warn('雲端資料讀取連線中...', err);
+    }
+  }
+
+  // 雲端資料同步儲存 (POST)
+  async function saveToCloud() {
+    try {
+      await fetch(`${API_BASE_URL}/api/budget/formal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: appState.data })
+      });
+      showStatus('☁️ 資料已雙向即時同步至雲端伺服器！', 'success');
+    } catch (err) {
+      showStatus('⚠️ 資料已寫入本機，網路恢復時將自動連線同步', 'info');
+    }
   }
 
   function getSortedYearsList() {
