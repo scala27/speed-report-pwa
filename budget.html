@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>計畫年度預算速查 - 經濟部水利署</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2b81ad">
+  <meta name="theme-color" content="#268785">
 
   <style>
     :root {
-      --primary-water: rgb(88, 178, 220);
-      --primary-dark: #2b81ad;
-      --primary-light: #eef7fc;
-      --bg-gradient: linear-gradient(180deg, #eaf5fb 0%, #f8fafc 220px);
+      --primary-teal: #268785;
+      --primary-dark: #1d6a69;
+      --primary-light: #e6f3f3;
+      --bg-gradient: linear-gradient(180deg, #e4f2f2 0%, #f8fafc 220px);
       --card-bg: #ffffff;
       --border-color: #cbd5e1;
       --text-main: #0f172a;
       --text-muted: #64748b;
       --radius-card: 16px;
       --radius-input: 10px;
-      --badge-gov: #dbeafe;
-      --badge-gov-text: #1e40af;
+      --badge-gov: #dcf2f1;
+      --badge-gov-text: #165857;
       --badge-spec: #fef3c7;
       --badge-spec-text: #92400e;
     }
@@ -48,12 +48,12 @@
 
     /* Header 卡片 */
     .hero-header-card {
-      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 60%, #7ac6e9 100%);
+      background: linear-gradient(135deg, #1d6a69 0%, #268785 60%, #42aba8 100%);
       border-radius: var(--radius-card);
       padding: 20px;
       color: #ffffff;
       margin-bottom: 12px;
-      box-shadow: 0 10px 22px -5px rgba(88, 178, 220, 0.35);
+      box-shadow: 0 10px 22px -5px rgba(38, 135, 133, 0.35);
       position: relative;
       overflow: hidden;
     }
@@ -123,7 +123,7 @@
     .kpi-value {
       font-size: 1.02rem;
       font-weight: 800;
-      color: var(--primary-dark);
+      color: var(--primary-teal);
     }
 
     /* 控制與搜尋列 */
@@ -145,7 +145,7 @@
       margin-bottom: 10px;
       outline: none;
     }
-    .search-input:focus { border-color: var(--primary-water); }
+    .search-input:focus { border-color: var(--primary-teal); }
 
     .chip-group {
       display: flex;
@@ -168,9 +168,9 @@
     }
 
     .chip-btn.active {
-      background: var(--primary-dark);
+      background: var(--primary-teal);
       color: #ffffff;
-      border-color: var(--primary-dark);
+      border-color: var(--primary-teal);
     }
 
     /* 年份範圍選擇 */
@@ -196,7 +196,7 @@
     .project-card {
       background: var(--card-bg);
       border: 1px solid #e2e8f0;
-      border-left: 4px solid var(--primary-water);
+      border-left: 4px solid var(--primary-teal);
       border-radius: var(--radius-card);
       padding: 14px;
       margin-bottom: 10px;
@@ -238,7 +238,7 @@
     }
 
     .summary-item-label { color: var(--text-muted); font-weight: 600; }
-    .summary-item-val { font-weight: 800; color: var(--primary-dark); }
+    .summary-item-val { font-weight: 800; color: var(--primary-teal); }
 
     .card-actions {
       display: flex;
@@ -263,8 +263,8 @@
     .btn-outline { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
     .btn-outline:active { background: #e2e8f0; }
 
-    .btn-primary-sm { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-    .btn-primary-sm:active { background: #bae6fd; }
+    .btn-primary-sm { background: #e6f3f3; color: #165857; border: 1px solid #b1dedd; }
+    .btn-primary-sm:active { background: #b1dedd; }
 
     /* 歷年明細展開表 */
     .details-table-wrapper {
@@ -348,10 +348,10 @@
 
     .btn-action-hero {
       flex: 1.3;
-      background: linear-gradient(135deg, #2b81ad 0%, rgb(88, 178, 220) 100%);
+      background: linear-gradient(135deg, #1d6a69 0%, #268785 100%);
       color: #ffffff;
       border: none;
-      box-shadow: 0 4px 12px rgba(88, 178, 220, 0.35);
+      box-shadow: 0 4px 12px rgba(38, 135, 133, 0.35);
     }
 
     /* Modal 對話框 */
@@ -415,7 +415,7 @@
       border-radius: 8px;
       outline: none;
     }
-    .input-modal:focus { border-color: var(--primary-water); }
+    .input-modal:focus { border-color: var(--primary-teal); }
 
     .modal-budget-grid {
       display: grid;
@@ -438,7 +438,7 @@
       text-align: center;
       font-weight: 700;
     }
-    .status-info { background: #e0f2fe; color: #0369a1; }
+    .status-info { background: #e6f3f3; color: #165857; }
     .status-success { background: #dcfce7; color: #15803d; }
     .status-error { background: #fee2e2; color: #b91c1c; }
   </style>
@@ -455,7 +455,7 @@
     <div class="hero-main-title">計畫年度預算速查與管理</div>
   </div>
 
-  <!-- KPI 摘要卡片 -->
+  <!-- KPI 核心數據面板 -->
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-title">選定範圍總預算</div>
@@ -501,9 +501,9 @@
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" class="btn-action btn-action-hero" id="btnAddProjectBtn">➕ 新增計畫/新期程</button>
+    <button type="button" class="btn-action" id="btnExportExcel">📊 匯出 Excel</button>
     <button type="button" class="btn-action" id="btnExportJson">📥 匯出 JSON</button>
     <button type="button" class="btn-action" id="btnImportJson">📂 讀入 JSON</button>
-    <button type="button" class="btn-action" id="btnResetData">🧹 重置</button>
   </div>
 </div>
 
@@ -541,7 +541,7 @@
       </div>
     </div>
 
-    <button type="button" class="btn-action" id="btnGenerateYearInputs" style="width:100%; margin-bottom:10px; background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">🔄 產生該期程預算填寫欄位</button>
+    <button type="button" class="btn-action" id="btnGenerateYearInputs" style="width:100%; margin-bottom:10px; background:#e6f3f3; color:#165857; border-color:#b1dedd;">🔄 產生該期程預算填寫欄位</button>
 
     <div class="form-group-modal">
       <label>期程各年度預算數（單位：千元）</label>
@@ -610,7 +610,7 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.3')
+      navigator.serviceWorker.register('./service-worker.js?v=8.0')
         .then(reg => console.log('SW註冊成功'))
         .catch(err => console.log('SW註冊失敗', err));
     });
@@ -623,7 +623,7 @@
   });
 
   function loadAppState() {
-    const saved = localStorage.getItem('wra_budget_app_data_v3');
+    const saved = localStorage.getItem('wra_budget_app_data_v4');
     if (saved) {
       try {
         appState.data = JSON.parse(saved);
@@ -640,7 +640,7 @@
   }
 
   function saveAppState() {
-    localStorage.setItem('wra_budget_app_data_v3', JSON.stringify(appState.data));
+    localStorage.setItem('wra_budget_app_data_v4', JSON.stringify(appState.data));
   }
 
   function getSortedYearsList() {
@@ -713,7 +713,9 @@
       renderModalYearInputs(startY.toString(), endY.toString(), {});
     });
 
-    // 匯出 / 讀入 JSON / 重置
+    // 匯出 Excel / 匯出 JSON / 讀入 JSON
+    document.getElementById('btnExportExcel').addEventListener('click', exportToExcel);
+
     document.getElementById('btnExportJson').addEventListener('click', () => {
       const blob = new Blob([JSON.stringify(appState.data, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
@@ -747,15 +749,6 @@
         }
       };
       reader.readAsText(file);
-    });
-
-    document.getElementById('btnResetData').addEventListener('click', () => {
-      if (confirm('確定恢復原始 91~109 年基底預算資料？所有新新增的期程資料將被還原。')) {
-        appState.data = JSON.parse(JSON.stringify(defaultBudgetData));
-        saveAppState();
-        renderApp();
-        showStatus('已還原為原始 91~109 年歸檔數據！', 'success');
-      }
     });
 
     // Modal 關閉與儲存
@@ -834,24 +827,25 @@
       return hasPeriodOverlap || hasBudgetInRange;
     });
 
-    // 2. 依「預設計畫排序原則」進行排序
-    //    第 1 排序：最新執行計畫優先 (按 endYear 降冪，其次 startYear 降冪)
-    //    第 2 排序：預算由大排到小 (按選定檢視區間內的總預算金額降冪)
+    // 2. 修正排序邏輯：
+    //    第 1 排序：最新執行計畫優先 (按 endYear 結束年度降冪)
+    //    第 2 排序：選定檢視區間內的預算金額由大到小 (按區間內累計金額降冪)
+    //    第 3 排序：起始年度降冪
     filteredProjects.sort((a, b) => {
       const endA = parseInt(a.endYear || '0');
       const endB = parseInt(b.endYear || '0');
       if (endB !== endA) return endB - endA;
-
-      const startA = parseInt(a.startYear || '0');
-      const startB = parseInt(b.startYear || '0');
-      if (startB !== startA) return startB - startA;
 
       let sumA = 0, sumB = 0;
       rangeYears.forEach(y => {
         sumA += (a.budgets[y] || 0);
         sumB += (b.budgets[y] || 0);
       });
-      return sumB - sumA;
+      if (sumB !== sumA) return sumB - sumA;
+
+      const startA = parseInt(a.startYear || '0');
+      const startB = parseInt(b.startYear || '0');
+      return startB - startA;
     });
 
     filteredProjects.forEach(p => {
@@ -936,7 +930,7 @@
       rowsHtml += '<tr style="' + (isZero ? 'color:#94a3b8;' : 'font-weight:600;') + '">' +
         '<td style="text-align:center;">' + y + '年</td>' +
         '<td style="text-align:right;">' + val.toLocaleString() + '</td>' +
-        '<td style="text-align:right; color:#2b81ad;">' + formatMoneyText(val) + '</td>' +
+        '<td style="text-align:right; color:#268785;">' + formatMoneyText(val) + '</td>' +
       '</tr>';
     });
 
@@ -1052,6 +1046,88 @@
     appState.endYear = appState.data.years[appState.data.years.length - 1];
     renderApp();
     showStatus(`已成功儲存「${pName}」之期程預算數據！`, 'success');
+  }
+
+  // 匯出 Excel (CSV 帶 BOM 格式)
+  function exportToExcel() {
+    const rangeYears = getSelectedYearsRange();
+    
+    // CSV 內容帶 BOM 防 Excel 簡體/繁體亂碼
+    let csvContent = "\uFEFF";
+    
+    // 表頭
+    let headers = ["計畫名稱", "預算類別", "執行期程", `${appState.startYear}~${appState.endYear}累計(千元)`, `${appState.startYear}~${appState.endYear}累計(億元)`];
+    rangeYears.forEach(y => headers.push(`${y}年預算(千元)`));
+    csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
+    
+    const filterStart = Math.min(parseInt(appState.startYear), parseInt(appState.endYear));
+    const filterEnd = Math.max(parseInt(appState.startYear), parseInt(appState.endYear));
+    
+    const filteredProjects = appState.data.projects.filter(p => {
+      if (appState.searchKey && !p.name.includes(appState.searchKey)) return false;
+      if (appState.selectedCategory !== 'ALL' && p.category !== appState.selectedCategory) return false;
+
+      const pStart = parseInt(p.startYear || '91');
+      const pEnd = parseInt(p.endYear || '109');
+      const hasPeriodOverlap = !(pEnd < filterStart || pStart > filterEnd);
+
+      let hasBudgetInRange = false;
+      for (let y = filterStart; y <= filterEnd; y++) {
+        const b = p.budgets[y.toString()];
+        if (b && b > 0) {
+          hasBudgetInRange = true;
+          break;
+        }
+      }
+      return hasPeriodOverlap || hasBudgetInRange;
+    });
+
+    // 依相同排序 logic 匯出
+    filteredProjects.sort((a, b) => {
+      const endA = parseInt(a.endYear || '0');
+      const endB = parseInt(b.endYear || '0');
+      if (endB !== endA) return endB - endA;
+
+      let sumA = 0, sumB = 0;
+      rangeYears.forEach(y => {
+        sumA += (a.budgets[y] || 0);
+        sumB += (b.budgets[y] || 0);
+      });
+      if (sumB !== sumA) return sumB - sumA;
+
+      const startA = parseInt(a.startYear || '0');
+      const startB = parseInt(b.startYear || '0');
+      return startB - startA;
+    });
+
+    filteredProjects.forEach(p => {
+      let pRangeTotal = 0;
+      rangeYears.forEach(y => pRangeTotal += (p.budgets[y] || 0));
+      
+      const rangeTotalYi = (pRangeTotal * 1000 / 100000000).toFixed(2);
+      const periodText = `${p.startYear || '91'}~${p.endYear || '109'}年`;
+      
+      let row = [
+        `"${p.name.replace(/"/g, '""')}"`,
+        `"${p.category}"`,
+        `"${periodText}"`,
+        pRangeTotal,
+        rangeTotalYi
+      ];
+      
+      rangeYears.forEach(y => {
+        row.push(p.budgets[y] || 0);
+      });
+      
+      csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `水利署計畫預算統計表_${appState.startYear}-${appState.endYear}年.csv`;
+    link.click();
+    showStatus('已成功匯出 Excel 統計表 (.csv)！', 'success');
   }
 
   // 複製速報單 / 公文簡報摘要
