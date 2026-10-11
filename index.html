@@ -284,7 +284,7 @@
     <div class="hero-title">打工雲</div>
   </div>
 
-  <!-- 選單列表 (精準對齊截圖的「登入/進入」SVG 圖示) -->
+  <!-- 選單列表 -->
   <div class="menu-list">
     <div class="menu-item" onclick="openWorkspace('./wra-report.html', '水利署速報單')">
       <span class="menu-item-title">水利署速報單</span>
@@ -315,6 +315,16 @@
         </svg>
       </div>
     </div>
+
+    <div class="menu-item" onclick="openWorkspace('./draft_budget.html', '新年度預算編列')">
+      <span class="menu-item-title">新年度預算編列</span>
+      <div class="menu-item-arrow">
+        <svg viewBox="0 0 24 24">
+          <path d="M15 4h4.5a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H15" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M3 12h12M11 7l5 5-5 5" stroke="#2a837f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+    </div>
   </div>
 
   <!-- 頁尾 -->
@@ -326,11 +336,11 @@
 <script>
   let targetWorkspaceUrl = '';
 
-  // 註冊 Service Worker 並更新快取版本至 v6.9
+  // 註冊 Service Worker 並更新快取版本至 v7.0
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=6.9')
-        .then(reg => console.log('Portal Service Worker v6.9 註冊成功'))
+      navigator.serviceWorker.register('./service-worker.js?v=7.0')
+        .then(reg => console.log('Portal Service Worker v7.0 註冊成功'))
         .catch(err => console.log('Service Worker 註冊失敗:', err));
     });
   }
