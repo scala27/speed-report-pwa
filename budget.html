@@ -37,7 +37,7 @@
       background: var(--bg-gradient);
       background-attachment: fixed;
       color: var(--text-main);
-      padding: 12px 12px 120px 12px;
+      padding: 12px 12px 100px 12px;
       line-height: 1.5;
     }
 
@@ -311,7 +311,7 @@
       text-decoration: underline;
     }
 
-    /* 底部操作列 */
+    /* 底部操作列 (優化為 2 欄寬版) */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -320,7 +320,7 @@
       background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(12px);
       border-top: 1px solid #e2e8f0;
-      padding: 10px 8px;
+      padding: 10px 12px 14px 12px;
       z-index: 1000;
       box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
     }
@@ -329,13 +329,13 @@
       max-width: 650px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1.1fr 1fr 1fr 1fr;
-      gap: 5px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
     }
 
     .btn-action {
-      padding: 10px 2px;
-      font-size: 0.78rem;
+      padding: 11px 8px;
+      font-size: 0.85rem;
       font-weight: 700;
       border-radius: 10px;
       border: 1px solid #cbd5e1;
@@ -344,8 +344,10 @@
       cursor: pointer;
       text-align: center;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
     }
     .btn-action:active { transform: scale(0.96); }
 
@@ -499,18 +501,13 @@
   <div id="projectListContainer"></div>
 </div>
 
-<!-- 底部操作列 -->
+<!-- 底部操作列 (精簡為 2 選項) -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" class="btn-action btn-action-hero" id="btnAddProjectBtn">➕ 新增計畫</button>
     <button type="button" class="btn-action" id="btnExportExcel">📊 匯出 Excel</button>
-    <button type="button" class="btn-action" id="btnExportJson">📥 匯出檔</button>
-    <button type="button" class="btn-action" id="btnImportJson">📂 匯入檔</button>
   </div>
 </div>
-
-<!-- 隱藏的 JSON 檔案輸入 -->
-<input type="file" id="jsonFileInput" accept=".json" style="display: none;">
 
 <!-- Modal 1: 新增 / 編輯計畫與期程對話框 -->
 <div class="modal-overlay" id="editModal">
@@ -669,7 +666,7 @@
 
     const sortedYears = getSortedYearsList();
     appState.startYear = sortedYears[0];
-    appState.endYear = getLatestYearWithData(); // 預設以實質有經費數據的最新年度為主
+    appState.endYear = getLatestYearWithData();
 
     // 背景靜默讀取雲端伺服器資料
     syncWithCloud();
@@ -779,42 +776,6 @@
     });
 
     document.getElementById('btnExportExcel').addEventListener('click', exportToExcel);
-
-    document.getElementById('btnExportJson').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(appState.data, null, 2)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `水利署計畫預算資料庫_${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
-      showStatus('預算資料庫檔 (.json) 已成功匯出備份！', 'success');
-    });
-
-    document.getElementById('btnImportJson').addEventListener('click', () => {
-      document.getElementById('jsonFileInput').click();
-    });
-
-    document.getElementById('jsonFileInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const imported = JSON.parse(event.target.result);
-          if (imported.years && imported.projects) {
-            appState.data = imported;
-            saveAppState();
-            appState.endYear = getLatestYearWithData();
-            renderApp();
-            showStatus('成功讀入並更新本機預算資料庫！', 'success');
-          } else {
-            showStatus('格式不合：缺 years 或 projects', 'error');
-          }
-        } catch (err) {
-          showStatus('讀取檔案失敗', 'error');
-        }
-      };
-      reader.readAsText(file);
-    });
 
     document.getElementById('btnCloseEditModal').addEventListener('click', () => {
       document.getElementById('editModal').style.display = 'none';
