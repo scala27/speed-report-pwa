@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>新年度預算編列 - 經濟部水利署</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#268785">
+
+  <style>
+    :root {
+      --primary-teal: #268785;
+      --primary-dark: #1d6a69;
+      --primary-light: #e6f3f3;
+      --bg-gradient: linear-gradient(180deg, #e4f2f2 0%, #f8fafc 220px);
+      --card-bg: #ffffff;
+      --border-color: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius-card: 16px;
+      --radius-input: 10px;
+      --badge-wra: #dcf2f1;
+      --badge-wra-text: #165857;
+      --badge-other: #f1f5f9;
+      --badge-other-text: #334155;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-main);
+      padding: 12px 12px 120px 12px;
+      line-height: 1.5;
+    }
+
+    .app-container {
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    /* Header 卡片 */
+    .hero-header-card {
+      background: linear-gradient(135deg, #1d6a69 0%, #268785 60%, #42aba8 100%);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      color: #ffffff;
+      margin-bottom: 12px;
+      box-shadow: 0 10px 22px -5px rgba(38, 135, 133, 0.35);
+      position: relative;
+    }
+
+    .header-top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .agency-tag {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(8px);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-back-portal {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-back-portal:active { background: rgba(0, 0, 0, 0.3); }
+
+    .hero-main-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .hero-sub-title {
+      font-size: 0.82rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    /* 審議階段頁籤切換條 */
+    .stage-tabs-container {
+      background: #ffffff;
+      border-radius: var(--radius-card);
+      padding: 6px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .stage-tab-btn {
+      padding: 10px 2px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .stage-tab-btn.active {
+      background: var(--primary-teal);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(38, 135, 133, 0.3);
+    }
+
+    /* KPI 核心數據面板 */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-card);
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .kpi-title {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .kpi-value {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: var(--primary-teal);
+    }
+
+    .kpi-sub {
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .text-up { color: #dc2626; }
+    .text-down { color: #16a34a; }
+    .text-same { color: #64748b; }
+
+    /* 控制與過濾列 */
+    .control-card {
+      background: var(--card-bg);
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-card);
+      padding: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .select-input {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #fff;
+      font-weight: 700;
+      outline: none;
+    }
+
+    /* 經費項目列表 */
+    .item-card {
+      background: var(--card-bg);
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid var(--primary-teal);
+      border-radius: var(--radius-card);
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .item-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .item-title-box { flex: 1; }
+    .item-name { font-size: 0.98rem; font-weight: 800; color: var(--text-main); }
+    .item-tags { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+
+    .tag-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .badge-dept { background: #e0f2fe; color: #0369a1; }
+    .badge-fund { background: #fef3c7; color: #92400e; }
+    .badge-cat { background: #f1f5f9; color: #475569; }
+
+    .item-amount-val {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary-teal);
+      white-space: nowrap;
+    }
+
+    .item-stage-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      background: #f8fafc;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 8px;
+      text-align: center;
+      font-size: 0.72rem;
+    }
+
+    .stage-cell {
+      padding: 4px 2px;
+      border-radius: 6px;
+    }
+    .stage-cell.active-stage {
+      background: #e6f3f3;
+      border: 1px solid #b1dedd;
+      font-weight: 800;
+      color: #165857;
+    }
+
+    .stage-cell-title { color: var(--text-muted); margin-bottom: 2px; font-weight: 700; }
+    .stage-cell-val { font-weight: 800; }
+
+    .item-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+      gap: 8px;
+    }
+
+    .btn-text-sm {
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* 底部固定欄 */
+    .sticky-actions-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid #e2e8f0;
+      padding: 10px 8px;
+      z-index: 1000;
+      box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .actions-container {
+      max-width: 650px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1.1fr;
+      gap: 5px;
+    }
+
+    .btn-action {
+      padding: 10px 2px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-action:active { transform: scale(0.96); }
+
+    .btn-action-hero {
+      background: linear-gradient(135deg, #1d6a69 0%, #268785 100%);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 12px rgba(38, 135, 133, 0.35);
+    }
+
+    /* Modal 對話框 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 10px;
+    }
+
+    .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+    .btn-close-modal { font-size: 1.2rem; background: none; border: none; cursor: pointer; color: var(--text-muted); }
+
+    .form-group-modal { margin-bottom: 12px; }
+    .form-group-modal label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: #334155; }
+    .form-row-modal { display: flex; gap: 8px; }
+
+    .input-modal {
+      width: 100%;
+      padding: 9px 10px;
+      font-size: 0.88rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      outline: none;
+    }
+    .input-modal:focus { border-color: var(--primary-teal); }
+
+    .modal-stages-box {
+      background: #f8fafc;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 12px;
+    }
+
+    #status-msg {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: none;
+      text-align: center;
+      font-weight: 700;
+    }
+    .status-info { background: #e6f3f3; color: #165857; }
+    .status-success { background: #dcfce7; color: #15803d; }
+    .status-error { background: #fee2e2; color: #b91c1c; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Header 卡片 -->
+  <div class="hero-header-card">
+    <div class="header-top-nav">
+      <div class="agency-tag">🏛️ 經濟部水利署</div>
+      <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
+    </div>
+    <div class="hero-main-title">新年度預算編列</div>
+    <div class="hero-sub-title">116年度籌編與跨部會審議滾動追蹤</div>
+  </div>
+
+  <!-- 四大審議階段切換頁籤 -->
+  <div class="stage-tabs-container">
+    <button class="stage-tab-btn active" data-stage="1">1. 概算階段</button>
+    <button class="stage-tab-btn" data-stage="2">2. 國發會審議</button>
+    <button class="stage-tab-btn" data-stage="3">3. 行政院預算案</button>
+    <button class="stage-tab-btn" data-stage="4">4. 法定預算</button>
+  </div>
+
+  <!-- KPI 核心數據面板 -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-title">當前階段總經費</div>
+      <div class="kpi-value" id="kpiStageTotal">0 億元</div>
+      <div class="kpi-sub text-same" id="kpiDiffText">較前階段 0 億</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">水利署公務預算</div>
+      <div class="kpi-value" id="kpiWraGov">0 億元</div>
+      <div class="kpi-sub" style="color:var(--text-muted);" id="kpiWraGovSub">經常/資本/補助</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-title">水資源作業基金</div>
+      <div class="kpi-value" id="kpiWraFund">0 億元</div>
+      <div class="kpi-sub" style="color:var(--text-muted);" id="kpiOtherDepts">其他部會: 0億</div>
+    </div>
+  </div>
+
+  <!-- 數據過濾 -->
+  <div class="control-card">
+    <div class="filter-row">
+      <select id="filterDept" class="select-input">
+        <option value="ALL">所有部會 (全部)</option>
+        <option value="經濟部水利署">經濟部水利署</option>
+        <option value="農業部">農業部</option>
+        <option value="環境部">環境部</option>
+      </select>
+
+      <select id="filterFund" class="select-input">
+        <option value="ALL">所有預算類別</option>
+        <option value="公務預算">公務預算</option>
+        <option value="水資源作業基金">水資源作業基金</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="status-msg"></div>
+
+  <!-- 項目卡片列表區 -->
+  <div id="draftItemListContainer"></div>
+</div>
+
+<!-- 底部操作列 -->
+<div class="sticky-actions-bar">
+  <div class="actions-container">
+    <button type="button" class="btn-action btn-action-hero" id="btnAddItemBtn">➕ 新增項目</button>
+    <button type="button" class="btn-action" id="btnCopySummary">📋 複製簡報摘要</button>
+    <button type="button" class="btn-action" id="btnExportExcel">📊 匯出 Excel</button>
+    <button type="button" class="btn-action" id="btnTransferToFormal" style="background:#fef3c7; color:#92400e; border-color:#fcd34d;">🚀 轉入法定庫</button>
+  </div>
+</div>
+
+<!-- Modal 1: 新增 / 編輯經費項目 -->
+<div class="modal-overlay" id="editItemModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">新增預算編列項目</div>
+      <button class="btn-close-modal" id="btnCloseModal">✕</button>
+    </div>
+
+    <div class="form-group-modal">
+      <label>計畫/經費項目名稱</label>
+      <input type="text" id="modalName" class="input-modal" placeholder="例如：中央管流域整體改善與調適計畫">
+    </div>
+
+    <div class="form-row-modal">
+      <div class="form-group-modal" style="flex:1;">
+        <label>主管部會</label>
+        <select id="modalDept" class="input-modal">
+          <option value="經濟部水利署">經濟部水利署</option>
+          <option value="農業部">農業部</option>
+          <option value="環境部">環境部</option>
+        </select>
+      </div>
+      <div class="form-group-modal" style="flex:1;">
+        <label>預算類別</label>
+        <select id="modalFund" class="input-modal">
+          <option value="公務預算">公務預算</option>
+          <option value="水資源作業基金">水資源作業基金</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group-modal">
+      <label>門別與用途別</label>
+      <select id="modalCat" class="input-modal">
+        <option value="資本門">資本門</option>
+        <option value="經常門">經常門</option>
+        <option value="補助款">補助款</option>
+      </select>
+    </div>
+
+    <div class="modal-stages-box">
+      <div style="font-size:0.82rem; font-weight:800; color:#1d6a69; margin-bottom:8px;">各審議階段額度（單位：千元）</div>
+      
+      <div class="form-row-modal">
+        <div class="form-group-modal" style="flex:1;">
+          <label>1. 概算階段</label>
+          <input type="number" id="modalStage1" class="input-modal" value="0">
+        </div>
+        <div class="form-group-modal" style="flex:1;">
+          <label>2. 國發會審議</label>
+          <input type="number" id="modalStage2" class="input-modal" value="0">
+        </div>
+      </div>
+
+      <div class="form-row-modal">
+        <div class="form-group-modal" style="flex:1;">
+          <label>3. 行政院預算案</label>
+          <input type="number" id="modalStage3" class="input-modal" value="0">
+        </div>
+        <div class="form-group-modal" style="flex:1;">
+          <label>4. 法定預算</label>
+          <input type="number" id="modalStage4" class="input-modal" value="0">
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-action btn-action-hero" id="btnSaveItem" style="width:100%; padding:11px;">💾 儲存項目金額</button>
+  </div>
+</div>
+
+<script>
+  // 1. 預置 116 年度籌編初始資料庫
+  const defaultDraftData = {
+    targetYear: "116",
+    items: [
+      {
+        id: "d_01",
+        dept: "經濟部水利署",
+        fund: "公務預算",
+        cat: "資本門",
+        name: "中央管流域整體改善與調適計畫(110-115年)",
+        s1: 15500000,
+        s2: 15000000,
+        s3: 15500000,
+        s4: 0
+      },
+      {
+        id: "d_02",
+        dept: "經濟部水利署",
+        fund: "公務預算",
+        cat: "經常門",
+        name: "水資源水質維護與河川管理維護業務",
+        s1: 1200000,
+        s2: 1150000,
+        s3: 1180000,
+        s4: 0
+      },
+      {
+        id: "d_03",
+        dept: "經濟部水利署",
+        fund: "公務預算",
+        cat: "補助款",
+        name: "縣市管電瓶水防道路及縣市防洪設施補助",
+        s1: 2500000,
+        s2: 2400000,
+        s3: 2450000,
+        s4: 0
+      },
+      {
+        id: "d_04",
+        dept: "經濟部水利署",
+        fund: "水資源作業基金",
+        cat: "資本門",
+        name: "水庫更新改善與水資源多元開發建造工程",
+        s1: 6800000,
+        s2: 6500000,
+        s3: 6600000,
+        s4: 0
+      },
+      {
+        id: "d_05",
+        dept: "農業部",
+        fund: "公務預算",
+        cat: "資本門",
+        name: "集水區整體治理與農田水利灌溉設施改善",
+        s1: 3200000,
+        s2: 3000000,
+        s3: 3100000,
+        s4: 0
+      },
+      {
+        id: "d_06",
+        dept: "環境部",
+        fund: "公務預算",
+        cat: "資本門",
+        name: "水質改善及流域污染源頭永續削減水體營造",
+        s1: 850000,
+        s2: 800000,
+        s3: 820000,
+        s4: 0
+      }
+    ]
+  };
+
+  const STAGE_NAMES = {
+    "1": "概算階段",
+    "2": "國發會審議",
+    "3": "行政院預算案",
+    "4": "法定預算"
+  };
+
+  let appState = {
+    data: null,
+    currentStage: "1",
+    filterDept: "ALL",
+    filterFund: "ALL",
+    editingItemId: null
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadAppState();
+    initUIEvents();
+    renderApp();
+  });
+
+  function loadAppState() {
+    const saved = localStorage.getItem('wra_draft_budget_data_v1');
+    if (saved) {
+      try {
+        appState.data = JSON.parse(saved);
+      } catch (e) {
+        appState.data = JSON.parse(JSON.stringify(defaultDraftData));
+      }
+    } else {
+      appState.data = JSON.parse(JSON.stringify(defaultDraftData));
+    }
+  }
+
+  function saveAppState() {
+    localStorage.setItem('wra_draft_budget_data_v1', JSON.stringify(appState.data));
+  }
+
+  function showStatus(text, type = 'info') {
+    const msgEl = document.getElementById('status-msg');
+    msgEl.style.display = 'block';
+    msgEl.className = `status-${type}`;
+    msgEl.innerText = text;
+    setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
+  }
+
+  function formatMoneyText(valThousand) {
+    if (!valThousand || valThousand === 0) return '0 元';
+    const valNTD = valThousand * 1000;
+    if (Math.abs(valNTD) >= 100000000) {
+      return `${(valNTD / 100000000).toFixed(2)} 億元`;
+    } else if (Math.abs(valNTD) >= 10000) {
+      return `${(valNTD / 10000).toFixed(0)} 萬元`;
+    }
+    return `${valThousand.toLocaleString()} 千元`;
+  }
+
+  function initUIEvents() {
+    // 切換審議階段 TAB
+    document.querySelectorAll('.stage-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stage-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        appState.currentStage = btn.getAttribute('data-stage');
+        renderApp();
+      });
+    });
+
+    document.getElementById('filterDept').addEventListener('change', (e) => {
+      appState.filterDept = e.target.value;
+      renderApp();
+    });
+
+    document.getElementById('filterFund').addEventListener('change', (e) => {
+      appState.filterFund = e.target.value;
+      renderApp();
+    });
+
+    document.getElementById('btnAddItemBtn').addEventListener('click', () => {
+      openEditModal(null);
+    });
+
+    document.getElementById('btnCopySummary').addEventListener('click', copyExecutiveSummary);
+    document.getElementById('btnExportExcel').addEventListener('click', exportExcelReport);
+    document.getElementById('btnTransferToFormal').addEventListener('click', transferToFormalBudgetApp);
+
+    document.getElementById('btnCloseModal').addEventListener('click', () => {
+      document.getElementById('editItemModal').style.display = 'none';
+    });
+
+    document.getElementById('btnSaveItem').addEventListener('click', saveItemModal);
+  }
+
+  function renderApp() {
+    const stageKey = `s${appState.currentStage}`;
+    const prevStageKey = `s${Math.max(1, parseInt(appState.currentStage) - 1)}`;
+
+    let grandTotal = 0;
+    let prevGrandTotal = 0;
+    let wraGovTotal = 0;
+    let wraFundTotal = 0;
+    let otherDeptsTotal = 0;
+
+    const container = document.getElementById('draftItemListContainer');
+    container.innerHTML = '';
+
+    const filtered = appState.data.items.filter(item => {
+      if (appState.filterDept !== 'ALL' && item.dept !== appState.filterDept) return false;
+      if (appState.filterFund !== 'ALL' && item.fund !== appState.filterFund) return false;
+      return true;
+    });
+
+    filtered.forEach(item => {
+      const val = item[stageKey] || 0;
+      const prevVal = item[prevStageKey] || 0;
+
+      grandTotal += val;
+      prevGrandTotal += prevVal;
+
+      if (item.dept === '經濟部水利署') {
+        if (item.fund === '公務預算') wraGovTotal += val;
+        else if (item.fund === '水資源作業基金') wraFundTotal += val;
+      } else {
+        otherDeptsTotal += val;
+      }
+
+      // 卡片生成
+      const card = document.createElement('div');
+      card.className = 'item-card';
+
+      card.innerHTML = `
+        <div class="item-card-header">
+          <div class="item-title-box">
+            <div class="item-name">${item.name}</div>
+            <div class="item-tags">
+              <span class="tag-badge badge-dept">${item.dept}</span>
+              <span class="tag-badge badge-fund">${item.fund}</span>
+              <span class="tag-badge badge-cat">${item.cat}</span>
+            </div>
+          </div>
+          <div class="item-amount-val">${formatMoneyText(val)}</div>
+        </div>
+
+        <div class="item-stage-grid">
+          <div class="stage-cell ${appState.currentStage==='1'?'active-stage':''}">
+            <div class="stage-cell-title">1. 概算</div>
+            <div class="stage-cell-val">${formatMoneyText(item.s1)}</div>
+          </div>
+          <div class="stage-cell ${appState.currentStage==='2'?'active-stage':''}">
+            <div class="stage-cell-title">2. 國發會</div>
+            <div class="stage-cell-val">${formatMoneyText(item.s2)}</div>
+          </div>
+          <div class="stage-cell ${appState.currentStage==='3'?'active-stage':''}">
+            <div class="stage-cell-title">3. 政院案</div>
+            <div class="stage-cell-val">${formatMoneyText(item.s3)}</div>
+          </div>
+          <div class="stage-cell ${appState.currentStage==='4'?'active-stage':''}">
+            <div class="stage-cell-title">4. 法定</div>
+            <div class="stage-cell-val">${formatMoneyText(item.s4)}</div>
+          </div>
+        </div>
+
+        <div class="item-actions">
+          <button class="btn-text-sm" onclick="openEditModal('${item.id}')">✏️ 修正項目數據</button>
+          <button class="btn-text-sm" style="color:#ef4444;" onclick="deleteItem('${item.id}')">🗑️ 刪除</button>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // KPI 數據更新
+    document.getElementById('kpiStageTotal').innerText = formatMoneyText(grandTotal);
+
+    const diff = grandTotal - prevGrandTotal;
+    const diffEl = document.getElementById('kpiDiffText');
+    if (appState.currentStage === '1') {
+      diffEl.innerText = `提報項目：${filtered.length} 筆`;
+      diffEl.className = 'kpi-sub text-same';
+    } else {
+      if (diff > 0) {
+        diffEl.innerText = `較前階段 +${formatMoneyText(diff)}`;
+        diffEl.className = 'kpi-sub text-up';
+      } else if (diff < 0) {
+        diffEl.innerText = `較前階段 -${formatMoneyText(Math.abs(diff))}`;
+        diffEl.className = 'kpi-sub text-down';
+      } else {
+        diffEl.innerText = `與前階段持平`;
+        diffEl.className = 'kpi-sub text-same';
+      }
+    }
+
+    document.getElementById('kpiWraGov').innerText = formatMoneyText(wraGovTotal);
+    document.getElementById('kpiWraFund').innerText = formatMoneyText(wraFundTotal);
+    document.getElementById('kpiOtherDepts').innerText = `其他部會：${formatMoneyText(otherDeptsTotal)}`;
+  }
+
+  function openEditModal(itemId) {
+    appState.editingItemId = itemId;
+    const titleEl = document.getElementById('modalTitle');
+
+    if (itemId) {
+      const item = appState.data.items.find(i => i.id === itemId);
+      if (!item) return;
+      titleEl.innerText = `修正：${item.name}`;
+      document.getElementById('modalName').value = item.name;
+      document.getElementById('modalDept').value = item.dept;
+      document.getElementById('modalFund').value = item.fund;
+      document.getElementById('modalCat').value = item.cat;
+      document.getElementById('modalStage1').value = item.s1 || 0;
+      document.getElementById('modalStage2').value = item.s2 || 0;
+      document.getElementById('modalStage3').value = item.s3 || 0;
+      document.getElementById('modalStage4').value = item.s4 || 0;
+    } else {
+      titleEl.innerText = '新增預算編列項目';
+      document.getElementById('modalName').value = '';
+      document.getElementById('modalDept').value = '經濟部水利署';
+      document.getElementById('modalFund').value = '公務預算';
+      document.getElementById('modalCat').value = '資本門';
+      document.getElementById('modalStage1').value = 0;
+      document.getElementById('modalStage2').value = 0;
+      document.getElementById('modalStage3').value = 0;
+      document.getElementById('modalStage4').value = 0;
+    }
+
+    document.getElementById('editItemModal').style.display = 'flex';
+  }
+
+  function saveItemModal() {
+    const name = document.getElementById('modalName').value.trim();
+    if (!name) {
+      alert('請輸入項目名稱！');
+      return;
+    }
+
+    const dept = document.getElementById('modalDept').value;
+    const fund = document.getElementById('modalFund').value;
+    const cat = document.getElementById('modalCat').value;
+    const s1 = parseInt(document.getElementById('modalStage1').value) || 0;
+    const s2 = parseInt(document.getElementById('modalStage2').value) || 0;
+    const s3 = parseInt(document.getElementById('modalStage3').value) || 0;
+    const s4 = parseInt(document.getElementById('modalStage4').value) || 0;
+
+    if (appState.editingItemId) {
+      const item = appState.data.items.find(i => i.id === appState.editingItemId);
+      if (item) {
+        item.name = name; item.dept = dept; item.fund = fund; item.cat = cat;
+        item.s1 = s1; item.s2 = s2; item.s3 = s3; item.s4 = s4;
+      }
+    } else {
+      appState.data.items.unshift({
+        id: `d_${Date.now()}`,
+        name, dept, fund, cat, s1, s2, s3, s4
+      });
+    }
+
+    saveAppState();
+    document.getElementById('editItemModal').style.display = 'none';
+    renderApp();
+    showStatus('已成功儲存項目預算數據！', 'success');
+  }
+
+  function deleteItem(itemId) {
+    if (!confirm('確定要刪除此預算項目嗎？')) return;
+    appState.data.items = appState.data.items.filter(i => i.id !== itemId);
+    saveAppState();
+    renderApp();
+    showStatus('已刪除預算項目', 'info');
+  }
+
+  // 複製長官速報摘要
+  function copyExecutiveSummary() {
+    const stageName = STAGE_NAMES[appState.currentStage];
+    const stageKey = `s${appState.currentStage}`;
+
+    let wraGov = 0, wraFund = 0, agrGov = 0, envGov = 0;
+    let capTotal = 0, curTotal = 0, subTotal = 0;
+
+    appState.data.items.forEach(item => {
+      const val = item[stageKey] || 0;
+      if (item.dept === '經濟部水利署') {
+        if (item.fund === '公務預算') {
+          wraGov += val;
+          if (item.cat === '資本門') capTotal += val;
+          else if (item.cat === '經常門') curTotal += val;
+          else if (item.cat === '補助款') subTotal += val;
+        } else if (item.fund === '水資源作業基金') {
+          wraFund += val;
+        }
+      } else if (item.dept === '農業部') {
+        agrGov += val;
+      } else if (item.dept === '環境部') {
+        envGov += val;
+      }
+    });
+
+    const total = wraGov + wraFund + agrGov + envGov;
+
+    const summaryText = `【116年度預算籌編速報】(${stageName}階段)\n` +
+      `水利署公務預算共編列 ${formatMoneyText(wraGov)}（資本門 ${formatMoneyText(capTotal)}、經常門 ${formatMoneyText(curTotal)}、補助款 ${formatMoneyText(subTotal)}）；水資源基金編列 ${formatMoneyText(wraFund)}。\n` +
+      `跨部會統籌部分：農業部編列 ${formatMoneyText(agrGov)}、環境部編列 ${formatMoneyText(envGov)}。\n` +
+      `水利與相關部會116年總計籌編金額為 ${formatMoneyText(total)}。`;
+
+    navigator.clipboard.writeText(summaryText).then(() => {
+      showStatus('已複製長官簡報摘要至剪貼簿！', 'success');
+    }).catch(err => {
+      prompt('請手動複製摘要文字：', summaryText);
+    });
+  }
+
+  // 匯出 Excel
+  function exportExcelReport() {
+    let csvContent = "\uFEFF";
+    csvContent += `"項目名稱","主管部會","預算類別","門別","1.概算數(千元)","2.國發會審議(千元)","3.行政院案(千元)","4.法定預算(千元)"\n`;
+
+    appState.data.items.forEach(item => {
+      csvContent += `"${item.name.replace(/"/g, '""')}","${item.dept}","${item.fund}","${item.cat}",${item.s1},${item.s2},${item.s3},${item.s4}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `水利署116年預算籌編審議表.csv`;
+    link.click();
+    showStatus('已成功匯出報表檔 (.csv)！', 'success');
+  }
+
+  // 轉入正式法定預算資料庫 (Bridge Action)
+  function transferToFormalBudgetApp() {
+    const statutoryItems = appState.data.items.filter(i => (i.s4 || 0) > 0);
+
+    if (statutoryItems.length === 0) {
+      alert('目前「4. 法定預算」階段尚無填寫數據（皆為 0 元），請於立法院審議確定後輸入數據再執行轉入！');
+      return;
+    }
+
+    if (!confirm(`確定要將 116 年【法定預算】階段計 ${statutoryItems.length} 筆數據轉入「計畫年度預算統計資訊」資料庫嗎？`)) {
+      return;
+    }
+
+    let formalData = null;
+    const savedFormal = localStorage.getItem('wra_budget_app_data_v4');
+    if (savedFormal) {
+      try { formalData = JSON.parse(savedFormal); } catch(e){}
+    }
+
+    if (!formalData) {
+      alert('找不到正式預算資料庫，請先開啟「計畫年度預算統計資訊」頁面建置！');
+      return;
+    }
+
+    // 確保 116 年存在於年份清單
+    if (!formalData.years.includes('116')) {
+      formalData.years.push('116');
+      formalData.years.sort((a,b) => parseInt(a)-parseInt(b));
+    }
+
+    // 寫入數據
+    statutoryItems.forEach(item => {
+      let existP = formalData.projects.find(p => p.name === item.name);
+      if (existP) {
+        existP.endYear = '116';
+        existP.budgets['116'] = item.s4;
+      } else {
+        formalData.projects.unshift({
+          id: `p_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+          name: item.name,
+          category: item.fund.includes('基金') ? '特別預算' : '公務預算',
+          startYear: '116',
+          endYear: '116',
+          budgets: { "116": item.s4 }
+        });
+      }
+    });
+
+    localStorage.setItem('wra_budget_app_data_v4', JSON.stringify(formalData));
+    showStatus('🎉 已成功將 116 年法定預算數據寫入並更新至正式計畫資料庫！', 'success');
+  }
+</script>
+</body>
+</html>
