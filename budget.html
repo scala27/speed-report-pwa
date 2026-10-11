@@ -552,7 +552,7 @@
 </div>
 
 <script>
-  // 1. 預置 91~109 年 40 項計畫原始歸檔資料庫 (單位：千元，已刪除累計總計欄位)
+  // 1. 預置 91~109 年 40 項計畫原始歸檔資料庫 (單位：千元)
   const defaultBudgetData = {
     years: ["91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109"],
     projects: [
@@ -610,7 +610,7 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=7.2')
+      navigator.serviceWorker.register('./service-worker.js?v=7.3')
         .then(reg => console.log('SW註冊成功'))
         .catch(err => console.log('SW註冊失敗', err));
     });
@@ -810,7 +810,7 @@
     let grandTotalThousand = 0;
     let filteredProjectsCount = 0;
 
-    // 1. 篩選年度期間相關的計畫 (需求 1)
+    // 1. 篩選年度期間相關的計畫
     const filteredProjects = appState.data.projects.filter(p => {
       if (appState.searchKey && !p.name.includes(appState.searchKey)) return false;
       if (appState.selectedCategory !== 'ALL' && p.category !== appState.selectedCategory) return false;
@@ -832,6 +832,26 @@
       }
 
       return hasPeriodOverlap || hasBudgetInRange;
+    });
+
+    // 2. 依「預設計畫排序原則」進行排序
+    //    第 1 排序：最新執行計畫優先 (按 endYear 降冪，其次 startYear 降冪)
+    //    第 2 排序：預算由大排到小 (按選定檢視區間內的總預算金額降冪)
+    filteredProjects.sort((a, b) => {
+      const endA = parseInt(a.endYear || '0');
+      const endB = parseInt(b.endYear || '0');
+      if (endB !== endA) return endB - endA;
+
+      const startA = parseInt(a.startYear || '0');
+      const startB = parseInt(b.startYear || '0');
+      if (startB !== startA) return startB - startA;
+
+      let sumA = 0, sumB = 0;
+      rangeYears.forEach(y => {
+        sumA += (a.budgets[y] || 0);
+        sumB += (b.budgets[y] || 0);
+      });
+      return sumB - sumA;
     });
 
     filteredProjects.forEach(p => {
@@ -856,7 +876,7 @@
       let badgeClass = 'badge-gov';
       if (p.category === '特別預算') badgeClass = 'badge-spec';
 
-      // 2. 計算該計畫在此篩選區間內的實質對應期程標籤 (需求 2)
+      // 計算該計畫在此篩選區間內的實質對應期程標籤
       const pStart = parseInt(p.startYear || '91');
       const pEnd = parseInt(p.endYear || '109');
       const actStart = Math.max(filterStart, pStart);
