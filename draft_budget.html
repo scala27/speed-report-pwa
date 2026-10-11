@@ -586,7 +586,6 @@
         appState.data = JSON.parse(JSON.stringify(defaultDraftData));
       }
     } else {
-      // 舊版轉新版資料相容
       const oldSaved = localStorage.getItem('wra_draft_budget_v4') || localStorage.getItem('wra_draft_budget_v3');
       if (oldSaved) {
         try {
@@ -615,7 +614,6 @@
     localStorage.setItem('wra_draft_budget_v5', JSON.stringify(appState.data));
   }
 
-  // 動態產生長遠年度選單 (預設 116 ~ 130，並相容更大年份)
   function populateYearDropdown() {
     const select = document.getElementById('selectTargetYear');
     select.innerHTML = '';
@@ -623,7 +621,6 @@
     let minYear = 116;
     let maxYear = 130;
 
-    // 若資料庫已有更高年份，自動延伸選單上限
     if (appState.data && appState.data.yearsData) {
       Object.keys(appState.data.yearsData).forEach(yKey => {
         const yNum = parseInt(yKey);
@@ -651,7 +648,63 @@
     return appState.data.yearsData[cYear];
   }
 
-  // 取得特定階段數據 (Deep Clone 隔離)
+  // 尋找最近有資料的前一個年度
+  function getNearestPreviousYearWithData(targetYearStr) {
+    const targetYr = parseInt(targetYearStr);
+    let foundYear = null;
+    let maxYrSoFar = -1;
+
+    Object.keys(appState.data.yearsData).forEach(yKey => {
+      const yNum = parseInt(yKey);
+      if (!isNaN(yNum) && yNum < targetYr && appState.data.yearsData[yKey].length > 0) {
+        if (yNum > maxYrSoFar) {
+          maxYrSoFar = yNum;
+          foundYear = yKey;
+        }
+      }
+    });
+    return foundYear;
+  }
+
+  // 一鍵從上一年度複製計畫數據至當前年度
+  function copyFromPreviousYear() {
+    const curYr = appState.data.currentYear;
+    const prevYr = getNearestPreviousYearWithData(curYr);
+
+    if (!prevYr) {
+      alert('找不到可供參考的前一年度計畫數據！');
+      return;
+    }
+
+    const prevProjects = appState.data.yearsData[prevYr];
+    if (!prevProjects || prevProjects.length === 0) return;
+
+    if (!confirm(`確定要將 ${prevYr} 年度的 ${prevProjects.length} 項計畫內容，複製帶入為 ${curYr} 年度的初始【概算】資料嗎？`)) {
+      return;
+    }
+
+    const newYearProjects = prevProjects.map((p, idx) => {
+      // 取得該計畫在前一年度最後生效的經費數據
+      const latestEffectiveData = getEffectiveStageData(p, 4); 
+
+      return {
+        id: `p_${curYr}_${Date.now()}_${idx}`,
+        name: p.name,
+        stages: {
+          "1": JSON.parse(JSON.stringify(latestEffectiveData)), // 載入為新年度階段 1 概算
+          "2": null,
+          "3": null,
+          "4": null
+        }
+      };
+    });
+
+    appState.data.yearsData[curYr] = newYearProjects;
+    saveAppState();
+    renderApp();
+    showStatus(`🎉 已成功從 ${prevYr} 年度帶入 ${newYearProjects.length} 項計畫資料！`, 'success');
+  }
+
   function getEffectiveStageData(project, stageNum) {
     const sKey = stageNum.toString();
     if (project.stages[sKey] !== null && project.stages[sKey] !== undefined) {
@@ -685,7 +738,6 @@
   }
 
   function initUIEvents() {
-    // 審議階段頁籤切換
     document.querySelectorAll('.stage-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.stage-tab-btn').forEach(b => b.classList.remove('active'));
@@ -695,7 +747,6 @@
       });
     });
 
-    // 切換年度
     document.getElementById('selectTargetYear').addEventListener('change', (e) => {
       appState.data.currentYear = e.target.value;
       saveAppState();
@@ -718,7 +769,6 @@
     document.getElementById('btnExportExcel').addEventListener('click', exportExcelReport);
     document.getElementById('btnTransferToFormal').addEventListener('click', transferToFormalBudgetApp);
 
-    // JSON 備份與匯入
     document.getElementById('btnBackupJson').addEventListener('click', backupJsonData);
     document.getElementById('btnRestoreJson').addEventListener('click', () => {
       document.getElementById('jsonFileInput').click();
@@ -769,11 +819,19 @@
     const stageNum = parseInt(appState.currentStage);
 
     if (yearProjects.length === 0) {
+      const prevYr = getNearestPreviousYearWithData(curYr);
+      const copyBtnHtml = prevYr ? 
+        `<button type="button" class="btn-card-action" style="background:var(--primary-main); color:#ffffff; padding:8px 14px; font-size:0.85rem; border:none; box-shadow: 0 2px 8px rgba(145, 152, 159, 0.4);" onclick="copyFromPreviousYear()">📋 帶入 ${prevYr} 年度計畫數據</button>` : '';
+
       container.innerHTML = `
         <div class="empty-plans-hint">
-          <div style="font-size: 1.5rem; margin-bottom: 6px;">📂</div>
+          <div style="font-size: 1.6rem; margin-bottom: 6px;">📂</div>
           <div style="font-weight: 800; font-size: 1.05rem; color: #334155;">${curYr} 年度尚無籌編計畫</div>
-          <div style="font-size: 0.85rem; margin-top: 4px;">請點擊下方「➕ 新增計畫」按鈕開始建立。</div>
+          <div style="font-size: 0.85rem; margin-top: 4px; margin-bottom: 14px; color: #64748b;">您可以手動新增空白計畫，或直接承襲前一年度之計畫經費基礎進行修改：</div>
+          <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            ${copyBtnHtml}
+            <button type="button" class="btn-card-action" style="padding:8px 14px; font-size:0.85rem;" onclick="addNewProject()">➕ 新增空白計畫</button>
+          </div>
         </div>`;
       return;
     }
@@ -1067,7 +1125,7 @@
     }
 
     yearProjects.forEach(p => {
-      const stData = getEffectiveStageData(p, 4); // 第 4 階段法定預算
+      const stData = getEffectiveStageData(p, 4);
       const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
 
       if (wraGov > 0 || (stData.wra_fund || 0) > 0) {
