@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>計畫年度預算速查 - 經濟部水利署</title>
+  <title>計畫年度預算統計資訊 - 經濟部水利署</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#268785">
 
@@ -230,10 +230,11 @@
     .budget-summary-row {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       background: #f8fafc;
       padding: 8px 10px;
       border-radius: 8px;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       margin-bottom: 10px;
     }
 
@@ -310,7 +311,7 @@
       text-decoration: underline;
     }
 
-    /* 底部操作列 (修改為 Grid 完美對齊不超出螢幕) */
+    /* 底部操作列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -453,7 +454,7 @@
       <div class="agency-tag">🏛️ 經濟部水利署</div>
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
-    <div class="hero-main-title">計畫年度預算速查與管理</div>
+    <div class="hero-main-title">計畫年度預算統計資訊</div>
   </div>
 
   <!-- KPI 核心數據面板 -->
@@ -537,7 +538,7 @@
         <input type="number" id="modalStartYear" class="input-modal" value="110" placeholder="如 110">
       </div>
       <div class="form-group-modal" style="flex:1;">
-        <label>執行結束年度 (例6年期)</label>
+        <label>執行結束年度</label>
         <input type="number" id="modalEndYear" class="input-modal" value="115" placeholder="如 115">
       </div>
     </div>
@@ -611,7 +612,7 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=8.2')
+      navigator.serviceWorker.register('./service-worker.js?v=8.3')
         .then(reg => console.log('SW註冊成功'))
         .catch(err => console.log('SW註冊失敗', err));
     });
@@ -852,18 +853,11 @@
     filteredProjects.forEach(p => {
       filteredProjectsCount++;
 
-      // 計算選定區間總額與最高單年預算
+      // 計算選定區間總額
       let pRangeTotal = 0;
-      let maxYearVal = 0;
-      let maxYearName = '';
-
       rangeYears.forEach(y => {
         const b = p.budgets[y] || 0;
         pRangeTotal += b;
-        if (b > maxYearVal) {
-          maxYearVal = b;
-          maxYearName = y;
-        }
       });
 
       grandTotalThousand += pRangeTotal;
@@ -896,10 +890,6 @@
           <div>
             <span class="summary-item-label">${periodLabelStr}累計：</span>
             <span class="summary-item-val">${formatMoneyText(pRangeTotal)}</span>
-          </div>
-          <div>
-            <span class="summary-item-label">最高單年預算：</span>
-            <span class="summary-item-val">${maxYearName ? maxYearName + '年 (' + formatMoneyText(maxYearVal) + ')' : '無'}</span>
           </div>
         </div>
         <div class="card-actions">
@@ -1143,16 +1133,10 @@
 
     const rangeYears = getSelectedYearsRange();
     let totalThousand = 0;
-    let maxVal = 0;
-    let maxYear = '';
 
     rangeYears.forEach(y => {
       const val = p.budgets[y] || 0;
       totalThousand += val;
-      if (val > maxVal) {
-        maxVal = val;
-        maxYear = y;
-      }
     });
 
     const pStart = parseInt(p.startYear || '91');
@@ -1164,7 +1148,7 @@
 
     const periodStr = (actStart === actEnd) ? `${actStart} 年度` : `${actStart} 至 ${actEnd} 年度`;
 
-    const summaryStr = `${p.name}於 ${periodStr}間累計編列預算共 ${formatMoneyText(totalThousand)}，其中最高單年為 ${maxYear} 年度編列 ${formatMoneyText(maxVal)}。`;
+    const summaryStr = `${p.name}於 ${periodStr}間累計編列預算共 ${formatMoneyText(totalThousand)}。`;
 
     navigator.clipboard.writeText(summaryStr).then(() => {
       showStatus('已複製陳報摘要文字至剪貼簿！可直接貼入速報單。', 'success');
