@@ -469,7 +469,7 @@
     </div>
     <div class="kpi-card">
       <div class="kpi-title">檢視年度區間</div>
-      <div class="kpi-value" id="kpiLatestYear">91~109年</div>
+      <div class="kpi-value" id="kpiLatestYear">91~116年</div>
     </div>
   </div>
 
@@ -609,7 +609,6 @@
     editingProjectId: null
   };
 
-  // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js?v=8.3')
@@ -623,6 +622,32 @@
     initUIEvents();
     renderApp();
   });
+
+  // 動態尋找實質有編列預算金額(>0)的最新年度
+  function getLatestYearWithData() {
+    if (!appState.data || !appState.data.projects) return "109";
+    let maxYearNum = 91;
+
+    appState.data.projects.forEach(p => {
+      if (p.budgets) {
+        Object.keys(p.budgets).forEach(yKey => {
+          const val = p.budgets[yKey];
+          if (val && val > 0) {
+            const yNum = parseInt(yKey);
+            if (!isNaN(yNum) && yNum > maxYearNum) {
+              maxYearNum = yNum;
+            }
+          }
+        });
+      }
+    });
+
+    if (maxYearNum === 91) {
+      const sorted = getSortedYearsList();
+      return sorted[sorted.length - 1];
+    }
+    return maxYearNum.toString();
+  }
 
   function loadAppState() {
     const saved = localStorage.getItem('wra_budget_app_data_v4');
@@ -638,7 +663,7 @@
 
     const sortedYears = getSortedYearsList();
     appState.startYear = sortedYears[0];
-    appState.endYear = sortedYears[sortedYears.length - 1];
+    appState.endYear = getLatestYearWithData(); // 預設以實質有經費數據的最新年度為主
   }
 
   function saveAppState() {
@@ -658,7 +683,6 @@
     setTimeout(() => { msgEl.style.display = 'none'; }, 4000);
   }
 
-  // 千元轉億元/萬元顯示
   function formatMoneyText(valThousand) {
     if (!valThousand || valThousand === 0) return '0 元';
     const valNTD = valThousand * 1000;
@@ -697,12 +721,10 @@
       renderApp();
     });
 
-    // 按鈕：新增計畫
     document.getElementById('btnAddProjectBtn').addEventListener('click', () => {
       openProjectEditModal(null);
     });
 
-    // 產生該期程預算填寫欄位
     document.getElementById('btnGenerateYearInputs').addEventListener('click', () => {
       const startY = parseInt(document.getElementById('modalStartYear').value) || 110;
       const endY = parseInt(document.getElementById('modalEndYear').value) || 115;
@@ -715,7 +737,6 @@
       renderModalYearInputs(startY.toString(), endY.toString(), {});
     });
 
-    // 匯出 Excel / 匯出檔 / 匯入檔
     document.getElementById('btnExportExcel').addEventListener('click', exportToExcel);
 
     document.getElementById('btnExportJson').addEventListener('click', () => {
@@ -741,6 +762,7 @@
           if (imported.years && imported.projects) {
             appState.data = imported;
             saveAppState();
+            appState.endYear = getLatestYearWithData();
             renderApp();
             showStatus('成功讀入並更新本機預算資料庫！', 'success');
           } else {
@@ -753,7 +775,6 @@
       reader.readAsText(file);
     });
 
-    // Modal 關閉與儲存
     document.getElementById('btnCloseEditModal').addEventListener('click', () => {
       document.getElementById('editModal').style.display = 'none';
     });
@@ -805,7 +826,6 @@
     let grandTotalThousand = 0;
     let filteredProjectsCount = 0;
 
-    // 1. 篩選年度期間相關的計畫
     const filteredProjects = appState.data.projects.filter(p => {
       if (appState.searchKey && !p.name.includes(appState.searchKey)) return false;
       if (appState.selectedCategory !== 'ALL' && p.category !== appState.selectedCategory) return false;
@@ -813,10 +833,8 @@
       const pStart = parseInt(p.startYear || '91');
       const pEnd = parseInt(p.endYear || '109');
 
-      // 檢查計畫期程是否與篩選年度區間有交集
       const hasPeriodOverlap = !(pEnd < filterStart || pStart > filterEnd);
 
-      // 檢查在篩選年度內是否有實質預算金額
       let hasBudgetInRange = false;
       for (let y = filterStart; y <= filterEnd; y++) {
         const b = p.budgets[y.toString()];
@@ -829,10 +847,6 @@
       return hasPeriodOverlap || hasBudgetInRange;
     });
 
-    // 2. 排序邏輯：
-    //    第 1 排序：最新執行計畫優先 (按 endYear 結束年度降冪)
-    //    第 2 排序：選定檢視區間內的預算金額由大到小 (按區間內累計金額降冪)
-    //    第 3 排序：起始年度降冪
     filteredProjects.sort((a, b) => {
       const endA = parseInt(a.endYear || '0');
       const endB = parseInt(b.endYear || '0');
@@ -853,7 +867,6 @@
     filteredProjects.forEach(p => {
       filteredProjectsCount++;
 
-      // 計算選定區間總額
       let pRangeTotal = 0;
       rangeYears.forEach(y => {
         const b = p.budgets[y] || 0;
@@ -865,7 +878,6 @@
       let badgeClass = 'badge-gov';
       if (p.category === '特別預算') badgeClass = 'badge-spec';
 
-      // 計算該計畫在此篩選區間內的實質對應期程標籤
       const pStart = parseInt(p.startYear || '91');
       const pEnd = parseInt(p.endYear || '109');
       const actStart = Math.max(filterStart, pStart);
@@ -912,7 +924,6 @@
     document.getElementById('kpiProjectCount').innerText = `${filteredProjectsCount} 筆`;
   }
 
-  // 歷年明細：自動過濾無預算年度 (預算數 > 0 才呈現)
   function buildDetailsTableHTML(p, rangeYears) {
     const activeYears = rangeYears.filter(y => (p.budgets[y] || 0) > 0);
 
@@ -943,7 +954,6 @@
     }
   }
 
-  // 開啟 Modal（新增或編輯特定期程）
   function openProjectEditModal(pid) {
     appState.editingProjectId = pid;
     const titleEl = document.getElementById('editModalTitle');
@@ -1018,7 +1028,6 @@
     targetP.startYear = startY;
     targetP.endYear = endY;
 
-    // 將該期程年份加入系統總年份列表
     const startInt = parseInt(startY);
     const endInt = parseInt(endY);
     for (let y = startInt; y <= endInt; y++) {
@@ -1029,7 +1038,6 @@
     }
     appState.data.years.sort((a,b) => parseInt(a)-parseInt(b));
 
-    // 收集該期程的各年度輸入數值
     document.querySelectorAll('.modal-year-input').forEach(input => {
       const y = input.getAttribute('data-year');
       targetP.budgets[y] = parseInt(input.value) || 0;
@@ -1038,20 +1046,16 @@
     saveAppState();
     document.getElementById('editModal').style.display = 'none';
 
-    // 自動拉大選定區間至新期程
-    appState.endYear = appState.data.years[appState.data.years.length - 1];
+    appState.endYear = getLatestYearWithData();
     renderApp();
     showStatus(`已成功儲存「${pName}」之期程預算數據！`, 'success');
   }
 
-  // 匯出 Excel (CSV 帶 BOM 格式)
   function exportToExcel() {
     const rangeYears = getSelectedYearsRange();
     
-    // CSV 內容帶 BOM 防 Excel 亂碼
     let csvContent = "\uFEFF";
     
-    // 表頭
     let headers = ["計畫名稱", "預算類別", "執行期程", `${appState.startYear}~${appState.endYear}累計(千元)`, `${appState.startYear}~${appState.endYear}累計(億元)`];
     rangeYears.forEach(y => headers.push(`${y}年預算(千元)`));
     csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
@@ -1078,7 +1082,6 @@
       return hasPeriodOverlap || hasBudgetInRange;
     });
 
-    // 依相同排序邏輯匯出
     filteredProjects.sort((a, b) => {
       const endA = parseInt(a.endYear || '0');
       const endB = parseInt(b.endYear || '0');
@@ -1126,7 +1129,6 @@
     showStatus('已成功匯出 Excel 統計表 (.csv)！', 'success');
   }
 
-  // 複製速報單 / 公文簡報摘要
   function copySummaryText(pid) {
     const p = appState.data.projects.find(item => item.id === pid);
     if (!p) return;
