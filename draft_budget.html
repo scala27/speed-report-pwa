@@ -83,7 +83,7 @@
     }
 
     .hero-main-title {
-      font-size: 1.35rem;
+      font-size: 1.4rem;
       font-weight: 800;
       line-height: 1.25;
     }
@@ -94,43 +94,35 @@
       margin-top: 4px;
     }
 
-    /* 計畫切換控制列 */
-    .project-selector-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-card);
-      padding: 12px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    /* 頂部操作區（新增計畫） */
+    .section-header-bar {
       display: flex;
-      gap: 8px;
+      justify-content: space-between;
       align-items: center;
+      margin-bottom: 10px;
+      padding: 0 4px;
     }
 
-    .select-project {
-      flex: 1;
-      padding: 9px 10px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      border: 1.5px solid var(--border-color);
-      border-radius: var(--radius-input);
-      outline: none;
+    .section-title-text {
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .btn-add-plan-header {
       background: #ffffff;
-      color: #0f172a;
-    }
-    .select-project:focus { border-color: var(--primary-teal); }
-
-    .btn-project-action {
-      padding: 9px 12px;
+      color: #1d6a69;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 999px;
       font-size: 0.82rem;
-      font-weight: 700;
-      border-radius: var(--radius-input);
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: #334155;
+      font-weight: 800;
       cursor: pointer;
-      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: all 0.2s ease;
     }
-    .btn-project-action:active { background: #e2e8f0; }
+    .btn-add-plan-header:active { transform: scale(0.95); }
 
     /* 審議階段頁籤切換條 */
     .stage-tabs-container {
@@ -163,7 +155,7 @@
       box-shadow: 0 2px 8px rgba(38, 135, 133, 0.3);
     }
 
-    /* KPI 核心數據面板 */
+    /* KPI 核心數據面板 (全計畫彙總) */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -199,34 +191,62 @@
       color: var(--text-muted);
     }
 
-    /* 階層樹狀展示卡片 */
-    .tree-card {
+    /* 獨立計畫卡片 */
+    .project-card {
       background: var(--card-bg);
       border-radius: var(--radius-card);
       padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
     }
 
-    .tree-header {
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: var(--text-main);
+    .project-card-header {
       padding-bottom: 10px;
       border-bottom: 2px solid #e2e8f0;
       margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
 
+    .project-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .project-title-text {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    .project-actions-top {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-card-action {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+    }
+    .btn-card-action:active { background: #e2e8f0; }
+
     .inherit-tag {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       background: #fef3c7;
       color: #92400e;
       padding: 2px 8px;
       border-radius: 999px;
       font-weight: 700;
+      display: inline-block;
+      margin-top: 4px;
     }
 
     /* 階層 1：主管部會 */
@@ -290,16 +310,18 @@
     .node-level-3 {
       margin-top: 6px;
       padding-left: 12px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      display: flex;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     .node-box-l3 {
       background: #f1f5f9;
       border-radius: 6px;
-      padding: 6px;
+      padding: 6px 10px;
       text-align: center;
+      flex: 1;
+      min-width: 80px;
     }
 
     .node-title-l3 {
@@ -448,15 +470,8 @@
       <div class="agency-tag">🏛️ 經濟部水利署</div>
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
-    <div class="hero-main-title" id="activeProjectHeaderTitle">中央管流域整體改善與調適計畫(116-121年)</div>
-    <div class="hero-sub-title">116年度預算籌編與跨部會審議滾動追蹤</div>
-  </div>
-
-  <!-- 計畫選擇與管理列 -->
-  <div class="project-selector-card">
-    <select id="projectSelect" class="select-project"></select>
-    <button type="button" class="btn-project-action" id="btnAddProject">➕ 新增計畫</button>
-    <button type="button" class="btn-project-action" id="btnDeleteProject" style="color:#ef4444;">🗑️</button>
+    <div class="hero-main-title">新年度預算編列與籌編追蹤</div>
+    <div class="hero-sub-title">116年度各籌編計畫滾動審議數據</div>
   </div>
 
   <!-- 四大審議階段切換頁籤 -->
@@ -467,7 +482,7 @@
     <button class="stage-tab-btn" data-stage="4">4. 法定預算</button>
   </div>
 
-  <!-- KPI 核心數據面板 -->
+  <!-- KPI 核心數據面板 (全計畫加總) -->
   <div class="kpi-grid">
     <div class="kpi-card">
       <div class="kpi-title">116年跨部會總計</div>
@@ -486,81 +501,21 @@
     </div>
   </div>
 
+  <div class="section-header-bar">
+    <div class="section-title-text">📌 116年度籌編計畫列表</div>
+    <button type="button" class="btn-add-plan-header" id="btnAddProject">➕ 新增計畫</button>
+  </div>
+
   <div id="status-msg"></div>
 
-  <!-- 階層樹狀卡片展示區 -->
-  <div class="tree-card">
-    <div class="tree-header">
-      <span>📌 116年度經費結構明細</span>
-      <div>
-        <span class="inherit-tag" id="inheritNoticeTag" style="display:none;">承襲前階段數據</span>
-        <span style="font-size:0.8rem; font-weight:700; color:var(--primary-teal); margin-left:4px;" id="currentStageBadge">概算階段</span>
-      </div>
-    </div>
-
-    <!-- 第一層：經濟部水利署 -->
-    <div class="node-level-1">
-      <div class="node-row">
-        <div class="node-title-l1">🏢 經濟部水利署</div>
-        <div class="node-amount-l1" id="disp_wra_total">0 億元</div>
-      </div>
-
-      <!-- 第二層：公務預算 (經常 + 資本 + 補助) -->
-      <div class="node-level-2">
-        <div class="node-box-l2">
-          <div class="node-row">
-            <div class="node-title-l2">📘 公務預算 (自動勾稽小計)</div>
-            <div class="node-amount-l2" id="disp_wra_gov">0 億元</div>
-          </div>
-          <!-- 第三層：門別與用途 -->
-          <div class="node-level-3">
-            <div class="node-box-l3">
-              <div class="node-title-l3">經常門</div>
-              <div class="node-amount-l3" id="disp_wra_cur">0 元</div>
-            </div>
-            <div class="node-box-l3">
-              <div class="node-title-l3">資本門</div>
-              <div class="node-amount-l3" id="disp_wra_cap">0 元</div>
-            </div>
-            <div class="node-box-l3">
-              <div class="node-title-l3">補助款</div>
-              <div class="node-amount-l3" id="disp_wra_sub">0 元</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 第二層：水資源作業基金 -->
-        <div class="node-box-l2">
-          <div class="node-row">
-            <div class="node-title-l2">📗 水資源作業基金</div>
-            <div class="node-amount-l2" id="disp_wra_fund">0 億元</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 第一層：農業部 -->
-    <div class="node-level-1">
-      <div class="node-row">
-        <div class="node-title-l1">🌾 農業部</div>
-        <div class="node-amount-l1" id="disp_moa">0 億元</div>
-      </div>
-    </div>
-
-    <!-- 第一層：環境部 -->
-    <div class="node-level-1">
-      <div class="node-row">
-        <div class="node-title-l1">🍃 環境部</div>
-        <div class="node-amount-l1" id="disp_moe">0 億元</div>
-      </div>
-    </div>
-  </div>
+  <!-- 計畫卡片列表放置區 (多計畫卡片獨立顯示) -->
+  <div id="projectCardsContainer"></div>
 </div>
 
-<!-- 底部操作列 -->
+<!-- 底部固定操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
-    <button type="button" class="btn-action btn-action-hero" id="btnEditCurrentStage">✏️ 填寫/修正數據</button>
+    <button type="button" class="btn-action btn-action-hero" id="btnBottomAddPlan">➕ 新增計畫</button>
     <button type="button" class="btn-action" id="btnCopySummary">📋 複製長官摘要</button>
     <button type="button" class="btn-action" id="btnExportExcel">📊 匯出 Excel</button>
     <button type="button" class="btn-action" id="btnTransferToFormal" style="background:#fef3c7; color:#92400e; border-color:#fcd34d;">🚀 轉入法定庫</button>
@@ -618,24 +573,33 @@
       </div>
     </div>
 
-    <button type="button" class="btn-action btn-action-hero" id="btnSaveStageData" style="width:100%; padding:11px;">💾 儲存並更新此階段數值</button>
+    <button type="button" class="btn-action btn-action-hero" id="btnSaveStageData" style="width:100%; padding:11px;">💾 儲存並更新數據</button>
   </div>
 </div>
 
 <script>
-  // 預置的多計畫初始資料庫（以您截圖填好的真實數據為預設第一項）
+  // 預置的多計畫初始資料庫（精準預載「中央管流域」與「荖濃溪防災韌性」）
   const defaultDraftData = {
     targetYear: "116",
-    activeProjectId: "p_116_01",
     projects: [
       {
         id: "p_116_01",
         name: "中央管流域整體改善與調適計畫(116-121年)",
         stages: {
           "1": { wra_cur: 1300000, wra_cap: 9450000, wra_sub: 600000, wra_fund: 1500000, moa: 500000, moe: 150000 },
-          "2": null, // null 代表自動承襲階段 1
-          "3": null, // null 代表自動承襲階段 2
-          "4": null  // null 代表自動承襲階段 3
+          "2": null,
+          "3": null,
+          "4": null
+        }
+      },
+      {
+        id: "p_116_02",
+        name: "荖濃溪防災韌性計畫(114-118 年)",
+        stages: {
+          "1": { wra_cur: 12400, wra_cap: 287600, wra_sub: 0, wra_fund: 0, moa: 50500, moe: 0 },
+          "2": null,
+          "3": null,
+          "4": null
         }
       }
     ]
@@ -650,7 +614,8 @@
 
   let appState = {
     data: null,
-    currentStage: "1"
+    currentStage: "1",
+    editingProjectId: null
   };
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -660,7 +625,7 @@
   });
 
   function loadAppState() {
-    const saved = localStorage.getItem('wra_draft_budget_multi_v1');
+    const saved = localStorage.getItem('wra_draft_budget_cards_v1');
     if (saved) {
       try {
         appState.data = JSON.parse(saved);
@@ -673,19 +638,10 @@
   }
 
   function saveAppState() {
-    localStorage.setItem('wra_draft_budget_multi_v1', JSON.stringify(appState.data));
+    localStorage.setItem('wra_draft_budget_cards_v1', JSON.stringify(appState.data));
   }
 
-  function getCurrentProject() {
-    let p = appState.data.projects.find(i => i.id === appState.data.activeProjectId);
-    if (!p && appState.data.projects.length > 0) {
-      p = appState.data.projects[0];
-      appState.data.activeProjectId = p.id;
-    }
-    return p;
-  }
-
-  // 取得特定階段之生效數據（若未單獨設定，則向上順承）
+  // 取得特定計畫在特定審議階段之生效數據 (向上順承邏輯)
   function getEffectiveStageData(project, stageNum) {
     const sKey = stageNum.toString();
     if (project.stages[sKey] !== null && project.stages[sKey] !== undefined) {
@@ -733,48 +689,10 @@
       });
     });
 
-    // 下拉選單切換計畫
-    document.getElementById('projectSelect').addEventListener('change', (e) => {
-      appState.data.activeProjectId = e.target.value;
-      saveAppState();
-      renderApp();
-    });
+    // 新增計畫按鈕綁定
+    document.getElementById('btnAddProject').addEventListener('click', addNewProject);
+    document.getElementById('btnBottomAddPlan').addEventListener('click', addNewProject);
 
-    // 新增籌編計畫
-    document.getElementById('btnAddProject').addEventListener('click', () => {
-      const pName = prompt('請輸入新增籌編計畫名稱（如：重要河川環境營造計畫(第3期)）：');
-      if (!pName || !pName.trim()) return;
-
-      const newId = `p_116_${Date.now()}`;
-      appState.data.projects.push({
-        id: newId,
-        name: pName.trim(),
-        stages: { "1": { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0 }, "2": null, "3": null, "4": null }
-      });
-      appState.data.activeProjectId = newId;
-      saveAppState();
-      renderApp();
-      showStatus(`已成功新增計畫「${pName.trim()}」`, 'success');
-    });
-
-    // 刪除目前計畫
-    document.getElementById('btnDeleteProject').addEventListener('click', () => {
-      const p = getCurrentProject();
-      if (!p) return;
-      if (appState.data.projects.length <= 1) {
-        alert('最少需保留一個計畫！');
-        return;
-      }
-      if (confirm(`確定要刪除籌編計畫「${p.name}」嗎？`)) {
-        appState.data.projects = appState.data.projects.filter(i => i.id !== p.id);
-        appState.data.activeProjectId = appState.data.projects[0].id;
-        saveAppState();
-        renderApp();
-        showStatus('已刪除該籌編計畫', 'info');
-      }
-    });
-
-    document.getElementById('btnEditCurrentStage').addEventListener('click', openModalForCurrentStage);
     document.getElementById('btnCloseModal').addEventListener('click', () => {
       document.getElementById('editModal').style.display = 'none';
     });
@@ -789,70 +707,178 @@
     document.getElementById('btnTransferToFormal').addEventListener('click', transferToFormalBudgetApp);
   }
 
-  function renderApp() {
-    renderProjectDropdown();
+  function addNewProject() {
+    const pName = prompt('請輸入新增籌編計畫名稱：');
+    if (!pName || !pName.trim()) return;
 
-    const p = getCurrentProject();
+    const newId = `p_116_${Date.now()}`;
+    appState.data.projects.push({
+      id: newId,
+      name: pName.trim(),
+      stages: { "1": { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0 }, "2": null, "3": null, "4": null }
+    });
+    saveAppState();
+    renderApp();
+    showStatus(`已成功新增計畫「${pName.trim()}」`, 'success');
+  }
+
+  function deleteProject(projectId) {
+    const p = appState.data.projects.find(i => i.id === projectId);
     if (!p) return;
+    if (confirm(`確定要刪除籌編計畫「${p.name}」嗎？`)) {
+      appState.data.projects = appState.data.projects.filter(i => i.id !== projectId);
+      saveAppState();
+      renderApp();
+      showStatus('已刪除該計畫', 'info');
+    }
+  }
 
-    document.getElementById('activeProjectHeaderTitle').innerText = p.name;
+  function renderApp() {
+    const container = document.getElementById('projectCardsContainer');
+    container.innerHTML = '';
+
+    let grandTotSum = 0;
+    let wraTotSum = 0;
+    let wraGovSum = 0;
+    let wraFundSum = 0;
+    let moaSum = 0;
+    let moeSum = 0;
 
     const stageNum = parseInt(appState.currentStage);
-    const result = getEffectiveStageData(p, stageNum);
-    const stData = result.data;
 
-    // 是否順承提示標籤
-    const inheritTag = document.getElementById('inheritNoticeTag');
-    if (result.isInherited && stageNum > 1) {
-      inheritTag.style.display = 'inline-block';
-      inheritTag.innerText = `承襲階段 ${stageNum-1} 數據`;
-    } else {
-      inheritTag.style.display = 'none';
-    }
+    appState.data.projects.forEach(p => {
+      const result = getEffectiveStageData(p, stageNum);
+      const stData = result.data;
 
-    // 勾稽加總計算
-    const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
-    const wraTotal = wraGov + (stData.wra_fund || 0);
-    const otherTotal = (stData.moa || 0) + (stData.moe || 0);
-    const grandTotal = wraTotal + otherTotal;
+      const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
+      const wraFund = stData.wra_fund || 0;
+      const wraTotal = wraGov + wraFund;
+      const moa = stData.moa || 0;
+      const moe = stData.moe || 0;
+      const projectGrandTotal = wraTotal + moa + moe;
 
-    // UI 顯示更新
-    document.getElementById('currentStageBadge').innerText = STAGE_NAMES[appState.currentStage];
-    document.getElementById('kpiGrandTotal').innerText = formatMoneyText(grandTotal);
+      // 累算至全頁頂部 KPI
+      grandTotSum += projectGrandTotal;
+      wraTotSum += wraTotal;
+      wraGovSum += wraGov;
+      wraFundSum += wraFund;
+      moaSum += moa;
+      moeSum += moe;
+
+      // 生成計畫卡片 HTML
+      const card = document.createElement('div');
+      card.className = 'project-card';
+
+      // 1. 水利署內部區塊 (無經費則隱藏門別/基金)
+      let wraHtml = '';
+      if (wraTotal > 0) {
+        let govSubCatsHtml = '';
+        if ((stData.wra_cur || 0) > 0) govSubCatsHtml += `<div class="node-box-l3"><div class="node-title-l3">經常門</div><div class="node-amount-l3">${formatMoneyText(stData.wra_cur)}</div></div>`;
+        if ((stData.wra_cap || 0) > 0) govSubCatsHtml += `<div class="node-box-l3"><div class="node-title-l3">資本門</div><div class="node-amount-l3">${formatMoneyText(stData.wra_cap)}</div></div>`;
+        if ((stData.wra_sub || 0) > 0) govSubCatsHtml += `<div class="node-box-l3"><div class="node-title-l3">補助款</div><div class="node-amount-l3">${formatMoneyText(stData.wra_sub)}</div></div>`;
+
+        let govBlockHtml = '';
+        if (wraGov > 0) {
+          govBlockHtml = `
+            <div class="node-box-l2">
+              <div class="node-row">
+                <div class="node-title-l2">📘 公務預算 (自動勾稽小計)</div>
+                <div class="node-amount-l2">${formatMoneyText(wraGov)}</div>
+              </div>
+              <div class="node-level-3">${govSubCatsHtml}</div>
+            </div>`;
+        }
+
+        let fundBlockHtml = '';
+        if (wraFund > 0) {
+          fundBlockHtml = `
+            <div class="node-box-l2">
+              <div class="node-row">
+                <div class="node-title-l2">📗 水資源作業基金</div>
+                <div class="node-amount-l2">${formatMoneyText(wraFund)}</div>
+              </div>
+            </div>`;
+        }
+
+        wraHtml = `
+          <div class="node-level-1">
+            <div class="node-row">
+              <div class="node-title-l1">🏢 經濟部水利署</div>
+              <div class="node-amount-l1">${formatMoneyText(wraTotal)}</div>
+            </div>
+            <div class="node-level-2">
+              ${govBlockHtml}
+              ${fundBlockHtml}
+            </div>
+          </div>`;
+      }
+
+      // 2. 農業部區塊 (0元自動隱藏)
+      let moaHtml = '';
+      if (moa > 0) {
+        moaHtml = `
+          <div class="node-level-1">
+            <div class="node-row">
+              <div class="node-title-l1">🌾 農業部</div>
+              <div class="node-amount-l1">${formatMoneyText(moa)}</div>
+            </div>
+          </div>`;
+      }
+
+      // 3. 環境部區塊 (0元自動隱藏)
+      let moeHtml = '';
+      if (moe > 0) {
+        moeHtml = `
+          <div class="node-level-1">
+            <div class="node-row">
+              <div class="node-title-l1">🍃 環境部</div>
+              <div class="node-amount-l1">${formatMoneyText(moe)}</div>
+            </div>
+          </div>`;
+      }
+
+      const inheritTagHtml = (result.isInherited && stageNum > 1) 
+        ? `<div class="inherit-tag">承襲階段 ${stageNum-1} 數據</div>` 
+        : '';
+
+      card.innerHTML = `
+        <div class="project-card-header">
+          <div class="project-title-row">
+            <div>
+              <div class="project-title-text">${p.name}</div>
+              ${inheritTagHtml}
+            </div>
+            <div class="project-actions-top">
+              <button class="btn-card-action" onclick="openModalForProject('${p.id}')">✏️ 編輯</button>
+              <button class="btn-card-action" style="color:#ef4444;" onclick="deleteProject('${p.id}')">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="project-tree-body">
+          ${wraHtml}
+          ${moaHtml}
+          ${moeHtml}
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+    // 更新頂部 aggregated KPI 數據
+    document.getElementById('kpiGrandTotal').innerText = formatMoneyText(grandTotSum);
     document.getElementById('kpiDiffText').innerText = `當前：${STAGE_NAMES[appState.currentStage]}`;
 
-    document.getElementById('kpiWraTotal').innerText = formatMoneyText(wraTotal);
-    document.getElementById('kpiWraGovSub').innerText = `公務: ${formatMoneyText(wraGov)} | 基金: ${formatMoneyText(stData.wra_fund)}`;
+    document.getElementById('kpiWraTotal').innerText = formatMoneyText(wraTotSum);
+    document.getElementById('kpiWraGovSub').innerText = `公務: ${formatMoneyText(wraGovSum)} | 基金: ${formatMoneyText(wraFundSum)}`;
 
-    document.getElementById('kpiOtherDepts').innerText = formatMoneyText(otherTotal);
-    document.getElementById('kpiOtherSub').innerText = `農: ${formatMoneyText(stData.moa)} | 環: ${formatMoneyText(stData.moe)}`;
-
-    // 樹狀內容渲染
-    document.getElementById('disp_wra_total').innerText = formatMoneyText(wraTotal);
-    document.getElementById('disp_wra_gov').innerText = formatMoneyText(wraGov);
-    document.getElementById('disp_wra_cur').innerText = formatMoneyText(stData.wra_cur);
-    document.getElementById('disp_wra_cap').innerText = formatMoneyText(stData.wra_cap);
-    document.getElementById('disp_wra_sub').innerText = formatMoneyText(stData.wra_sub);
-    document.getElementById('disp_wra_fund').innerText = formatMoneyText(stData.wra_fund);
-
-    document.getElementById('disp_moa').innerText = formatMoneyText(stData.moa);
-    document.getElementById('disp_moe').innerText = formatMoneyText(stData.moe);
+    document.getElementById('kpiOtherDepts').innerText = formatMoneyText(moaSum + moeSum);
+    document.getElementById('kpiOtherSub').innerText = `農: ${formatMoneyText(moaSum)} | 環: ${formatMoneyText(moeSum)}`;
   }
 
-  function renderProjectDropdown() {
-    const select = document.getElementById('projectSelect');
-    select.innerHTML = '';
-    appState.data.projects.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.innerText = p.name;
-      if (p.id === appState.data.activeProjectId) opt.selected = true;
-      select.appendChild(opt);
-    });
-  }
-
-  function openModalForCurrentStage() {
-    const p = getCurrentProject();
+  function openModalForProject(projectId) {
+    appState.editingProjectId = projectId;
+    const p = appState.data.projects.find(i => i.id === projectId);
     if (!p) return;
 
     const stageName = STAGE_NAMES[appState.currentStage];
@@ -883,7 +909,7 @@
   }
 
   function saveModalStageData() {
-    const p = getCurrentProject();
+    const p = appState.data.projects.find(i => i.id === appState.editingProjectId);
     if (!p) return;
 
     const cur = parseInt(document.getElementById('input_wra_cur').value) || 0;
@@ -908,28 +934,40 @@
     showStatus(`已更新「${p.name}」在【${STAGE_NAMES[appState.currentStage]}】之經費數據！`, 'success');
   }
 
-  // 複製長官速報摘要
+  // 複製全計畫長官速報摘要
   function copyExecutiveSummary() {
-    const p = getCurrentProject();
-    if (!p) return;
-
     const stageName = STAGE_NAMES[appState.currentStage];
     const stageNum = parseInt(appState.currentStage);
-    const stData = getEffectiveStageData(p, stageNum).data;
 
-    const wraGov = stData.wra_cur + stData.wra_cap + stData.wra_sub;
-    const wraTotal = wraGov + stData.wra_fund;
-    const grandTotal = wraTotal + stData.moa + stData.moe;
+    let lines = [`【116年度預算籌編跨部會總速報】(${stageName})`];
+    let grandAll = 0;
 
-    const summaryText = `【${p.name}】\n` +
-      `116年度籌編金額速報（${stageName}）：\n` +
-      `1. 水利署公務預算：共 ${formatMoneyText(wraGov)}（經常門 ${formatMoneyText(stData.wra_cur)}、資本門 ${formatMoneyText(stData.wra_cap)}、補助款 ${formatMoneyText(stData.wra_sub)}）。\n` +
-      `2. 水利署水資源基金：${formatMoneyText(stData.wra_fund)}，水利署經費合計 ${formatMoneyText(wraTotal)}。\n` +
-      `3. 跨部會預算：農業部 ${formatMoneyText(stData.moa)}、環境部 ${formatMoneyText(stData.moe)}。\n` +
-      `全案116年度籌編總金額為 ${formatMoneyText(grandTotal)}。`;
+    appState.data.projects.forEach((p, index) => {
+      const stData = getEffectiveStageData(p, stageNum).data;
+      const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
+      const wraTotal = wraGov + (stData.wra_fund || 0);
+      const moa = stData.moa || 0;
+      const moe = stData.moe || 0;
+      const tot = wraTotal + moa + moe;
+      grandAll += tot;
+
+      let pText = `${index + 1}. ${p.name}\n` +
+        `   - 水利署：${formatMoneyText(wraTotal)} (公務 ${formatMoneyText(wraGov)}` +
+        (wraGov > 0 ? ` [經常 ${formatMoneyText(stData.wra_cur)}、資本 ${formatMoneyText(stData.wra_cap)}` + (stData.wra_sub > 0 ? `、補助 ${formatMoneyText(stData.wra_sub)}` : '') + `]` : '') +
+        (stData.wra_fund > 0 ? `、基金 ${formatMoneyText(stData.wra_fund)}` : '') + `)`;
+
+      if (moa > 0) pText += `\n   - 農業部：${formatMoneyText(moa)}`;
+      if (moe > 0) pText += `\n   - 環境部：${formatMoneyText(moe)}`;
+
+      lines.push(pText);
+    });
+
+    lines.push(`全案共 ${appState.data.projects.length} 項籌編計畫，116年總計金額為 ${formatMoneyText(grandAll)}。`);
+
+    const summaryText = lines.join('\n\n');
 
     navigator.clipboard.writeText(summaryText).then(() => {
-      showStatus('已複製長官簡報摘要至剪貼簿！', 'success');
+      showStatus('已複製全計畫長官簡報摘要至剪貼簿！', 'success');
     }).catch(err => {
       prompt('請手動複製摘要文字：', summaryText);
     });
@@ -937,46 +975,31 @@
 
   // 匯出 Excel
   function exportExcelReport() {
-    const p = getCurrentProject();
-    if (!p) return;
-
     let csvContent = "\uFEFF";
-    csvContent += `"計畫名稱","${p.name}"\n`;
-    csvContent += `"審議階段","水利署經常門(千元)","水利署資本門(千元)","水利署補助款(千元)","水利署公務小計(千元)","水資源基金(千元)","水利署合計(千元)","農業部(千元)","環境部(千元)","116年總計(千元)"\n`;
+    csvContent += `"計畫名稱","審議階段","水利署經常門(千元)","水利署資本門(千元)","水利署補助款(千元)","水利署公務小計(千元)","水資源基金(千元)","水利署合計(千元)","農業部(千元)","環境部(千元)","116年總計(千元)"\n`;
 
-    for (let st = 1; st <= 4; st++) {
-      const stData = getEffectiveStageData(p, st).data;
-      const gov = stData.wra_cur + stData.wra_cap + stData.wra_sub;
-      const wraTot = gov + stData.wra_fund;
-      const grand = wraTot + stData.moa + stData.moe;
+    appState.data.projects.forEach(p => {
+      for (let st = 1; st <= 4; st++) {
+        const stData = getEffectiveStageData(p, st).data;
+        const gov = (stData.wra_cur||0) + (stData.wra_cap||0) + (stData.wra_sub||0);
+        const wraTot = gov + (stData.wra_fund||0);
+        const grand = wraTot + (stData.moa||0) + (stData.moe||0);
 
-      csvContent += `"${STAGE_NAMES[st.toString()]}",${stData.wra_cur},${stData.wra_cap},${stData.wra_sub},${gov},${stData.wra_fund},${wraTot},${stData.moa},${stData.moe},${grand}\n`;
-    }
+        csvContent += `"${p.name.replace(/"/g, '""')}","${STAGE_NAMES[st.toString()]}",${stData.wra_cur||0},${stData.wra_cap||0},${stData.wra_sub||0},${gov},${stData.wra_fund||0},${wraTot},${stData.moa||0},${stData.moe||0},${grand}\n`;
+      }
+    });
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${p.name}_116年籌編表.csv`;
+    link.download = `116年度預算籌編總表.csv`;
     link.click();
     showStatus('已成功匯出 Excel 統計表 (.csv)！', 'success');
   }
 
   // 轉入正式法定預算資料庫 (Bridge Action)
   function transferToFormalBudgetApp() {
-    const p = getCurrentProject();
-    if (!p) return;
-
-    const stData = getEffectiveStageData(p, 4).data; // 取得第 4 階段法定預算資料
-    const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
-
-    if (wraGov === 0 && stData.wra_fund === 0) {
-      alert('目前「4. 法定預算」階段尚無有效數據，請於三讀通過確定後，進入第 4 階段輸入數據再執行轉入！');
-      return;
-    }
-
-    if (!confirm(`確定要將「${p.name}」116年度【法定預算】公務預算 (${formatMoneyText(wraGov)}) 轉入正式計畫資料庫嗎？`)) {
-      return;
-    }
+    let transferredCount = 0;
 
     let formalData = null;
     const savedFormal = localStorage.getItem('wra_budget_app_data_v4');
@@ -994,24 +1017,36 @@
       formalData.years.sort((a,b) => parseInt(a)-parseInt(b));
     }
 
-    let existP = formalData.projects.find(item => item.name === p.name);
+    appState.data.projects.forEach(p => {
+      const stData = getEffectiveStageData(p, 4).data; // 第 4 階段法定預算
+      const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
 
-    if (existP) {
-      existP.startYear = "116";
-      existP.budgets["116"] = wraGov;
-    } else {
-      formalData.projects.unshift({
-        id: `p_116_${Date.now()}`,
-        name: p.name,
-        category: "公務預算",
-        startYear: "116",
-        endYear: "121",
-        budgets: { "116": wraGov }
-      });
+      if (wraGov > 0 || (stData.wra_fund || 0) > 0) {
+        let existP = formalData.projects.find(item => item.name === p.name);
+        if (existP) {
+          existP.startYear = "116";
+          existP.budgets["116"] = wraGov;
+        } else {
+          formalData.projects.unshift({
+            id: `p_116_${Date.now()}_${Math.floor(Math.random()*1000)}`,
+            name: p.name,
+            category: "公務預算",
+            startYear: "116",
+            endYear: "121",
+            budgets: { "116": wraGov }
+          });
+        }
+        transferredCount++;
+      }
+    });
+
+    if (transferredCount === 0) {
+      alert('目前「4. 法定預算」階段尚無有效數據，請於三讀通過確定後，進入第 4 階段輸入數據再執行轉入！');
+      return;
     }
 
     localStorage.setItem('wra_budget_app_data_v4', JSON.stringify(formalData));
-    showStatus('🎉 已成功將 116 年法定預算數據寫入並更新至正式計畫資料庫！', 'success');
+    showStatus(`🎉 已成功將 ${transferredCount} 筆 116 年法定預算計畫數據轉入正式計畫庫！`, 'success');
   }
 </script>
 </body>
