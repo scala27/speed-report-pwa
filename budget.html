@@ -610,7 +610,7 @@
   // PWA Service Worker 註冊
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js?v=8.0')
+      navigator.serviceWorker.register('./service-worker.js?v=8.1')
         .then(reg => console.log('SW註冊成功'))
         .catch(err => console.log('SW註冊失敗', err));
     });
@@ -827,7 +827,7 @@
       return hasPeriodOverlap || hasBudgetInRange;
     });
 
-    // 2. 修正排序邏輯：
+    // 2. 排序邏輯：
     //    第 1 排序：最新執行計畫優先 (按 endYear 結束年度降冪)
     //    第 2 排序：選定檢視區間內的預算金額由大到小 (按區間內累計金額降冪)
     //    第 3 排序：起始年度降冪
@@ -921,13 +921,19 @@
     document.getElementById('kpiProjectCount').innerText = `${filteredProjectsCount} 筆`;
   }
 
-  // 純字串拼接建構歷年明細表格
+  // 歷年明細：自動過濾無預算年度 (預算數 > 0 才呈現)
   function buildDetailsTableHTML(p, rangeYears) {
+    // 只保留該計畫在選定區間內且預算數 > 0 的年度
+    const activeYears = rangeYears.filter(y => (p.budgets[y] || 0) > 0);
+
+    if (activeYears.length === 0) {
+      return '<div style="text-align:center; color:#64748b; padding:10px 0; font-size:0.82rem;">選定檢視區間內尚無預算數據</div>';
+    }
+
     let rowsHtml = '';
-    rangeYears.forEach(y => {
+    activeYears.forEach(y => {
       const val = p.budgets[y] || 0;
-      const isZero = (val === 0);
-      rowsHtml += '<tr style="' + (isZero ? 'color:#94a3b8;' : 'font-weight:600;') + '">' +
+      rowsHtml += '<tr style="font-weight:600;">' +
         '<td style="text-align:center;">' + y + '年</td>' +
         '<td style="text-align:right;">' + val.toLocaleString() + '</td>' +
         '<td style="text-align:right; color:#268785;">' + formatMoneyText(val) + '</td>' +
@@ -1052,7 +1058,7 @@
   function exportToExcel() {
     const rangeYears = getSelectedYearsRange();
     
-    // CSV 內容帶 BOM 防 Excel 簡體/繁體亂碼
+    // CSV 內容帶 BOM 防 Excel 亂碼
     let csvContent = "\uFEFF";
     
     // 表頭
@@ -1082,7 +1088,7 @@
       return hasPeriodOverlap || hasBudgetInRange;
     });
 
-    // 依相同排序 logic 匯出
+    // 依相同排序邏輯匯出
     filteredProjects.sort((a, b) => {
       const endA = parseInt(a.endYear || '0');
       const endB = parseInt(b.endYear || '0');
