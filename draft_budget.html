@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>新年度預算編列 - 經濟部水利署</title>
+  <title>新年度計畫預算編列追蹤 - 經濟部水利署</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#268785">
 
@@ -46,7 +46,7 @@
     .hero-header-card {
       background: linear-gradient(135deg, #1d6a69 0%, #268785 60%, #42aba8 100%);
       border-radius: var(--radius-card);
-      padding: 20px;
+      padding: 16px 20px;
       color: #ffffff;
       margin-bottom: 12px;
       box-shadow: 0 10px 22px -5px rgba(0, 0, 0, 0.25);
@@ -56,7 +56,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .agency-tag {
@@ -83,15 +83,9 @@
     }
 
     .hero-main-title {
-      font-size: 1.4rem;
+      font-size: 1.45rem;
       font-weight: 800;
-      line-height: 1.25;
-    }
-
-    .hero-sub-title {
-      font-size: 0.82rem;
-      opacity: 0.92;
-      margin-top: 4px;
+      line-height: 1.2;
     }
 
     /* 頂部操作區（新增計畫） */
@@ -155,42 +149,6 @@
       box-shadow: 0 2px 8px rgba(38, 135, 133, 0.3);
     }
 
-    /* KPI 核心數據面板 (全計畫彙總) */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .kpi-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-card);
-      padding: 10px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .kpi-title {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      font-weight: 700;
-      margin-bottom: 2px;
-    }
-
-    .kpi-value {
-      font-size: 0.98rem;
-      font-weight: 800;
-      color: var(--primary-teal);
-    }
-
-    .kpi-sub {
-      font-size: 0.7rem;
-      font-weight: 700;
-      margin-top: 2px;
-      color: var(--text-muted);
-    }
-
     /* 獨立計畫卡片 */
     .project-card {
       background: var(--card-bg);
@@ -237,17 +195,6 @@
       cursor: pointer;
     }
     .btn-card-action:active { background: #e2e8f0; }
-
-    .inherit-tag {
-      font-size: 0.7rem;
-      background: #fef3c7;
-      color: #92400e;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 700;
-      display: inline-block;
-      margin-top: 4px;
-    }
 
     /* 階層 1：主管部會 */
     .node-level-1 {
@@ -470,8 +417,7 @@
       <div class="agency-tag">🏛️ 經濟部水利署</div>
       <a href="./index.html" class="btn-back-portal">🏠 返回工作區</a>
     </div>
-    <div class="hero-main-title">新年度預算編列與籌編追蹤</div>
-    <div class="hero-sub-title">116年度各籌編計畫滾動審議數據</div>
+    <div class="hero-main-title">新年度計畫預算編列追蹤</div>
   </div>
 
   <!-- 四大審議階段切換頁籤 -->
@@ -482,25 +428,6 @@
     <button class="stage-tab-btn" data-stage="4">4. 法定預算</button>
   </div>
 
-  <!-- KPI 核心數據面板 (全計畫加總) -->
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-title">116年跨部會總計</div>
-      <div class="kpi-value" id="kpiGrandTotal">0 億元</div>
-      <div class="kpi-sub" id="kpiDiffText">當前：概算階段</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">水利署經費小計</div>
-      <div class="kpi-value" id="kpiWraTotal">0 億元</div>
-      <div class="kpi-sub" id="kpiWraGovSub">公務: 0億 | 基金: 0億</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-title">農業部與環境部</div>
-      <div class="kpi-value" id="kpiOtherDepts">0 億元</div>
-      <div class="kpi-sub" id="kpiOtherSub">農: 0億 | 環: 0億</div>
-    </div>
-  </div>
-
   <div class="section-header-bar">
     <div class="section-title-text">📌 116年度籌編計畫列表</div>
     <button type="button" class="btn-add-plan-header" id="btnAddProject">➕ 新增計畫</button>
@@ -508,7 +435,7 @@
 
   <div id="status-msg"></div>
 
-  <!-- 計畫卡片列表放置區 (多計畫卡片獨立顯示) -->
+  <!-- 計畫卡片列表放置區 -->
   <div id="projectCardsContainer"></div>
 </div>
 
@@ -578,7 +505,7 @@
 </div>
 
 <script>
-  // 預置的多計畫初始資料庫（精準預載「中央管流域」與「荖濃溪防災韌性」）
+  // 預置的多計畫初始資料庫
   const defaultDraftData = {
     targetYear: "116",
     projects: [
@@ -625,7 +552,7 @@
   });
 
   function loadAppState() {
-    const saved = localStorage.getItem('wra_draft_budget_cards_v1');
+    const saved = localStorage.getItem('wra_draft_budget_v3');
     if (saved) {
       try {
         appState.data = JSON.parse(saved);
@@ -638,25 +565,21 @@
   }
 
   function saveAppState() {
-    localStorage.setItem('wra_draft_budget_cards_v1', JSON.stringify(appState.data));
+    localStorage.setItem('wra_draft_budget_v3', JSON.stringify(appState.data));
   }
 
-  // 取得特定計畫在特定審議階段之生效數據 (向上順承邏輯)
+  // 取得特定階段數據（以 Deep Clone 徹底隔離記憶體，絕不污染前階段數據）
   function getEffectiveStageData(project, stageNum) {
     const sKey = stageNum.toString();
     if (project.stages[sKey] !== null && project.stages[sKey] !== undefined) {
-      return { data: project.stages[sKey], isInherited: false };
+      return JSON.parse(JSON.stringify(project.stages[sKey]));
     }
 
     if (stageNum > 1) {
-      const parentResult = getEffectiveStageData(project, stageNum - 1);
-      return { data: parentResult.data, isInherited: true };
+      return getEffectiveStageData(project, stageNum - 1);
     }
 
-    return {
-      data: { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0 },
-      isInherited: false
-    };
+    return { wra_cur: 0, wra_cap: 0, wra_sub: 0, wra_fund: 0, moa: 0, moe: 0 };
   }
 
   function showStatus(text, type = 'info') {
@@ -689,7 +612,6 @@
       });
     });
 
-    // 新增計畫按鈕綁定
     document.getElementById('btnAddProject').addEventListener('click', addNewProject);
     document.getElementById('btnBottomAddPlan').addEventListener('click', addNewProject);
 
@@ -737,39 +659,21 @@
     const container = document.getElementById('projectCardsContainer');
     container.innerHTML = '';
 
-    let grandTotSum = 0;
-    let wraTotSum = 0;
-    let wraGovSum = 0;
-    let wraFundSum = 0;
-    let moaSum = 0;
-    let moeSum = 0;
-
     const stageNum = parseInt(appState.currentStage);
 
     appState.data.projects.forEach(p => {
-      const result = getEffectiveStageData(p, stageNum);
-      const stData = result.data;
+      const stData = getEffectiveStageData(p, stageNum);
 
       const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
       const wraFund = stData.wra_fund || 0;
       const wraTotal = wraGov + wraFund;
       const moa = stData.moa || 0;
       const moe = stData.moe || 0;
-      const projectGrandTotal = wraTotal + moa + moe;
 
-      // 累算至全頁頂部 KPI
-      grandTotSum += projectGrandTotal;
-      wraTotSum += wraTotal;
-      wraGovSum += wraGov;
-      wraFundSum += wraFund;
-      moaSum += moa;
-      moeSum += moe;
-
-      // 生成計畫卡片 HTML
       const card = document.createElement('div');
       card.className = 'project-card';
 
-      // 1. 水利署內部區塊 (無經費則隱藏門別/基金)
+      // 1. 水利署內部區塊 (無經費隱藏相關小項目)
       let wraHtml = '';
       if (wraTotal > 0) {
         let govSubCatsHtml = '';
@@ -782,7 +686,7 @@
           govBlockHtml = `
             <div class="node-box-l2">
               <div class="node-row">
-                <div class="node-title-l2">📘 公務預算 (自動勾稽小計)</div>
+                <div class="node-title-l2">📘 公務預算</div>
                 <div class="node-amount-l2">${formatMoneyText(wraGov)}</div>
               </div>
               <div class="node-level-3">${govSubCatsHtml}</div>
@@ -837,17 +741,10 @@
           </div>`;
       }
 
-      const inheritTagHtml = (result.isInherited && stageNum > 1) 
-        ? `<div class="inherit-tag">承襲階段 ${stageNum-1} 數據</div>` 
-        : '';
-
       card.innerHTML = `
         <div class="project-card-header">
           <div class="project-title-row">
-            <div>
-              <div class="project-title-text">${p.name}</div>
-              ${inheritTagHtml}
-            </div>
+            <div class="project-title-text">${p.name}</div>
             <div class="project-actions-top">
               <button class="btn-card-action" onclick="openModalForProject('${p.id}')">✏️ 編輯</button>
               <button class="btn-card-action" style="color:#ef4444;" onclick="deleteProject('${p.id}')">🗑️</button>
@@ -864,16 +761,6 @@
 
       container.appendChild(card);
     });
-
-    // 更新頂部 aggregated KPI 數據
-    document.getElementById('kpiGrandTotal').innerText = formatMoneyText(grandTotSum);
-    document.getElementById('kpiDiffText').innerText = `當前：${STAGE_NAMES[appState.currentStage]}`;
-
-    document.getElementById('kpiWraTotal').innerText = formatMoneyText(wraTotSum);
-    document.getElementById('kpiWraGovSub').innerText = `公務: ${formatMoneyText(wraGovSum)} | 基金: ${formatMoneyText(wraFundSum)}`;
-
-    document.getElementById('kpiOtherDepts').innerText = formatMoneyText(moaSum + moeSum);
-    document.getElementById('kpiOtherSub').innerText = `農: ${formatMoneyText(moaSum)} | 環: ${formatMoneyText(moeSum)}`;
   }
 
   function openModalForProject(projectId) {
@@ -885,8 +772,7 @@
     document.getElementById('modalStageTitle').innerText = `編輯【${p.name}】116年${stageName}數據`;
 
     const stageNum = parseInt(appState.currentStage);
-    const result = getEffectiveStageData(p, stageNum);
-    const stData = result.data;
+    const stData = getEffectiveStageData(p, stageNum);
 
     document.getElementById('input_wra_cur').value = stData.wra_cur || 0;
     document.getElementById('input_wra_cap').value = stData.wra_cap || 0;
@@ -919,6 +805,7 @@
     const moa = parseInt(document.getElementById('input_moa').value) || 0;
     const moe = parseInt(document.getElementById('input_moe').value) || 0;
 
+    // 建立完全獨立的新物件，擺脫記憶體共用問題，絕對不會更動先前階段數據！
     p.stages[appState.currentStage] = {
       wra_cur: cur,
       wra_cap: cap,
@@ -931,7 +818,7 @@
     saveAppState();
     document.getElementById('editModal').style.display = 'none';
     renderApp();
-    showStatus(`已更新「${p.name}」在【${STAGE_NAMES[appState.currentStage]}】之經費數據！`, 'success');
+    showStatus(`已更新「${p.name}」在【${STAGE_NAMES[appState.currentStage]}】之數據！`, 'success');
   }
 
   // 複製全計畫長官速報摘要
@@ -943,7 +830,7 @@
     let grandAll = 0;
 
     appState.data.projects.forEach((p, index) => {
-      const stData = getEffectiveStageData(p, stageNum).data;
+      const stData = getEffectiveStageData(p, stageNum);
       const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
       const wraTotal = wraGov + (stData.wra_fund || 0);
       const moa = stData.moa || 0;
@@ -980,7 +867,7 @@
 
     appState.data.projects.forEach(p => {
       for (let st = 1; st <= 4; st++) {
-        const stData = getEffectiveStageData(p, st).data;
+        const stData = getEffectiveStageData(p, st);
         const gov = (stData.wra_cur||0) + (stData.wra_cap||0) + (stData.wra_sub||0);
         const wraTot = gov + (stData.wra_fund||0);
         const grand = wraTot + (stData.moa||0) + (stData.moe||0);
@@ -1018,7 +905,7 @@
     }
 
     appState.data.projects.forEach(p => {
-      const stData = getEffectiveStageData(p, 4).data; // 第 4 階段法定預算
+      const stData = getEffectiveStageData(p, 4); // 第 4 階段法定預算
       const wraGov = (stData.wra_cur || 0) + (stData.wra_cap || 0) + (stData.wra_sub || 0);
 
       if (wraGov > 0 || (stData.wra_fund || 0) > 0) {
