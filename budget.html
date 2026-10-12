@@ -311,7 +311,7 @@
       text-decoration: underline;
     }
 
-    /* 底部操作列 (優化為 2 欄寬版) */
+    /* 底部操作列 */
     .sticky-actions-bar {
       position: fixed;
       bottom: 0;
@@ -394,22 +394,9 @@
     .modal-title { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
     .btn-close-modal { font-size: 1.2rem; background: none; border: none; cursor: pointer; color: var(--text-muted); }
 
-    .form-group-modal {
-      margin-bottom: 12px;
-    }
-
-    .form-group-modal label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 700;
-      margin-bottom: 4px;
-      color: #334155;
-    }
-
-    .form-row-modal {
-      display: flex;
-      gap: 10px;
-    }
+    .form-group-modal { margin-bottom: 12px; }
+    .form-group-modal label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; color: #334155; }
+    .form-row-modal { display: flex; gap: 10px; }
 
     .input-modal {
       width: 100%;
@@ -445,6 +432,102 @@
     .status-info { background: #e6f3f3; color: #165857; }
     .status-success { background: #dcfce7; color: #15803d; }
     .status-error { background: #fee2e2; color: #b91c1c; }
+
+    /* 🤖 AI 小幫手 浮動按鈕與抽屜樣式 */
+    .ai-assistant-float-btn {
+      position: fixed;
+      bottom: 70px;
+      right: 18px;
+      z-index: 1500;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-size: 0.88rem;
+      font-weight: 800;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .ai-assistant-float-btn:active { transform: scale(0.95); }
+
+    .ai-drawer-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 2500;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .ai-drawer-card {
+      background: #ffffff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 650px;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      box-shadow: 0 -10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .ai-drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .ai-chat-logs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-msg-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      max-width: 88%;
+      white-space: pre-wrap;
+    }
+    .ai-msg-user {
+      align-self: flex-end;
+      background: #268785;
+      color: #ffffff;
+    }
+    .ai-msg-bot {
+      align-self: flex-start;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #e2e8f0;
+    }
+
+    .ai-quick-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+
+    .ai-input-row {
+      display: flex;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #f1f5f9;
+    }
   </style>
 </head>
 <body>
@@ -501,11 +584,43 @@
   <div id="projectListContainer"></div>
 </div>
 
-<!-- 底部操作列 (精簡為 2 選項) -->
+<!-- 底部操作列 -->
 <div class="sticky-actions-bar">
   <div class="actions-container">
     <button type="button" class="btn-action btn-action-hero" id="btnAddProjectBtn">➕ 新增計畫</button>
     <button type="button" class="btn-action" id="btnExportExcel">📊 匯出 Excel</button>
+  </div>
+</div>
+
+<!-- 🤖 AI 小幫手 浮動按鈕 -->
+<button type="button" class="ai-assistant-float-btn" id="btnOpenAiAssistant">
+  🤖 AI 小幫手
+</button>
+
+<!-- 🤖 AI 小幫手 抽屜對話介面 -->
+<div class="ai-drawer-overlay" id="aiDrawerOverlay">
+  <div class="ai-drawer-card">
+    <div class="ai-drawer-header">
+      <div style="font-weight: 800; font-size: 1.05rem; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+        🤖 AI 小幫手 <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">(預算數據動態洞察)</span>
+      </div>
+      <button class="btn-close-modal" id="btnCloseAiDrawer">✕</button>
+    </div>
+
+    <div class="ai-chat-logs" id="aiChatLogs">
+      <div class="ai-msg-bubble ai-msg-bot">您好！我是您的 **AI 小幫手**。您可以問我任何關於「正式計畫年度預算」的統計、比較與分析問題！</div>
+    </div>
+
+    <div class="ai-quick-chips">
+      <button class="chip-btn" onclick="sendAiQuickQuery('幫我分析目前選定範圍內的總預算與計畫比重')">📊 總預算結構分析</button>
+      <button class="chip-btn" onclick="sendAiQuickQuery('比較公務預算與特別預算的金額差異與占比')">⚖️ 公務 vs 特別預算</button>
+      <button class="chip-btn" onclick="sendAiQuickQuery('列出累計金額最高的前 3 項重點計畫')">🏆 前三名重點計畫</button>
+    </div>
+
+    <div class="ai-input-row">
+      <input type="text" id="aiQueryInput" class="input-modal" placeholder="問 AI 小幫手任何預算問題...">
+      <button type="button" class="btn-action btn-action-hero" id="btnSendAiQuery" style="padding: 0 16px;">發送</button>
+    </div>
   </div>
 </div>
 
@@ -554,7 +669,6 @@
   // 雲端 API 設定
   const API_BASE_URL = 'https://speed-report-api.onrender.com';
 
-  // 1. 預置 91~109 年 40 項計畫原始歸檔資料庫 (單位：千元)
   const defaultBudgetData = {
     years: ["91", "92", "93", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109"],
     projects: [
@@ -622,11 +736,9 @@
     initUIEvents();
     renderApp();
 
-    // 切換回視窗時自動感應同步雲端最新數據
     window.addEventListener('focus', syncWithCloud);
   });
 
-  // 動態尋找實質有編列預算金額(>0)的最新年度
   function getLatestYearWithData() {
     if (!appState.data || !appState.data.projects) return "109";
     let maxYearNum = 91;
@@ -668,7 +780,6 @@
     appState.startYear = sortedYears[0];
     appState.endYear = getLatestYearWithData();
 
-    // 背景靜默讀取雲端伺服器資料
     syncWithCloud();
   }
 
@@ -677,7 +788,6 @@
     saveToCloud();
   }
 
-  // 雲端資料同步讀取 (GET)
   async function syncWithCloud() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/budget/formal`);
@@ -694,7 +804,6 @@
     }
   }
 
-  // 雲端資料同步儲存 (POST)
   async function saveToCloud() {
     try {
       await fetch(`${API_BASE_URL}/api/budget/formal`, {
@@ -782,6 +891,18 @@
     });
 
     document.getElementById('btnSaveProjectEdit').addEventListener('click', saveProjectModalEdit);
+
+    // 🤖 AI 小幫手 事件綁定
+    document.getElementById('btnOpenAiAssistant').addEventListener('click', () => {
+      document.getElementById('aiDrawerOverlay').style.display = 'flex';
+    });
+    document.getElementById('btnCloseAiDrawer').addEventListener('click', () => {
+      document.getElementById('aiDrawerOverlay').style.display = 'none';
+    });
+    document.getElementById('btnSendAiQuery').addEventListener('click', handleAiQuerySubmit);
+    document.getElementById('aiQueryInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleAiQuerySubmit();
+    });
   }
 
   function renderApp() {
@@ -885,17 +1006,12 @@
       const actStart = Math.max(filterStart, pStart);
       const actEnd = Math.min(filterEnd, pEnd);
 
-      let periodLabelStr = '';
-      if (actStart === actEnd) {
-        periodLabelStr = `${actStart}年`;
-      } else {
-        periodLabelStr = `${actStart}~${actEnd}年`;
-      }
+      let periodLabelStr = (actStart === actEnd) ? `${actStart}年` : `${actStart}~${actEnd}年`;
 
       const card = document.createElement('div');
       card.className = 'project-card';
       
-      const cardHeaderHtml = `
+      card.innerHTML = `
         <div class="project-card-header">
           <div class="project-title">${p.name}</div>
           <span class="category-badge ${badgeClass}">${p.category}</span>
@@ -918,7 +1034,6 @@
         </div>
       `;
       
-      card.innerHTML = cardHeaderHtml;
       container.appendChild(card);
     });
 
@@ -936,17 +1051,17 @@
     let rowsHtml = '';
     activeYears.forEach(y => {
       const val = p.budgets[y] || 0;
-      rowsHtml += '<tr style="font-weight:600;">' +
-        '<td style="text-align:center;">' + y + '年</td>' +
-        '<td style="text-align:right;">' + val.toLocaleString() + '</td>' +
-        '<td style="text-align:right; color:#268785;">' + formatMoneyText(val) + '</td>' +
-      '</tr>';
+      rowsHtml += `<tr style="font-weight:600;">
+        <td style="text-align:center;">${y}年</td>
+        <td style="text-align:right;">${val.toLocaleString()}</td>
+        <td style="text-align:right; color:#268785;">${formatMoneyText(val)}</td>
+      </tr>`;
     });
 
-    return '<table class="details-table">' +
-      '<thead><tr><th style="width:25%;">年度</th><th style="width:40%; text-align:right;">預算數 (千元)</th><th style="width:35%; text-align:right;">換算顯示</th></tr></thead>' +
-      '<tbody>' + rowsHtml + '</tbody>' +
-    '</table>';
+    return `<table class="details-table">
+      <thead><tr><th style="width:25%;">年度</th><th style="width:40%; text-align:right;">預算數 (千元)</th><th style="width:35%; text-align:right;">換算顯示</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>`;
   }
 
   function toggleDetails(pid) {
@@ -1055,7 +1170,6 @@
 
   function exportToExcel() {
     const rangeYears = getSelectedYearsRange();
-    
     let csvContent = "\uFEFF";
     
     let headers = ["計畫名稱", "預算類別", "執行期程", `${appState.startYear}~${appState.endYear}累計(千元)`, `${appState.startYear}~${appState.endYear}累計(億元)`];
@@ -1082,23 +1196,6 @@
         }
       }
       return hasPeriodOverlap || hasBudgetInRange;
-    });
-
-    filteredProjects.sort((a, b) => {
-      const endA = parseInt(a.endYear || '0');
-      const endB = parseInt(b.endYear || '0');
-      if (endB !== endA) return endB - endA;
-
-      let sumA = 0, sumB = 0;
-      rangeYears.forEach(y => {
-        sumA += (a.budgets[y] || 0);
-        sumB += (b.budgets[y] || 0);
-      });
-      if (sumB !== sumA) return sumB - sumA;
-
-      const startA = parseInt(a.startYear || '0');
-      const startB = parseInt(b.startYear || '0');
-      return startB - startA;
     });
 
     filteredProjects.forEach(p => {
@@ -1139,8 +1236,7 @@
     let totalThousand = 0;
 
     rangeYears.forEach(y => {
-      const val = p.budgets[y] || 0;
-      totalThousand += val;
+      totalThousand += (p.budgets[y] || 0);
     });
 
     const pStart = parseInt(p.startYear || '91');
@@ -1151,7 +1247,6 @@
     const actEnd = Math.min(filterEnd, pEnd);
 
     const periodStr = (actStart === actEnd) ? `${actStart} 年度` : `${actStart} 至 ${actEnd} 年度`;
-
     const summaryStr = `${p.name}於 ${periodStr}間累計編列預算共 ${formatMoneyText(totalThousand)}。`;
 
     navigator.clipboard.writeText(summaryStr).then(() => {
@@ -1159,6 +1254,56 @@
     }).catch(err => {
       prompt('請手動複製下列摘要文字：', summaryStr);
     });
+  }
+
+  // 🤖 AI 小幫手 對話處理函數
+  function sendAiQuickQuery(qText) {
+    document.getElementById('aiQueryInput').value = qText;
+    handleAiQuerySubmit();
+  }
+
+  async function handleAiQuerySubmit() {
+    const inputEl = document.getElementById('aiQueryInput');
+    const query = inputEl.value.trim();
+    if (!query) return;
+
+    const chatLogs = document.getElementById('aiChatLogs');
+
+    // 1. 渲染使用者訊息
+    const userBubble = document.createElement('div');
+    userBubble.className = 'ai-msg-bubble ai-msg-user';
+    userBubble.innerText = query;
+    chatLogs.appendChild(userBubble);
+
+    inputEl.value = '';
+    chatLogs.scrollTop = chatLogs.scrollHeight;
+
+    // 2. 渲染 AI 思考中狀態
+    const loadingBubble = document.createElement('div');
+    loadingBubble.className = 'ai-msg-bubble ai-msg-bot';
+    loadingBubble.innerText = '🤖 AI 小幫手正在分析預算數據中，請稍候...';
+    chatLogs.appendChild(loadingBubble);
+    chatLogs.scrollTop = chatLogs.scrollHeight;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/copilot/budget-insight`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: query, db_key: 'formal' })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail || '連線 AI 伺服器超時或失敗');
+      }
+
+      const data = await res.json();
+      loadingBubble.innerText = data.insight;
+    } catch (err) {
+      loadingBubble.innerText = `⚠️ 抱歉，AI 小幫手目前無法完成分析：${err.message}`;
+    }
+
+    chatLogs.scrollTop = chatLogs.scrollHeight;
   }
 </script>
 </body>
