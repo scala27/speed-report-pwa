@@ -762,6 +762,9 @@
         appState.data = resJson.data;
         localStorage.setItem('wra_draft_budget_v5', JSON.stringify(appState.data));
         renderApp();
+      } else {
+        // 若雲端伺服器剛重啟無數據，自動將前端本機資料同步上傳至雲端
+        saveToCloud();
       }
     } catch (err) {
       console.warn('雲端資料讀取連線中...', err);
