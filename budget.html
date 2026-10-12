@@ -798,6 +798,9 @@
         localStorage.setItem('wra_budget_app_data_v4', JSON.stringify(appState.data));
         appState.endYear = getLatestYearWithData();
         renderApp();
+      } else {
+        // 若雲端伺服器剛重啟無數據，自動將前端本機資料同步上傳至雲端
+        saveToCloud();
       }
     } catch (err) {
       console.warn('雲端資料讀取連線中...', err);
