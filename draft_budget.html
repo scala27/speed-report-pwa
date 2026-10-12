@@ -223,10 +223,11 @@
       gap: 6px;
     }
 
+    /* 核心修改：大幅提高最大數據對比度的鮮明湛藍色 */
     .node-amount-l1 {
       font-weight: 800;
       font-size: 1.05rem;
-      color: #2c5282;
+      color: #0284c7;
     }
 
     .node-level-2 {
@@ -700,7 +701,7 @@
 
     Object.keys(appState.data.yearsData).forEach(yKey => {
       const yNum = parseInt(yKey);
-      if (!isNaN(yNum) && yNum < targetYr && appState.data.yearsData[yKey].length > 0) {
+      if (!isNaN(yNum) && yNum < targetYr && appState.data.yearsData[yKey] && appState.data.yearsData[yKey].length > 0) {
         if (yNum > maxYrSoFar) {
           maxYrSoFar = yNum;
           foundYear = yKey;
