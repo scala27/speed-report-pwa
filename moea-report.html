@@ -1359,7 +1359,7 @@
     const data = getFormData();
     const pdfBlob = await generatePDFBlob(data);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
+    link.href = URL.createObjectURL(pdfBlob); // ✅ 修正：使用宣告的 pdfBlob 變數
     link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
     link.click();
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
