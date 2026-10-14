@@ -418,7 +418,7 @@
     .status-success { background: #dcfce7; color: #15803d; }
     .status-error { background: #fee2e2; color: #b91c1c; }
 
-    /* 今日通行密碼自訂彈窗（與截圖 UI 完全一致） */
+    /* 今日通行密碼自訂彈窗（與截圖視覺完美相符） */
     .pwd-modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -1359,7 +1359,7 @@
     const data = getFormData();
     const pdfBlob = await generatePDFBlob(data);
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(pdfBlob); // ✅ 修正：使用宣告的 pdfBlob 變數
+    link.href = URL.createObjectURL(pdfBlob);
     link.download = `經濟部速報單_${data.report_date || ''}.pdf`;
     link.click();
     showStatus('經濟部速報單 PDF 匯出成功！', 'success');
@@ -1676,7 +1676,8 @@
     drawBoldText(currentPage, leftTitle, marginX + headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
     const rightTitleW = measureTextWidth(rightTitle, titleSize);
-    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleSize, 2.2);
+    // ✅ 修正：補齊 titleCenterY 參數，讓「速 報 單」出現在正確的 Y 軸高度與 22pt 大小
+    drawBoldText(currentPage, rightTitle, marginX + printableWidth - rightTitleW - headerIndent2Chars, titleCenterY, titleSize, 2.2);
 
     currentY = headerTopY - (3.5 * catLineSpacing) - 25;
 
